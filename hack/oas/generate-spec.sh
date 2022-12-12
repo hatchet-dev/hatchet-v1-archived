@@ -1,0 +1,1 @@
+swagger generate spec --scan-models --include github.com/hatchet-dev/hatchet --work-dir ./cmd/hatchet-server/ --output openapi.yaml
