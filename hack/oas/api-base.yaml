@@ -1,0 +1,27 @@
+openapi: 3.1.0
+servers:
+  - url: "http://localhost:8080"
+info:
+  description: |
+    # Introduction
+    Welcome to the documentation for Hatchet's API. 
+  version: 1.0.0
+  title: API v1
+  termsOfService: "https://docs.hatchet.run/terms-and-privacy/terms-of-service/"
+  contact:
+    name: Hatchet Support
+    email: support@hatchet.run
+tags:
+  - name: Users
+    description: >
+      Users are Hatchet users. 
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  links: {}
+  callbacks: {}
+security:
+  - Bearer: []

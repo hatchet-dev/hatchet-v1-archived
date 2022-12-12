@@ -4,10 +4,6 @@ import (
 	"time"
 )
 
-const (
-	ErrCodeUnavailable uint = 1405
-)
-
 type APIVerb string
 
 const (

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 )
 
 // Decoder populates a request form from the request body and URL.
@@ -63,17 +64,23 @@ func (d *DefaultDecoder) Decode(
 func requestErrorFromJSONErr(err error) apierrors.RequestError {
 	var syntaxErr *json.SyntaxError
 	var typeErr *json.UnmarshalTypeError
-	var clientErr error
+	var clientErr string
 
 	if errors.As(err, &syntaxErr) {
-		clientErr = fmt.Errorf("JSON syntax error at character %d", syntaxErr.Offset)
+		clientErr = fmt.Sprintf("JSON syntax error at character %d", syntaxErr.Offset)
 	} else if errors.As(err, &typeErr) {
-		clientErr = fmt.Errorf("Invalid type for body param %s: expected %s, got %s", typeErr.Field, typeErr.Type.Kind().String(), typeErr.Value)
+		clientErr = fmt.Sprintf("Invalid type for body param %s: expected %s, got %s", typeErr.Field, typeErr.Type.Kind().String(), typeErr.Value)
 	} else {
-		return apierrors.NewErrPassThroughToClient(fmt.Errorf("Could not parse JSON request"), http.StatusBadRequest, err.Error())
+		return apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: "Could not parse JSON request",
+		}, http.StatusBadRequest, err.Error())
 	}
 
-	return apierrors.NewErrPassThroughToClient(clientErr, http.StatusBadRequest)
+	return apierrors.NewErrPassThroughToClient(types.APIError{
+		Code:        types.ErrCodeBadRequest,
+		Description: clientErr,
+	}, http.StatusBadRequest)
 }
 
 func requestErrorFromSchemaErr(err error) apierrors.RequestError {
@@ -86,9 +93,12 @@ func requestErrorFromSchemaErr(err error) apierrors.RequestError {
 			resStrArr = append(resStrArr, readableStringFromSchemaErr(err))
 		}
 
-		clientErr := fmt.Errorf(strings.Join(resStrArr, ","))
+		clientErr := fmt.Sprintf(strings.Join(resStrArr, ","))
 
-		return apierrors.NewErrPassThroughToClient(clientErr, http.StatusBadRequest)
+		return apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: clientErr,
+		}, http.StatusBadRequest)
 	}
 
 	// if not castable to multi-error, this is likely a server-side error, such as the

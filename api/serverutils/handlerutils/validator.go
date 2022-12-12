@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/validator"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 )
 
 // Validator will validate the fields for a request object to ensure that
@@ -62,7 +63,10 @@ func (v *DefaultValidator) Validate(s interface{}) apierrors.RequestError {
 
 func NewErrFailedRequestValidation(valError string) apierrors.RequestError {
 	// return 400 error since a validation error indicates an issue with the user request
-	return apierrors.NewErrPassThroughToClient(fmt.Errorf(valError), http.StatusBadRequest)
+	return apierrors.NewErrPassThroughToClient(types.APIError{
+		Code:        types.ErrCodeBadRequest,
+		Description: valError,
+	}, http.StatusBadRequest)
 }
 
 // ValidationErrObject represents an error referencing a specific field in a struct that

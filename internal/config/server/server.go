@@ -1,6 +1,9 @@
 package server
 
-import "github.com/hatchet-dev/hatchet/internal/config/shared"
+import (
+	"github.com/hatchet-dev/hatchet/internal/config/database"
+	"github.com/hatchet-dev/hatchet/internal/config/shared"
+)
 
 type ConfigFile struct {
 	// General server config options
@@ -25,6 +28,8 @@ type ServerRuntimeConfig struct {
 
 type Config struct {
 	shared.Config
+
+	DB database.Config
 
 	AuthConfig AuthConfig
 

@@ -8,11 +8,12 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type HatchetHandler interface {
 	Config() *server.Config
-	// Repo() repository.Repository
+	Repo() repository.Repository
 	HandleAPIError(w http.ResponseWriter, r *http.Request, err apierrors.RequestError)
 	HandleAPIErrorNoWrite(w http.ResponseWriter, r *http.Request, err apierrors.RequestError)
 	// PopulateOAuthSession(
@@ -58,9 +59,9 @@ func (d *DefaultHatchetHandler) Config() *server.Config {
 	return d.config
 }
 
-// func (d *DefaultHatchetHandler) Repo() repository.Repository {
-// 	return d.config.Repo
-// }
+func (d *DefaultHatchetHandler) Repo() repository.Repository {
+	return d.config.DB.Repository
+}
 
 func (d *DefaultHatchetHandler) HandleAPIError(w http.ResponseWriter, r *http.Request, err apierrors.RequestError) {
 	apierrors.HandleAPIError(d.Config().Logger, d.Config().ErrorAlerter, w, r, err, true)
@@ -151,9 +152,10 @@ func NewUnavailable(config *server.Config, handlerID string) *Unavailable {
 
 func (u *Unavailable) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	apierrors.HandleAPIError(u.config.Logger, u.config.ErrorAlerter, w, r, apierrors.NewErrPassThroughToClient(
-		fmt.Errorf("%s not available in community edition", u.handlerID),
+		types.APIError{
+			Description: fmt.Sprintf("%s not available in community edition", u.handlerID),
+			Code:        types.ErrCodeUnavailable,
+		},
 		http.StatusMethodNotAllowed,
-	), true, apierrors.ErrorOpts{
-		Code: types.ErrCodeUnavailable,
-	})
+	), true)
 }

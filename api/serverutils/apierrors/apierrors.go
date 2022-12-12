@@ -2,6 +2,7 @@ package apierrors
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 
 type RequestError interface {
 	Error() string
-	ExternalError() string
+	APIError() types.APIErrors
 	InternalError() string
 	GetStatusCode() int
 }
@@ -33,8 +34,15 @@ func (e *ErrInternal) InternalError() string {
 	return e.err.Error()
 }
 
-func (e *ErrInternal) ExternalError() string {
-	return "An internal error occurred."
+func (e *ErrInternal) APIError() types.APIErrors {
+	return types.APIErrors{
+		Errors: []types.APIError{
+			{
+				Code:        types.ErrCodeInternalServerError,
+				Description: "An internal error occurred.",
+			},
+		},
+	}
 }
 
 func (e *ErrInternal) GetStatusCode() int {
@@ -57,8 +65,15 @@ func (e *ErrForbidden) InternalError() string {
 	return e.err.Error()
 }
 
-func (e *ErrForbidden) ExternalError() string {
-	return "Forbidden"
+func (e *ErrForbidden) APIError() types.APIErrors {
+	return types.APIErrors{
+		Errors: []types.APIError{
+			{
+				Code:        types.ErrCodeForbidden,
+				Description: "Forbidden",
+			},
+		},
+	}
 }
 
 func (e *ErrForbidden) GetStatusCode() int {
@@ -67,25 +82,41 @@ func (e *ErrForbidden) GetStatusCode() int {
 
 // errors that should be passed directly, with no filter
 type ErrPassThroughToClient struct {
-	err        error
+	apiErrors  types.APIErrors
 	statusCode int
 	errDetails []string
 }
 
-func NewErrPassThroughToClient(err error, statusCode int, details ...string) RequestError {
-	return &ErrPassThroughToClient{err, statusCode, details}
+func NewErrPassThroughToClient(apiError types.APIError, statusCode int, details ...string) RequestError {
+	return &ErrPassThroughToClient{types.APIErrors{
+		Errors: []types.APIError{apiError},
+	}, statusCode, details}
+}
+
+func NewErrPassThroughToClientMulti(apiErrors types.APIErrors, statusCode int, details ...string) RequestError {
+	return &ErrPassThroughToClient{apiErrors, statusCode, details}
 }
 
 func (e *ErrPassThroughToClient) Error() string {
-	return e.err.Error()
+	errs := make([]string, 0)
+
+	for _, apiError := range e.apiErrors.Errors {
+		errs = append(errs, apiError.Description)
+	}
+
+	return strings.Join(errs, ", ")
 }
 
 func (e *ErrPassThroughToClient) InternalError() string {
-	return e.err.Error() + strings.Join(e.errDetails, ",")
+	if len(e.errDetails) > 0 {
+		return fmt.Sprintf("%v: %s", e.Error(), strings.Join(e.errDetails, ", "))
+	}
+
+	return e.Error()
 }
 
-func (e *ErrPassThroughToClient) ExternalError() string {
-	return e.err.Error()
+func (e *ErrPassThroughToClient) APIError() types.APIErrors {
+	return e.apiErrors
 }
 
 func (e *ErrPassThroughToClient) GetStatusCode() int {
@@ -109,8 +140,15 @@ func (e *ErrNotFound) InternalError() string {
 	return e.err.Error()
 }
 
-func (e *ErrNotFound) ExternalError() string {
-	return "Resource not found."
+func (e *ErrNotFound) APIError() types.APIErrors {
+	return types.APIErrors{
+		Errors: []types.APIError{
+			{
+				Code:        types.ErrCodeNotFound,
+				Description: "Resource not found",
+			},
+		},
+	}
 }
 
 func (e *ErrNotFound) GetStatusCode() int {
@@ -130,12 +168,9 @@ func HandleAPIError(
 	writeErr bool,
 	opts ...ErrorOpts,
 ) {
-	extErrorStr := err.ExternalError()
-
 	// log the internal error
 	event := l.Warn().
-		Str("internal_error", err.InternalError()).
-		Str("external_error", extErrorStr)
+		Str("internal_error", err.InternalError())
 
 	data := make(map[string]interface{})
 	// data := logger.AddLoggingContextScopes(r.Context(), event)
@@ -154,7 +189,7 @@ func HandleAPIError(
 	if writeErr {
 		// send the external error
 		// TODO: populate error
-		resp := &types.APIErrors{}
+		resp := err.APIError()
 
 		// write the status code
 		w.WriteHeader(err.GetStatusCode())

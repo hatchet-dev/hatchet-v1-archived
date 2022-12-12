@@ -1,8 +1,6 @@
 package router
 
 import (
-	"fmt"
-
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
@@ -61,9 +59,6 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 
 func registerRoutes(config *server.Config, routes []*router.Route) {
 	for _, route := range routes {
-
-		fmt.Println("parsing route:", route, route.Endpoint.Metadata.Path.GetPathString())
-
 		atomicGroup := route.Router.Group(nil)
 
 		atomicGroup.Method(

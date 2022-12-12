@@ -17,6 +17,8 @@ bin
 openapi.yaml
 .idea
 
+node_modules
+
 # Local docs directories
 /docs/.obsidian
 

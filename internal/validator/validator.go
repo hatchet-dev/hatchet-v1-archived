@@ -2,6 +2,7 @@ package validator
 
 import (
 	"regexp"
+	"unicode"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -18,5 +19,27 @@ func New() *validator.Validate {
 		return NameRegex.MatchString(fl.Field().String())
 	})
 
+	validate.RegisterValidation("password", func(fl validator.FieldLevel) bool {
+		return passwordValidation(fl.Field().String())
+	})
+
 	return validate
+}
+
+func passwordValidation(pw string) bool {
+	pwLen := len(pw)
+	var hasNumber, hasUpper, hasLower bool
+
+	for _, char := range pw {
+		switch {
+		case unicode.IsNumber(char):
+			hasNumber = true
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		}
+	}
+
+	return hasNumber && hasUpper && hasLower && pwLen >= 8 && pwLen <= 32
 }

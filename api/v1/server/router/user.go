@@ -47,12 +47,20 @@ func GetUserScopedRoutes(
 		// responses:
 		//   '201':
 		//     description: Successfully created the user
+		//     schema:
+		//       $ref: '#/definitions/CreateUserResponse'
 		//   '400':
 		//     description: A malformed or bad request
+		//     schema:
+		//       $ref: '#/definitions/APIErrors'
 		//   '403':
 		//     description: Forbidden
+		//     schema:
+		//       $ref: '#/definitions/APIErrors'
 		//   '405':
 		//     description: This endpoint is not supported on this Hatchet instance.
+		//     schema:
+		//       $ref: '#/definitions/APIErrors'
 		createUserEndpoint := factory.NewAPIEndpoint(
 			&endpoint.EndpointMetadata{
 				Verb:   types.APIVerbCreate,
