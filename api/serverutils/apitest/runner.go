@@ -55,6 +55,11 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 		apiTester.conf, err = loader.LoadServerConfigFromConfigFile(&server.ConfigFile{
 			Port:             8080,
 			BasicAuthEnabled: true,
+			CookieName:       "hatchet",
+			CookieSecrets: []string{
+				"random_hash_key_",
+				"random_block_key",
+			},
 		}, conf, sharedConfig)
 
 		if err != nil {
