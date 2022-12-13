@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
 // AuthNFactory generates a middleware handler `AuthN`
@@ -47,6 +50,20 @@ type AuthN struct {
 // ServeHTTP attaches an authenticated subject to the request context,
 // or serves a forbidden error. If authenticated, it calls the next handler.
 func (authn *AuthN) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// first check for a bearer token
+	tok, err := authn.getPATFromRequest(r)
+
+	// if the error is not an invalid auth header error, the token was invalid, and we throw error
+	// forbidden. If the error was an invalid auth error, we look for a cookie.
+	if err != nil && err != errInvalidAuthHeader {
+		authn.sendForbiddenError(err, w, r)
+		return
+	} else if err == nil && tok != nil {
+		authn.verifyTokenWithNext(w, r, tok)
+		return
+	}
+
+	// otherwise we check for a cookie-based user session
 	store := authn.config.UserSessionStore
 
 	session, err := store.Get(r, store.GetName())
@@ -102,6 +119,48 @@ func (authn *AuthN) handleForbiddenForSession(
 	return
 }
 
+func (authn *AuthN) verifyTokenWithNext(w http.ResponseWriter, r *http.Request, pat *models.PersonalAccessToken) {
+	// if the token has a stored token id and secret we check that the token is valid in the database
+	if pat.Revoked || pat.IsExpired() {
+		authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", pat.ID), w, r)
+		return
+	}
+
+	authn.nextWithUserID(w, r, pat.UserID)
+}
+
+// sendForbiddenError sends a 403 Forbidden error to the end user while logging a
+// specific error
+func (authn *AuthN) sendForbiddenError(err error, w http.ResponseWriter, r *http.Request) {
+	reqErr := apierrors.NewErrForbidden(err)
+
+	apierrors.HandleAPIError(authn.config.Logger, authn.config.ErrorAlerter, w, r, reqErr, true)
+}
+
+var errInvalidToken = fmt.Errorf("authorization header exists, but token is not valid")
+var errInvalidAuthHeader = fmt.Errorf("invalid authorization header in request")
+
+// getPATFromRequest finds an `Authorization` header of the form `Bearer <token>`,
+// and returns a valid token if it exists.
+func (authn *AuthN) getPATFromRequest(r *http.Request) (*models.PersonalAccessToken, error) {
+	reqToken := r.Header.Get("Authorization")
+	splitToken := strings.Split(reqToken, "Bearer")
+
+	if len(splitToken) != 2 {
+		return nil, errInvalidAuthHeader
+	}
+
+	reqToken = strings.TrimSpace(splitToken[1])
+
+	pat, err := token.GetPATFromEncoded(reqToken, authn.config.DB.Repository.PersonalAccessToken())
+
+	if err != nil {
+		return nil, errInvalidToken
+	}
+
+	return pat, nil
+}
+
 // nextWithUserID calls the next handler with the user set in the context with key
 // `types.UserScope`.
 func (authn *AuthN) nextWithUserID(w http.ResponseWriter, r *http.Request, userID string) {
@@ -119,12 +178,4 @@ func (authn *AuthN) nextWithUserID(w http.ResponseWriter, r *http.Request, userI
 
 	r = r.Clone(ctx)
 	authn.next.ServeHTTP(w, r)
-}
-
-// sendForbiddenError sends a 403 Forbidden error to the end user while logging a
-// specific error
-func (authn *AuthN) sendForbiddenError(err error, w http.ResponseWriter, r *http.Request) {
-	reqErr := apierrors.NewErrForbidden(err)
-
-	apierrors.HandleAPIError(authn.config.Logger, authn.config.ErrorAlerter, w, r, reqErr, true)
 }

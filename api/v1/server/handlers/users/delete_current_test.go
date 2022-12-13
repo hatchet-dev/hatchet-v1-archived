@@ -1,7 +1,6 @@
 package users_test
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,12 +9,12 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/users"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
-	"github.com/hatchet-dev/hatchet/internal/models/uuidutils"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetCurrentUserSuccessful(t *testing.T) {
+func TestDeleteSuccessful(t *testing.T) {
 	declaredUser := testutils.DeclaredUserModels[0]
 
 	withAuthUser := func(config *server.Config) (interface{}, interface{}) {
@@ -29,32 +28,19 @@ func TestGetCurrentUserSuccessful(t *testing.T) {
 	}
 
 	apitest.RunAPITest(t, func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error {
-		gotUser := &types.User{}
+		apitest.AssertStatusCode(t, rr, http.StatusAccepted)
 
-		err := json.NewDecoder(rr.Body).Decode(gotUser)
+		// make sure the user is deleted by checking the database
+		_, failingErr := config.DB.Repository.User().ReadUserByEmail(declaredUser.Email)
 
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// assert that the uuid is valid
-		assert.True(t, uuidutils.IsValidUUID(gotUser.ID))
-
-		expUser := &types.User{
-			APIResourceMeta: gotUser.APIResourceMeta,
-			DisplayName:     declaredUser.DisplayName,
-			Email:           declaredUser.Email,
-			EmailVerified:   declaredUser.EmailVerified,
-		}
-
-		// assert the rest of the user object is valid
-		assert.Equal(t, expUser, gotUser, "user should be equal")
+		assert.NotNil(t, failingErr, "err is not nil")
+		assert.ErrorIs(t, repository.RepositoryErrorNotFound, failingErr)
 
 		return nil
 	}, &apitest.APITesterOpts{
-		Method:      "GET",
+		Method:      "DELETE",
 		Route:       "/api/v1/users/current",
-		HandlerInit: users.NewUserGetCurrentHandler,
+		HandlerInit: users.NewUserDeleteCurrentHandler,
 		CtxGenerators: []apitest.GenerateRequestCtx{
 			withAuthUser,
 		},

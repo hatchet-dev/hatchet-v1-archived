@@ -9,4 +9,5 @@ type UserRepository interface {
 	CreateUser(user *models.User) (*models.User, RepositoryError)
 	ReadUserByEmail(email string) (*models.User, RepositoryError)
 	ReadUserByID(id string) (*models.User, RepositoryError)
+	DeleteUser(user *models.User) (*models.User, RepositoryError)
 }

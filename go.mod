@@ -32,6 +32,7 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-test/deep v1.0.8
+	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1

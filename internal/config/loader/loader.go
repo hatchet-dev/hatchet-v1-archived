@@ -99,10 +99,14 @@ func (e *EnvConfigLoader) LoadDatabaseConfig() (res *database.Config, err error)
 
 	repo := gorm.NewRepository(db, &key)
 
-	return &database.Config{
+	res = &database.Config{
 		GormDB:     db,
 		Repository: repo,
-	}, nil
+	}
+
+	res.SetEncryptionKey(&key)
+
+	return res, nil
 }
 
 func (e *EnvConfigLoader) LoadServerConfigFromEnv() (res *server.Config, err error) {

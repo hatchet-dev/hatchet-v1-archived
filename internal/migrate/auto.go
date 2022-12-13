@@ -16,5 +16,6 @@ func AutoMigrate(db *gorm.DB, debug bool) error {
 	return instanceDB.AutoMigrate(
 		&models.User{},
 		&models.UserSession{},
+		&models.PersonalAccessToken{},
 	)
 }

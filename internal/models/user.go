@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// User type that extends gorm.Model
 type User struct {
 	Base
 

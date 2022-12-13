@@ -22,4 +22,14 @@ type ConfigFile struct {
 type Config struct {
 	GormDB     *gorm.DB
 	Repository repository.Repository
+
+	encryptionKey *[32]byte
+}
+
+func (c *Config) SetEncryptionKey(key *[32]byte) {
+	c.encryptionKey = key
+}
+
+func (c *Config) GetEncryptionKey() *[32]byte {
+	return c.encryptionKey
 }

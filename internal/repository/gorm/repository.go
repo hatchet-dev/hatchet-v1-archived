@@ -13,6 +13,7 @@ import (
 type GormRepository struct {
 	user        repository.UserRepository
 	userSession repository.UserSessionRepository
+	pat         repository.PersonalAccessTokenRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -23,12 +24,17 @@ func (t *GormRepository) UserSession() repository.UserSessionRepository {
 	return t.userSession
 }
 
+func (t *GormRepository) PersonalAccessToken() repository.PersonalAccessTokenRepository {
+	return t.pat
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 	return &GormRepository{
 		user:        NewUserRepository(db),
 		userSession: NewUserSessionRepository(db),
+		pat:         NewPersonalAccessTokenRepository(db, key),
 	}
 }
 

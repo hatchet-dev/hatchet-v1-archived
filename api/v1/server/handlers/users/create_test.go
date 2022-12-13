@@ -11,7 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/users"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
-	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/models/uuidutils"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +27,7 @@ func TestCreateSuccessful(t *testing.T) {
 		}
 
 		// assert that the uuid is valid
-		assert.True(t, models.IsValidUUID(gotUser.ID))
+		assert.True(t, uuidutils.IsValidUUID(gotUser.ID))
 
 		expUser := &types.User{
 			APIResourceMeta: gotUser.APIResourceMeta,

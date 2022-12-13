@@ -94,13 +94,13 @@ func (repo *UserRepository) ReadUserByEmail(email string) (*models.User, reposit
 // 	return user, nil
 // }
 
-// // DeleteUser deletes a single user using their unique id
-// func (repo *UserRepository) DeleteUser(user *models.User) (*models.User, error) {
-// 	if err := repo.db.Delete(&user).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return user, nil
-// }
+// DeleteUser deletes a single user using their unique id
+func (repo *UserRepository) DeleteUser(user *models.User) (*models.User, repository.RepositoryError) {
+	if err := repo.db.Delete(&user).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+	return user, nil
+}
 
 // // CheckPassword checks the input password is correct for the provided user id.
 // func (repo *UserRepository) CheckPassword(id int, pwd string) (bool, error) {
