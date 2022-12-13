@@ -44,9 +44,17 @@ const (
 
 // swagger:model
 type APIResourceMeta struct {
+	// the time that this resource was created
+	// example: 2022-12-13T15:06:48.888358-05:00
 	CreatedAt *time.Time `json:"created_at"`
+
+	// the time that this resource was last updated
+	// example: 2022-12-13T15:06:48.888358-05:00
 	UpdatedAt *time.Time `json:"updated_at"`
-	ID        string     `json:"id"`
+
+	// the id of this resource, in UUID format
+	// example: bb214807-246e-43a5-a25d-41761d1cff9e
+	ID string `json:"id"`
 }
 
 type UsageMetric string

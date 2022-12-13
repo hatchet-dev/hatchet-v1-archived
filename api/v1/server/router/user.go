@@ -185,18 +185,18 @@ func GetUserScopedRoutes(
 	// ---
 	// produces:
 	// - application/json
-	// summary: Create a new user
+	// summary: Create a new personal access token
 	// tags:
 	// - Users
 	// parameters:
 	//   - in: body
 	//     name: CreatePATRequest
-	//     description: The user to create
+	//     description: The personal access token to create
 	//     schema:
 	//       $ref: '#/definitions/CreatePATRequest'
 	// responses:
 	//   '201':
-	//     description: Successfully created the user
+	//     description: Successfully created the personal access token
 	//     schema:
 	//       $ref: '#/definitions/CreatePATResponse'
 	//   '400':

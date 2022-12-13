@@ -4,10 +4,21 @@ package types
 type User struct {
 	*APIResourceMeta
 
-	DisplayName   string `json:"display_name"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Icon          string `json:"icon"`
+	// the display name for this user
+	// example: User 1
+	DisplayName string `json:"display_name"`
+
+	// the email address for this user
+	// example: user1@gmail.com
+	Email string `json:"email"`
+
+	// whether this user's email address has been verified
+	// example: false
+	EmailVerified bool `json:"email_verified"`
+
+	// a URI for the user icon
+	// example: https://avatars.githubusercontent.com/u/25448214?v=4
+	Icon string `json:"icon"`
 }
 
 // swagger:model
@@ -15,9 +26,23 @@ type GetUserResponse User
 
 // swagger:model
 type CreateUserRequest struct {
+	// the display name for this user
+	//
+	// required: true
+	// example: User 1
 	DisplayName string `json:"display_name" form:"required,max=255"`
-	Email       string `json:"email" form:"required,max=255,email"`
-	Password    string `json:"password" form:"required,max=255,password"`
+
+	// the email address for this user
+	//
+	// required: true
+	// example: user1@gmail.com
+	Email string `json:"email" form:"required,max=255,email"`
+
+	// the password for this user
+	//
+	// required: true
+	// example: Securepassword123
+	Password string `json:"password" form:"required,max=255,password"`
 }
 
 // swagger:model
