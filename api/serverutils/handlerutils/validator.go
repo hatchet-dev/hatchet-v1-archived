@@ -12,6 +12,14 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 )
 
+type ValidatorErr string
+
+const (
+	EmailErr       ValidatorErr = "Invalid email address"
+	PasswordErr    ValidatorErr = "Invalid password. Passwords must be at least 8 characters in length, contain an upper and lowercase letter, and contain at least one number."
+	HatchetNameErr ValidatorErr = "Hatchet names must match the regex ^[a-zA-Z0-9\\.\\-_]+$"
+)
+
 // Validator will validate the fields for a request object to ensure that
 // the request is well-formed. For example, it searches for required fields
 // or verifies that fields are of a semantic type (like email)
@@ -55,7 +63,18 @@ func (v *DefaultValidator) Validate(s interface{}) apierrors.RequestError {
 	for i, field := range errs {
 		errObj := NewValidationErrObject(field)
 
-		errorStrs[i] = errObj.SafeExternalError()
+		// case on the hardcoded mappings for certain validators; otherwise, just add the safe
+		// external error
+		switch strings.ToLower(errObj.Field) + "-" + strings.ToLower(errObj.Condition) {
+		case "email-email":
+			errorStrs[i] = string(EmailErr)
+		case "password-password":
+			errorStrs[i] = string(PasswordErr)
+		case "hatchet-name-hatchet-name":
+			errorStrs[i] = string(HatchetNameErr)
+		default:
+			errorStrs[i] = errObj.SafeExternalError()
+		}
 	}
 
 	return NewErrFailedRequestValidation(strings.Join(errorStrs, ","))

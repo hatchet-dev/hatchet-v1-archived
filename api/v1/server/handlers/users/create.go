@@ -11,7 +11,6 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserCreateHandler struct {
@@ -22,7 +21,7 @@ func NewUserCreateHandler(
 	config *server.Config,
 	decoderValidator handlerutils.RequestDecoderValidator,
 	writer handlerutils.ResultWriter,
-) *UserCreateHandler {
+) http.Handler {
 	return &UserCreateHandler{
 		HatchetHandlerReadWriter: handlers.NewDefaultHatchetHandler(config, decoderValidator, writer),
 	}
@@ -54,16 +53,6 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Email:       request.Email,
 		Password:    request.Password,
 	}
-
-	// hash the password using bcrypt
-	hashedPw, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
-
-	if err != nil {
-		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
-	user.Password = string(hashedPw)
 
 	// write the user to the db
 	user, err = u.Repo().User().CreateUser(user)

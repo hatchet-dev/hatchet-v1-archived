@@ -33,61 +33,61 @@ var validationErrObjectTests = []validationErrObjectTest{
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:       "storage",
+			Field:       "role",
 			Condition:   "oneof",
-			Param:       "secret configmap",
-			ActualValue: "notsecret",
+			Param:       "admin developer",
+			ActualValue: "notarole",
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "'notsecret'"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "'notarole'"),
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:       "storage",
+			Field:       "role",
 			Condition:   "oneof",
-			Param:       "secret configmap",
+			Param:       "admin developer",
 			ActualValue: 1,
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "1"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "1"),
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:       "storage",
+			Field:       "role",
 			Condition:   "oneof",
-			Param:       "secret configmap",
-			ActualValue: []string{"secret1", "secret2"},
+			Param:       "admin developer",
+			ActualValue: []string{"dev1", "dev2"},
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "[ secret1 secret2 ]"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "[ dev1 dev2 ]"),
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:       "storage",
+			Field:       "role",
 			Condition:   "oneof",
-			Param:       "secret configmap",
+			Param:       "admin developer",
 			ActualValue: []int{1, 2},
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "[ 1 2 ]"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "[ 1 2 ]"),
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:     "storage",
+			Field:     "role",
 			Condition: "oneof",
-			Param:     "secret configmap",
+			Param:     "admin developer",
 			// for nil values, we convert the actual value to null
 			ActualValue: nil,
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "null"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "null"),
 	},
 	{
 		valErrObj: &handlerutils.ValidationErrObject{
-			Field:     "storage",
+			Field:     "role",
 			Condition: "oneof",
-			Param:     "secret configmap",
+			Param:     "admin developer",
 			// for unrecognized types, we don't cast to value
 			ActualValue: map[string]string{
 				"not": "cast",
 			},
 		},
-		expStr: fmt.Sprintf(paramErrorFmt, "storage", "oneof", "secret configmap", "invalid type"),
+		expStr: fmt.Sprintf(paramErrorFmt, "role", "oneof", "admin developer", "invalid type"),
 	},
 }
 
@@ -117,10 +117,10 @@ type validationTest struct {
 }
 
 type validationTestObj struct {
-	ID      uint   `form:"required"`
-	Name    string `form:"required"`
-	Email   string `form:"email"`
-	Storage string `form:"oneof=sqlite postgres"`
+	ID    string `form:"required"`
+	Name  string `form:"required"`
+	Email string `form:"email"`
+	Role  string `form:"oneof=admin developer"`
 }
 
 var validationTests = []validationTest{
@@ -131,30 +131,30 @@ var validationTests = []validationTest{
 		expErrStrings: []string{
 			fmt.Sprintf(requiredErrorFmt, "ID"),
 			fmt.Sprintf(requiredErrorFmt, "Name"),
-			fmt.Sprintf(simpleConditionErrorFmt, "Email", "email"),
-			fmt.Sprintf(paramErrorFmt, "Storage", "oneof", "sqlite postgres", "''"),
+			string(handlerutils.EmailErr),
+			fmt.Sprintf(paramErrorFmt, "Role", "oneof", "admin developer", "''"),
 		},
 	},
 	{
 		description: "Fails email validation",
 		valObj: &validationTestObj{
-			ID:      1,
-			Name:    "whatever",
-			Email:   "notanemail",
-			Storage: "postgres",
+			ID:    "1",
+			Name:  "whatever",
+			Email: "notanemail",
+			Role:  "admin",
 		},
 		expErr: true,
 		expErrStrings: []string{
-			fmt.Sprintf(simpleConditionErrorFmt, "Email", "email"),
+			string(handlerutils.EmailErr),
 		},
 	},
 	{
 		description: "Should pass all",
 		valObj: &validationTestObj{
-			ID:      1,
-			Name:    "whatever",
-			Email:   "anemail@gmail.com",
-			Storage: "postgres",
+			ID:    "1",
+			Name:  "whatever",
+			Email: "anemail@gmail.com",
+			Role:  "admin",
 		},
 		expErr:        false,
 		expErrStrings: []string{},
@@ -229,7 +229,7 @@ func TestErrFailedRequestValidation(t *testing.T) {
 
 	assert.Equal(
 		expErrStr,
-		err.ExternalError(),
+		err.APIError().Errors[0].Description,
 		"incorrect value for ExternalError() method",
 	)
 

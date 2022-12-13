@@ -63,7 +63,11 @@ func (e *EnvConfigLoader) loadSharedConfig() (res *shared.Config, err error) {
 		return nil, fmt.Errorf("could not load shared config from env: %v", err)
 	}
 
-	l := logger.NewConsole(sharedConfig.Debug)
+	return e.LoadSharedConfigFromConfigFile(sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadSharedConfigFromConfigFile(sharedConfigFile *shared.ConfigFile) (res *shared.Config, err error) {
+	l := logger.NewConsole(sharedConfigFile.Debug)
 
 	errorAlerter := erroralerter.NoOpAlerter{}
 
@@ -100,7 +104,7 @@ func (e *EnvConfigLoader) LoadDatabaseConfig() (res *database.Config, err error)
 	}, nil
 }
 
-func (e *EnvConfigLoader) LoadServerConfig() (res *server.Config, err error) {
+func (e *EnvConfigLoader) LoadServerConfigFromEnv() (res *server.Config, err error) {
 	sharedConfig, err := e.loadSharedConfig()
 
 	if err != nil {
@@ -119,6 +123,10 @@ func (e *EnvConfigLoader) LoadServerConfig() (res *server.Config, err error) {
 		return nil, fmt.Errorf("could not load server config from env: %v", err)
 	}
 
+	return e.LoadServerConfigFromConfigFile(sc, dbConfig, sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, dbConfig *database.Config, sharedConfig *shared.Config) (res *server.Config, err error) {
 	authConfig := server.AuthConfig{
 		BasicAuthEnabled: sc.BasicAuthEnabled,
 	}

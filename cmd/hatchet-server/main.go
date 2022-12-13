@@ -27,7 +27,7 @@ func main() {
 	}
 
 	configLoader := &loader.EnvConfigLoader{}
-	sc, err := configLoader.LoadServerConfig()
+	sc, err := configLoader.LoadServerConfigFromEnv()
 
 	if err != nil {
 		fmt.Printf("Fatal: could not load server config: %v", err)
