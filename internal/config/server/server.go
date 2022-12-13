@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 )
@@ -16,6 +17,11 @@ type ConfigFile struct {
 	// BasedAuthEnabled controls whether email and password-based login is enabled for this
 	// Hatchet instances
 	BasicAuthEnabled bool `env:"BASIC_AUTH_ENABLED,default=true"`
+
+	CookieName          string   `env:"COOKIE_NAME,default=hatchet"`
+	CookieDomain        string   `env:"COOKIE_DOMAIN"`
+	CookieSecrets       []string `env:"COOKIE_SECRETS,default=random_hash_key_;random_block_key"`
+	CookieAllowInsecure bool     `env:"COOKIE_INSECURE,default=false"`
 }
 
 type AuthConfig struct {
@@ -34,4 +40,6 @@ type Config struct {
 	AuthConfig AuthConfig
 
 	ServerRuntimeConfig ServerRuntimeConfig
+
+	UserSessionStore *cookie.UserSessionStore
 }

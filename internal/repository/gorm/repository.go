@@ -11,18 +11,24 @@ import (
 )
 
 type GormRepository struct {
-	user repository.UserRepository
+	user        repository.UserRepository
+	userSession repository.UserSessionRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
 	return t.user
 }
 
+func (t *GormRepository) UserSession() repository.UserSessionRepository {
+	return t.userSession
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 	return &GormRepository{
-		user: NewUserRepository(db),
+		user:        NewUserRepository(db),
+		userSession: NewUserSessionRepository(db),
 	}
 }
 

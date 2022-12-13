@@ -6,6 +6,7 @@ type RepositoryError error
 
 type Repository interface {
 	User() UserRepository
+	UserSession() UserSessionRepository
 }
 
 var (

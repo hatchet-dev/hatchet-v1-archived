@@ -19,7 +19,7 @@ type User struct {
 
 func (u *User) ToAPIType() *types.User {
 	return &types.User{
-		APIResourceMeta: u.ToAPITypeMetadata(),
+		APIResourceMeta: u.Base.ToAPITypeMetadata(),
 		DisplayName:     u.DisplayName,
 		Email:           u.Email,
 		EmailVerified:   u.EmailVerified,

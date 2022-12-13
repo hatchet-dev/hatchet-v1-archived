@@ -2,6 +2,7 @@
 package apitest
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,6 +29,7 @@ type APITesterOpts struct {
 	Method, Route string
 	RequestObj    interface{}
 	HandlerInit   HandlerInitFunc
+	CtxGenerators []GenerateRequestCtx
 }
 
 type APITestFunc func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error
@@ -66,6 +68,15 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 			opts.Route,
 			opts.RequestObj,
 		)
+
+		if opts.CtxGenerators != nil {
+			for _, gen := range opts.CtxGenerators {
+				ctx := req.Context()
+				key, val := gen(apiTester.conf)
+				ctx = context.WithValue(ctx, key, val)
+				req = req.WithContext(ctx)
+			}
+		}
 
 		handler := opts.HandlerInit(
 			apiTester.conf,

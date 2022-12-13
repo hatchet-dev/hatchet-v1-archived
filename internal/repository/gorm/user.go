@@ -45,6 +45,17 @@ func (repo *UserRepository) CreateUser(user *models.User) (*models.User, reposit
 // 	return users, nil
 // }
 
+// ReadUserByID finds a single user based on their unique id
+func (repo *UserRepository) ReadUserByID(id string) (*models.User, repository.RepositoryError) {
+	user := &models.User{}
+
+	if err := repo.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return user, nil
+}
+
 // ReadUserByEmail finds a single user based on their unique email
 func (repo *UserRepository) ReadUserByEmail(email string) (*models.User, repository.RepositoryError) {
 	user := &models.User{}

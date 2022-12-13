@@ -33,6 +33,8 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-test/deep v1.0.8
 	github.com/gorilla/schema v1.2.0
+	github.com/gorilla/securecookie v1.1.1
+	github.com/gorilla/sessions v1.2.1
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

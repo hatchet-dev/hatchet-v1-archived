@@ -3,7 +3,6 @@ package shared
 import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/erroralerter"
 	"github.com/hatchet-dev/hatchet/internal/logger"
-	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type ConfigFile struct {
@@ -14,5 +13,4 @@ type ConfigFile struct {
 type Config struct {
 	Logger       logger.Logger
 	ErrorAlerter erroralerter.Alerter
-	Repository   repository.Repository
 }

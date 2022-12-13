@@ -18,6 +18,8 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
+type GenerateRequestCtx func(config *server.Config) (interface{}, interface{})
+
 func GetRequestAndRecorder(t *testing.T, method, route string, requestObj interface{}) (*http.Request, *httptest.ResponseRecorder) {
 	var reader io.Reader = nil
 

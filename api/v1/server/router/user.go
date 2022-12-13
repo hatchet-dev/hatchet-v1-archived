@@ -86,5 +86,51 @@ func GetUserScopedRoutes(
 		})
 	}
 
+	// GET /api/v1/users/current -> user.UserGetCurrentHandler
+	// swagger:operation GET /api/v1/users/current getCurrentUser
+	//
+	// Retrieves the current user object based on the data passed in auth.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Retrieve the current user.
+	// tags:
+	// - Users
+	// responses:
+	//   '200':
+	//     description: Successfully got the user
+	//     schema:
+	//       $ref: '#/definitions/GetUserResponse'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrors'
+	getUserCurrentEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	getUserCurrentHandler := users.NewUserGetCurrentHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getUserCurrentEndpoint,
+		Handler:  getUserCurrentHandler,
+		Router:   r,
+	})
+
 	return routes
 }

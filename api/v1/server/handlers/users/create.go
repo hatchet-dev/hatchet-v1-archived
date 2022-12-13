@@ -6,6 +6,7 @@ import (
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
+	"github.com/hatchet-dev/hatchet/api/v1/server/authn"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
@@ -63,6 +64,14 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// save the user as authenticated in the session
+	_, err = authn.SaveUserAuthenticated(w, r, u.Config(), user)
+
+	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}

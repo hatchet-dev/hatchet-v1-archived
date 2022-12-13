@@ -5,6 +5,7 @@ import (
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/erroralerter"
 	"github.com/hatchet-dev/hatchet/internal/adapter"
+	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
@@ -135,10 +136,23 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		Port: sc.Port,
 	}
 
+	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
+		SessionRepository:   dbConfig.Repository.UserSession(),
+		CookieSecrets:       sc.CookieSecrets,
+		CookieAllowInsecure: sc.CookieAllowInsecure,
+		CookieDomain:        sc.CookieDomain,
+		CookieName:          sc.CookieName,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize session store: %v", err)
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
 		AuthConfig:          authConfig,
 		ServerRuntimeConfig: serverRuntimeConfig,
+		UserSessionStore:    userSessionStore,
 	}, nil
 }
