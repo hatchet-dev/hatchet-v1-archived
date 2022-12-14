@@ -58,29 +58,11 @@ func GetPATFromEncoded(tokenString string, repo repository.PersonalAccessTokenRe
 	var pat *models.PersonalAccessToken
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (res interface{}, err error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
+		var signingSecret []byte
 
-		// we read the PAT by both the user ID and token ID fields, and use that to retrieve the
-		// signing secret
-		claims, ok := token.Claims.(jwt.MapClaims)
+		signingSecret, pat, err = getSigningSecretAndPATFromToken(token, repo)
 
-		if !ok {
-
-			return nil, fmt.Errorf("claims could not be parsed before validate: error casting claims to jwt.MapClaims")
-		}
-
-		tokenID := claims["token_id"].(string)
-		userID := claims["user_id"].(string)
-
-		pat, err = repo.ReadPersonalAccessToken(userID, tokenID)
-
-		if err != nil {
-			return nil, fmt.Errorf("claims could not be parsed before validate: personal access token could not be read: %v", err)
-		}
-
-		return pat.SigningSecret, nil
+		return signingSecret, err
 	})
 
 	if err != nil {
@@ -92,6 +74,42 @@ func GetPATFromEncoded(tokenString string, repo repository.PersonalAccessTokenRe
 	}
 
 	return pat, nil
+}
+
+func IsPATValid(tokenString string, repo repository.PersonalAccessTokenRepository) (bool, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (res interface{}, err error) {
+		signingSecret, _, err := getSigningSecretAndPATFromToken(token, repo)
+
+		return signingSecret, err
+	})
+
+	return token != nil && err == nil, err
+}
+
+func getSigningSecretAndPATFromToken(token *jwt.Token, repo repository.PersonalAccessTokenRepository) ([]byte, *models.PersonalAccessToken, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	}
+
+	// we read the PAT by both the user ID and token ID fields, and use that to retrieve the
+	// signing secret
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+
+		return nil, nil, fmt.Errorf("claims could not be parsed before validate: error casting claims to jwt.MapClaims")
+	}
+
+	tokenID := claims["token_id"].(string)
+	userID := claims["user_id"].(string)
+
+	pat, err := repo.ReadPersonalAccessToken(userID, tokenID)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("claims could not be parsed before validate: personal access token could not be read: %v", err)
+	}
+
+	return pat.SigningSecret, pat, nil
 }
 
 // TODO (abelanger5): remove all this logic for encrypting the secret key from the token package

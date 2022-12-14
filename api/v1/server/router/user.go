@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
@@ -9,6 +11,15 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
+
+// swagger:parameters getPersonalAccessToken revokePersonalAccessToken deletePersonalAccessToken
+type patPathParams struct {
+	// The personal access token id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	PAT string `json:"pat_id"`
+}
 
 func NewUserScopedRegisterer(children ...*router.Registerer) *router.Registerer {
 	return &router.Registerer{
@@ -27,7 +38,7 @@ func GetUserScopedRoutes(
 	routes := make([]*router.Route, 0)
 
 	if config.AuthConfig.BasicAuthEnabled {
-		// POST /api/v1/users -> user.NewCreateUserHandler
+		// POST /api/v1/users -> users.NewCreateUserHandler
 		// swagger:operation POST /api/v1/users createUser
 		//
 		// Creates a new user via email and password-based authentication. This endpoint is only registered if the
@@ -53,15 +64,15 @@ func GetUserScopedRoutes(
 		//   '400':
 		//     description: A malformed or bad request
 		//     schema:
-		//       $ref: '#/definitions/APIErrors'
+		//       $ref: '#/definitions/APIErrorBadRequestExample'
 		//   '403':
 		//     description: Forbidden
 		//     schema:
-		//       $ref: '#/definitions/APIErrors'
+		//       $ref: '#/definitions/APIErrorForbiddenExample'
 		//   '405':
 		//     description: This endpoint is not supported on this Hatchet instance.
 		//     schema:
-		//       $ref: '#/definitions/APIErrors'
+		//       $ref: '#/definitions/APIErrorNotSupportedExample'
 		createUserEndpoint := factory.NewAPIEndpoint(
 			&endpoint.EndpointMetadata{
 				Verb:   types.APIVerbCreate,
@@ -87,7 +98,7 @@ func GetUserScopedRoutes(
 		})
 	}
 
-	// GET /api/v1/users/current -> user.UserGetCurrentHandler
+	// GET /api/v1/users/current -> users.UserGetCurrentHandler
 	// swagger:operation GET /api/v1/users/current getCurrentUser
 	//
 	// Retrieves the current user object based on the data passed in auth.
@@ -106,7 +117,7 @@ func GetUserScopedRoutes(
 	//   '403':
 	//     description: Forbidden
 	//     schema:
-	//       $ref: '#/definitions/APIErrors'
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
 	getUserCurrentEndpoint := factory.NewAPIEndpoint(
 		&endpoint.EndpointMetadata{
 			Verb:   types.APIVerbGet,
@@ -133,7 +144,7 @@ func GetUserScopedRoutes(
 		Router:   r,
 	})
 
-	// DELETE /api/v1/users/current -> user.UserDeleteCurrentHandler
+	// DELETE /api/v1/users/current -> users.UserDeleteCurrentHandler
 	// swagger:operation DELETE /api/v1/users/current deleteCurrentUser
 	//
 	// Deletes the current user.
@@ -150,7 +161,7 @@ func GetUserScopedRoutes(
 	//   '403':
 	//     description: Forbidden
 	//     schema:
-	//       $ref: '#/definitions/APIErrors'
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
 	deleteUserCurrentEndpoint := factory.NewAPIEndpoint(
 		&endpoint.EndpointMetadata{
 			Verb:   types.APIVerbDelete,
@@ -177,8 +188,8 @@ func GetUserScopedRoutes(
 		Router:   r,
 	})
 
-	// POST /api/v1/users/current/settings/pat -> user.NewPATCreateHandler
-	// swagger:operation POST /api/v1/users/current/settings/pat createPersonalAccessToken
+	// POST /api/v1/users/current/settings/pats -> pats.NewPATCreateHandler
+	// swagger:operation POST /api/v1/users/current/settings/pats createPersonalAccessToken
 	//
 	// Creates a new personal access token for a user.
 	//
@@ -202,22 +213,22 @@ func GetUserScopedRoutes(
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:
-	//       $ref: '#/definitions/APIErrors'
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
 	//   '403':
 	//     description: Forbidden
 	//     schema:
-	//       $ref: '#/definitions/APIErrors'
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
 	//   '405':
 	//     description: This endpoint is not supported on this Hatchet instance.
 	//     schema:
-	//       $ref: '#/definitions/APIErrors'
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
 	createPATEndpoint := factory.NewAPIEndpoint(
 		&endpoint.EndpointMetadata{
 			Verb:   types.APIVerbCreate,
 			Method: types.HTTPVerbPost,
 			Path: &endpoint.Path{
 				Parent:       basePath,
-				RelativePath: "/users/current/settings/pat",
+				RelativePath: "/users/current/settings/pats",
 			},
 			Scopes: []types.PermissionScope{
 				types.UserScope,
@@ -234,6 +245,230 @@ func GetUserScopedRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: createPATEndpoint,
 		Handler:  createPATHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/users/current/settings/pats/{pat_id} -> pats.NewPATGetHandler
+	// swagger:operation GET /api/v1/users/current/settings/pats/{pat_id} getPersonalAccessToken
+	//
+	// Gets a personal access token for a user, specified by the path param `pat_id`.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get a personal access token
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: pat_id
+	// responses:
+	//   '200':
+	//     description: Successfully got the personal access token
+	//     schema:
+	//       $ref: '#/definitions/GetPATResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '405':
+	//     description: This endpoint is not supported on this Hatchet instance.
+	//     schema:
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
+	getPATEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/users/current/settings/pats/{%s}", string(types.PersonalAccessTokenURLParam)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	getPATHandler := pats.NewPATGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getPATEndpoint,
+		Handler:  getPATHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/users/current/settings/pats -> pats.NewPATListHandler
+	// swagger:operation GET /api/v1/users/current/settings/pats listPersonalAccessTokens
+	//
+	// Lists personal access token for a user.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List personal access tokens.
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: page
+	// responses:
+	//   '200':
+	//     description: Successfully listed personal access tokens
+	//     schema:
+	//       $ref: '#/definitions/ListPATsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '405':
+	//     description: This endpoint is not supported on this Hatchet instance.
+	//     schema:
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
+	listPATsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbList,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/settings/pats",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	listPATsHandler := pats.NewPATListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listPATsEndpoint,
+		Handler:  listPATsHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/current/settings/pats/{pat_id}/revoke -> pats.NewPATRevokeHandler
+	// swagger:operation POST /api/v1/users/current/settings/pats/{pat_id}/revoke revokePersonalAccessToken
+	//
+	// Revokes the personal access token for the user
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Revoke the personal access token.
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: pat_id
+	// responses:
+	//   '200':
+	//     description: Successfully revoked the personal access token
+	//     schema:
+	//       $ref: '#/definitions/RevokePATResponseExample'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '405':
+	//     description: This endpoint is not supported on this Hatchet instance.
+	//     schema:
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
+	revokePATEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/users/current/settings/pats/{%s}/revoke", string(types.PersonalAccessTokenURLParam)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	revokePATHandler := pats.NewPATRevokeHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: revokePATEndpoint,
+		Handler:  revokePATHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/users/current/settings/pats/{pat_id} -> pats.NewPATDeleteHandler
+	// swagger:operation DELETE /api/v1/users/current/settings/pats/{pat_id} deletePersonalAccessToken
+	//
+	// Deletes the personal access token for the user
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Delete the personal access token.
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: pat_id
+	// responses:
+	//   '200':
+	//     description: Successfully deleted the personal access token
+	//     schema:
+	//       $ref: '#/definitions/DeletePATResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '405':
+	//     description: This endpoint is not supported on this Hatchet instance.
+	//     schema:
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
+	deletePATEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbDelete,
+			Method: types.HTTPVerbDelete,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/users/current/settings/pats/{%s}", string(types.PersonalAccessTokenURLParam)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	deletePATHandler := pats.NewPATDeleteHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: deletePATEndpoint,
+		Handler:  deletePATHandler,
 		Router:   r,
 	})
 

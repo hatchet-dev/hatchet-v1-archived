@@ -16,17 +16,7 @@ import (
 )
 
 func TestGetCurrentUserSuccessful(t *testing.T) {
-	declaredUser := testutils.DeclaredUserModels[0]
-
-	withAuthUser := func(config *server.Config) (interface{}, interface{}) {
-		user, err := config.DB.Repository.User().ReadUserByEmail(declaredUser.Email)
-
-		if err != nil {
-			t.Fatalf("%v\n", err)
-		}
-
-		return types.UserScope, user
-	}
+	declaredUser := testutils.UserModels[0]
 
 	apitest.RunAPITest(t, func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error {
 		gotUser := &types.User{}
@@ -56,7 +46,7 @@ func TestGetCurrentUserSuccessful(t *testing.T) {
 		Route:       "/api/v1/users/current",
 		HandlerInit: users.NewUserGetCurrentHandler,
 		CtxGenerators: []apitest.GenerateRequestCtx{
-			withAuthUser,
+			apitest.WithAuthUser(0),
 		},
 	}, testutils.InitUsers)
 }

@@ -84,7 +84,7 @@ func RunTestWithDatabase(t *testing.T, test func(config *database.Config) error,
 	defer Cleanup(t, tester)
 
 	for _, f := range initMethods {
-		err := f(t, tester.conf, tester.initData)
+		err := f(t, tester.conf)
 
 		if err != nil {
 			t.Fatalf("could not init data: %v\n", err)

@@ -48,7 +48,7 @@ type CreateUserRequest struct {
 // swagger:model
 type CreateUserResponse User
 
-const InvalidEmailOrPasswordCode APIErrorCode = 2403
+const InvalidEmailOrPasswordCode uint = 2403
 
 var InvalidEmailOrPassword APIError = APIError{
 	Code:        InvalidEmailOrPasswordCode,

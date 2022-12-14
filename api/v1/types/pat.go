@@ -2,6 +2,8 @@ package types
 
 import "time"
 
+const PersonalAccessTokenURLParam URLParam = "pat_id"
+
 // swagger:model
 type PersonalAccessToken struct {
 	*APIResourceMeta
@@ -39,3 +41,29 @@ type CreatePATResponse struct {
 	// example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....
 	Token string `json:"token"`
 }
+
+// swagger:parameters listPersonalAccessTokens
+type ListPATsRequest struct {
+	*PaginationRequest
+}
+
+// swagger:model
+type ListPATsResponse struct {
+	Pagination *PaginationResponse    `json:"pagination"`
+	Rows       []*PersonalAccessToken `json:"rows"`
+}
+
+// swagger:model
+type RevokePATResponse PersonalAccessToken
+
+// swagger:model
+type RevokePATResponseExample struct {
+	*PersonalAccessToken
+
+	// whether the token is revoked
+	// example: true
+	Revoked bool `json:"revoked"`
+}
+
+// swagger:model
+type DeletePATResponse PersonalAccessToken

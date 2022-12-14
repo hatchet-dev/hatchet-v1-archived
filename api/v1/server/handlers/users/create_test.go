@@ -88,7 +88,7 @@ func TestCreateUserDuplicate(t *testing.T) {
 		Route:  "/api/v1/users",
 		RequestObj: &types.CreateUserRequest{
 			DisplayName: "User 1",
-			Email:       testutils.DeclaredUserModels[0].Email,
+			Email:       testutils.UserModels[0].Email,
 			Password:    "Abcdefgh123!",
 		},
 		HandlerInit: users.NewUserCreateHandler,

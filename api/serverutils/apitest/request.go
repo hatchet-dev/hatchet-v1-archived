@@ -15,10 +15,30 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
 )
 
-type GenerateRequestCtx func(config *server.Config) (interface{}, interface{})
+func WithAuthUser(initDataIndex uint) GenerateRequestCtx {
+	return func(t *testing.T, config *server.Config) (interface{}, interface{}) {
+		return types.UserScope, testutils.InitDataAll.Users[initDataIndex]
+	}
+}
+
+func WithURLParamPAT(initDataIndex uint) GenerateURLParam {
+	return func(t *testing.T, config *server.Config, currParams map[string]string) map[string]string {
+		currParams[string(types.PersonalAccessTokenURLParam)] = testutils.InitDataAll.PATs[initDataIndex].ID
+
+		return currParams
+	}
+}
+
+type GenerateRequestCtx func(t *testing.T, config *server.Config) (interface{}, interface{})
+
+// GenerateURLParam takes in the server config and outputs URL params. It's meant to populate
+// URL params that are only available from the init data.
+type GenerateURLParam func(t *testing.T, config *server.Config, currParams map[string]string) map[string]string
 
 func GetRequestAndRecorder(t *testing.T, method, route string, requestObj interface{}) (*http.Request, *httptest.ResponseRecorder) {
 	var reader io.Reader = nil

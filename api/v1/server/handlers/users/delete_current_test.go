@@ -7,7 +7,6 @@ import (
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apitest"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/users"
-	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
@@ -15,17 +14,7 @@ import (
 )
 
 func TestDeleteSuccessful(t *testing.T) {
-	declaredUser := testutils.DeclaredUserModels[0]
-
-	withAuthUser := func(config *server.Config) (interface{}, interface{}) {
-		user, err := config.DB.Repository.User().ReadUserByEmail(declaredUser.Email)
-
-		if err != nil {
-			t.Fatalf("%v\n", err)
-		}
-
-		return types.UserScope, user
-	}
+	declaredUser := testutils.UserModels[0]
 
 	apitest.RunAPITest(t, func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error {
 		apitest.AssertStatusCode(t, rr, http.StatusAccepted)
@@ -42,7 +31,7 @@ func TestDeleteSuccessful(t *testing.T) {
 		Route:       "/api/v1/users/current",
 		HandlerInit: users.NewUserDeleteCurrentHandler,
 		CtxGenerators: []apitest.GenerateRequestCtx{
-			withAuthUser,
+			apitest.WithAuthUser(0),
 		},
 	}, testutils.InitUsers)
 }

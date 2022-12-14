@@ -56,13 +56,13 @@ func TestCreateDuplicateUser(t *testing.T) {
 
 func TestReadUser(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		user, err := conf.Repository.User().ReadUserByEmail(testutils.DeclaredUserModels[0].Email)
+		user, err := conf.Repository.User().ReadUserByEmail(testutils.UserModels[0].Email)
 
 		if err != nil {
 			t.Fatalf("could not read user: %v", err)
 		}
 
-		assert.Equal(t, testutils.DeclaredUserModels[0].Email, user.Email, "email of queried user should match")
+		assert.Equal(t, testutils.UserModels[0].Email, user.Email, "email of queried user should match")
 
 		return nil
 	}, testutils.InitUsers)

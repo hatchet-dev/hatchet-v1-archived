@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,8 +11,8 @@ import (
 type Base struct {
 	ID        string `gorm:"primarykey"`
 	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt sql.NullTime `gorm:"index"`
+	UpdatedAt time.Time      `gorm:"index"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 func (b *Base) BeforeCreate(tx *gorm.DB) error {
@@ -30,9 +29,4 @@ func (b *Base) ToAPITypeMetadata() *types.APIResourceMeta {
 		UpdatedAt: &b.UpdatedAt,
 		ID:        b.ID,
 	}
-}
-
-func IsValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
 }
