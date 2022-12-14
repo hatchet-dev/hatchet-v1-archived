@@ -25,26 +25,6 @@ func (repo *UserRepository) CreateUser(user *models.User) (*models.User, reposit
 	return user, nil
 }
 
-// // ReadUser finds a single user based on their unique id
-// func (repo *UserRepository) ReadUser(id uint) (*models.User, error) {
-// 	user := &models.User{}
-// 	if err := repo.db.Where("id = ?", id).First(&user).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return user, nil
-// }
-
-// // ListUsersByIDs finds all users matching ids
-// func (repo *UserRepository) ListUsersByIDs(ids []uint) ([]*models.User, error) {
-// 	users := make([]*models.User, 0)
-
-// 	if err := repo.db.Model(&models.User{}).Where("id IN (?)", ids).Find(&users).Error; err != nil {
-// 		return nil, err
-// 	}
-
-// 	return users, nil
-// }
-
 // ReadUserByID finds a single user based on their unique id
 func (repo *UserRepository) ReadUserByID(id string) (*models.User, repository.RepositoryError) {
 	user := &models.User{}
@@ -67,52 +47,15 @@ func (repo *UserRepository) ReadUserByEmail(email string) (*models.User, reposit
 	return user, nil
 }
 
-// // ReadUserByGithubUserID finds a single user based on their github user id
-// func (repo *UserRepository) ReadUserByGithubUserID(id int64) (*models.User, error) {
-// 	user := &models.User{}
-// 	if err := repo.db.Where("github_user_id = ?", id).First(&user).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return user, nil
-// }
-
-// // ReadUserByGoogleUserID finds a single user based on their google user id
-// func (repo *UserRepository) ReadUserByGoogleUserID(id string) (*models.User, error) {
-// 	user := &models.User{}
-// 	if err := repo.db.Where("google_user_id = ?", id).First(&user).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return user, nil
-// }
-
-// // UpdateUser modifies an existing User in the database
-// func (repo *UserRepository) UpdateUser(user *models.User) (*models.User, error) {
-// 	if err := repo.db.Save(user).Error; err != nil {
-// 		return nil, err
-// 	}
-
-// 	return user, nil
-// }
-
 // DeleteUser deletes a single user using their unique id
 func (repo *UserRepository) DeleteUser(user *models.User) (*models.User, repository.RepositoryError) {
-	if err := repo.db.Delete(&user).Error; err != nil {
-		return nil, toRepoError(repo.db, err)
+	del := repo.db.Debug().Delete(&user)
+
+	if del.Error != nil {
+		return nil, toRepoError(repo.db, del.Error)
+	} else if del.RowsAffected == 0 {
+		return nil, repository.RepositoryNoRowsAffected
 	}
+
 	return user, nil
 }
-
-// // CheckPassword checks the input password is correct for the provided user id.
-// func (repo *UserRepository) CheckPassword(id int, pwd string) (bool, error) {
-// 	u := &models.User{}
-
-// 	if err := repo.db.First(u, id).Error; err != nil {
-// 		return false, err
-// 	}
-
-// 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pwd)); err != nil {
-// 		return false, err
-// 	}
-
-// 	return true, nil
-// }

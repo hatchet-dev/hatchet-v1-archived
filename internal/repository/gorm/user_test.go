@@ -54,7 +54,7 @@ func TestCreateDuplicateUser(t *testing.T) {
 	})
 }
 
-func TestReadUser(t *testing.T) {
+func TestReadUserByEmail(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
 		user, err := conf.Repository.User().ReadUserByEmail(testutils.UserModels[0].Email)
 
@@ -68,12 +68,75 @@ func TestReadUser(t *testing.T) {
 	}, testutils.InitUsers)
 }
 
-func TestFailedReadUser(t *testing.T) {
+func TestFailedReadUserByEmail(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
 		_, failingErr := conf.Repository.User().ReadUserByEmail("notanemail@gmail.com")
 
 		assert.NotNil(t, failingErr, "err is not nil")
 		assert.ErrorIs(t, repository.RepositoryErrorNotFound, failingErr)
+
+		return nil
+	}, testutils.InitUsers)
+}
+
+func TestReadUserByID(t *testing.T) {
+	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
+		user, err := conf.Repository.User().ReadUserByID(testutils.UserModels[0].ID)
+
+		if err != nil {
+			t.Fatalf("could not read user: %v", err)
+		}
+
+		testutils.AssertUsersEqual(t, testutils.UserModels[0], user)
+
+		return nil
+	}, testutils.InitUsers)
+}
+
+func TestFailedReadUserByID(t *testing.T) {
+	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
+		_, failingErr := conf.Repository.User().ReadUserByID("not-an-id")
+
+		assert.NotNil(t, failingErr, "err is not nil")
+		assert.ErrorIs(t, repository.RepositoryErrorNotFound, failingErr)
+
+		return nil
+	}, testutils.InitUsers)
+}
+
+func TestDeleteUser(t *testing.T) {
+	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
+		user, err := conf.Repository.User().DeleteUser(testutils.UserModels[0])
+
+		if err != nil {
+			t.Fatalf("could not read user: %v", err)
+		}
+
+		testutils.AssertUsersEqual(t, testutils.UserModels[0], user)
+
+		// ensure that user no longer exists in the DB
+		user, failingErr := conf.Repository.User().ReadUserByEmail(testutils.UserModels[0].Email)
+
+		assert.NotNil(t, failingErr, "err is not nil")
+		assert.ErrorIs(t, repository.RepositoryErrorNotFound, failingErr)
+		assert.Nil(t, user, "user should be nil")
+
+		return nil
+	}, testutils.InitUsers)
+}
+
+func TestFailedDeleteUser(t *testing.T) {
+	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
+		notAUser := &models.User{
+			Base: models.Base{
+				ID: "not-an-id",
+			},
+		}
+
+		_, failingErr := conf.Repository.User().DeleteUser(notAUser)
+
+		assert.NotNil(t, failingErr, "err is not nil")
+		assert.ErrorIs(t, repository.RepositoryNoRowsAffected, failingErr)
 
 		return nil
 	}, testutils.InitUsers)

@@ -12,6 +12,7 @@ type Repository interface {
 
 var (
 	RepositoryErrorNotFound          error = fmt.Errorf("record not found")
+	RepositoryNoRowsAffected         error = fmt.Errorf("no rows affected")
 	RepositoryUniqueConstraintFailed error = fmt.Errorf("unique constraint failed")
 )
 

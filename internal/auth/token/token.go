@@ -10,50 +10,26 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
-type Subject string
-
-const (
-	User Subject = "user"
-	API  Subject = "api"
-)
-
-type TokenGeneratorConf struct {
-	TokenSecret string
-}
-
-type JWT struct {
-	*jwt.RegisteredClaims
-	UserID  string `json:"user_id"`
-	TokenID string `json:"token_id"`
-}
-
-func GetJWTForUser(userID, tokenID string) (*JWT, error) {
-	if userID == "" || !uuidutils.IsValidUUID(userID) {
-		return nil, fmt.Errorf("user id must be a valid UUID")
+// GenerateTokenFromPAT creates a new JWT based on a personal access token model.
+// Note that the personal access token model must include a signing secret and token ID
+// already, otherwise the generation will fail.
+func GenerateTokenFromPAT(pat *models.PersonalAccessToken) (string, error) {
+	if len(pat.SigningSecret) <= 15 {
+		return "", fmt.Errorf("signing secret must be at least 16 bytes in length")
 	}
 
-	if tokenID == "" || !uuidutils.IsValidUUID(tokenID) {
-		return nil, fmt.Errorf("token id must be a valid UUID")
+	rawTok, err := getJWTForUser(pat.UserID, pat.Base.ID)
+
+	if err != nil {
+		return "", err
 	}
 
-	return &JWT{
-		RegisteredClaims: &jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-		UserID:  userID,
-		TokenID: tokenID,
-	}, nil
+	return rawTok.encodeToken(pat.SigningSecret)
 }
 
-func (t *JWT) EncodeToken(conf *TokenGeneratorConf) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, t)
-
-	// Sign and get the complete encoded token as a string using the secret
-	return token.SignedString([]byte(conf.TokenSecret))
-}
-
+// GetPATFromEncoded returns a personal access token model based on the raw token. This method
+// performs parsing and validatino on the raw token string, so the returned PAT can be considered
+// valid without additional checks.
 func GetPATFromEncoded(tokenString string, repo repository.PersonalAccessTokenRepository) (*models.PersonalAccessToken, error) {
 	var pat *models.PersonalAccessToken
 
@@ -76,6 +52,8 @@ func GetPATFromEncoded(tokenString string, repo repository.PersonalAccessTokenRe
 	return pat, nil
 }
 
+// IsPATValid parses and validates the raw token. It requires access to the repository because
+// each token gets its own signing secret.
 func IsPATValid(tokenString string, repo repository.PersonalAccessTokenRepository) (bool, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (res interface{}, err error) {
 		signingSecret, _, err := getSigningSecretAndPATFromToken(token, repo)
@@ -112,16 +90,35 @@ func getSigningSecretAndPATFromToken(token *jwt.Token, repo repository.PersonalA
 	return pat.SigningSecret, pat, nil
 }
 
-// TODO (abelanger5): remove all this logic for encrypting the secret key from the token package
-// into Encrypt() method in the models package. Models are responsible for their own encryption.
-func GenerateTokenForPAT(pat *models.PersonalAccessToken) (string, error) {
-	rawTok, err := GetJWTForUser(pat.UserID, pat.Base.ID)
+type jwtClaims struct {
+	*jwt.RegisteredClaims
+	UserID  string `json:"user_id"`
+	TokenID string `json:"token_id"`
+}
 
-	if err != nil {
-		return "", err
+func (t *jwtClaims) encodeToken(tokenSecret []byte) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, t)
+
+	// Sign and get the complete encoded token as a string using the secret
+	return token.SignedString(tokenSecret)
+}
+
+func getJWTForUser(userID, tokenID string) (*jwtClaims, error) {
+	if userID == "" || !uuidutils.IsValidUUID(userID) {
+		return nil, fmt.Errorf("user id must be a valid UUID")
 	}
 
-	return rawTok.EncodeToken(&TokenGeneratorConf{
-		TokenSecret: string(pat.SigningSecret),
-	})
+	if tokenID == "" || !uuidutils.IsValidUUID(tokenID) {
+		return nil, fmt.Errorf("token id must be a valid UUID")
+	}
+
+	return &jwtClaims{
+		RegisteredClaims: &jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
+		UserID:  userID,
+		TokenID: tokenID,
+	}, nil
 }
