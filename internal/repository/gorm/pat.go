@@ -58,6 +58,25 @@ func (repo *PersonalAccessTokenRepository) ReadPersonalAccessToken(userID, token
 	return pat, nil
 }
 
+func (repo *PersonalAccessTokenRepository) ReadPersonalAccessTokenByDisplayName(userID, displayName string) (
+	*models.PersonalAccessToken,
+	repository.RepositoryError,
+) {
+	pat := &models.PersonalAccessToken{}
+
+	if err := repo.db.Where("user_id = ? AND display_name = ?", userID, displayName).First(&pat).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	err := pat.Decrypt(repo.key)
+
+	if err != nil {
+		return nil, repository.UnknownRepositoryError(err)
+	}
+
+	return pat, nil
+}
+
 func (repo *PersonalAccessTokenRepository) ListPersonalAccessTokensByUserID(
 	userID string,
 	opts ...repository.QueryOption,

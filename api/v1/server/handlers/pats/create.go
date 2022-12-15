@@ -1,6 +1,7 @@
 package pats
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -32,6 +33,18 @@ func (u *PATCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	request := &types.CreatePATRequest{}
 
 	if ok := u.DecodeAndValidate(w, r, request); !ok {
+		return
+	}
+
+	// ensure that there are no PATs with the same display name
+	existingPAT, _ := u.Repo().PersonalAccessToken().ReadPersonalAccessTokenByDisplayName(user.ID, request.DisplayName)
+
+	if existingPAT != nil {
+		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: fmt.Sprintf("Personal access token already exists with display_name %s for this user", request.DisplayName),
+		}, http.StatusBadRequest))
+
 		return
 	}
 
