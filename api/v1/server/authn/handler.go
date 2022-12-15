@@ -152,7 +152,7 @@ func (authn *AuthN) getPATFromRequest(r *http.Request) (*models.PersonalAccessTo
 
 	reqToken = strings.TrimSpace(splitToken[1])
 
-	pat, err := token.GetPATFromEncoded(reqToken, authn.config.DB.Repository.PersonalAccessToken())
+	pat, err := token.GetPATFromEncoded(reqToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
 
 	if err != nil {
 		return nil, errInvalidToken

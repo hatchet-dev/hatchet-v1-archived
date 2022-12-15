@@ -2,7 +2,6 @@ package pats
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -58,8 +57,6 @@ func (u *PATDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pat, err = u.Repo().PersonalAccessToken().DeletePersonalAccessToken(pat)
-
-	fmt.Println("RESULT OF DELETE CALL IS", pat, err)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

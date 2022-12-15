@@ -2,20 +2,23 @@ package testutils
 
 import (
 	"testing"
+	"time"
 
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
 type InitData struct {
-	Users []*models.User
-	PATs  []*models.PersonalAccessToken
+	Users        []*models.User
+	UserSessions []*models.UserSession
+	PATs         []*models.PersonalAccessToken
 }
 
 // All models will be populated with data and IDs after init methods are called
 var InitDataAll = &InitData{
-	Users: UserModels,
-	PATs:  PATModels,
+	Users:        UserModels,
+	UserSessions: UserSessionModels,
+	PATs:         PATModels,
 }
 
 var UserModels []*models.User = []*models.User{
@@ -36,6 +39,15 @@ var UserModels []*models.User = []*models.User{
 var PATModels []*models.PersonalAccessToken = []*models.PersonalAccessToken{
 	{
 		DisplayName: "test-pat-1",
+	},
+}
+
+// UserSessionModels do not represent actually valid user sessions
+var UserSessionModels []*models.UserSession = []*models.UserSession{
+	{
+		Key:       "1",
+		Data:      []byte("1"),
+		ExpiresAt: time.Now().Add(24 * 30 * time.Hour),
 	},
 }
 
@@ -73,7 +85,27 @@ func InitPATs(t *testing.T, conf *database.Config) error {
 
 		pat, err = conf.Repository.PersonalAccessToken().CreatePersonalAccessToken(pat)
 
+		if err != nil {
+			return err
+		}
+
 		PATModels[i] = pat
+	}
+
+	return nil
+}
+
+func InitUserSessions(t *testing.T, conf *database.Config) error {
+	for i, declaredUserSession := range UserSessionModels {
+		sessCp := declaredUserSession
+
+		userSession, err := conf.Repository.UserSession().CreateUserSession(sessCp)
+
+		if err != nil {
+			return err
+		}
+
+		UserSessionModels[i] = userSession
 	}
 
 	return nil

@@ -49,7 +49,7 @@ func (repo *UserRepository) ReadUserByEmail(email string) (*models.User, reposit
 
 // DeleteUser deletes a single user using their unique id
 func (repo *UserRepository) DeleteUser(user *models.User) (*models.User, repository.RepositoryError) {
-	del := repo.db.Debug().Delete(&user)
+	del := repo.db.Delete(&user)
 
 	if del.Error != nil {
 		return nil, toRepoError(repo.db, del.Error)

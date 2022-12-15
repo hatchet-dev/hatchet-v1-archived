@@ -42,7 +42,7 @@ func (u *PATCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawToken, err := token.GenerateTokenFromPAT(pat)
+	rawToken, err := token.GenerateTokenFromPAT(pat, u.Config().TokenOpts)
 
 	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))

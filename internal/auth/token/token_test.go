@@ -6,20 +6,26 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
+var tokenOpts *token.TokenOpts = &token.TokenOpts{
+	Issuer: "https://hatchet.run",
+	Audience: []string{
+		"https://hatchet.run",
+	},
+}
+
 func TestGetJWTForUser(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		rawTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0])
+		rawTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0], tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 
-		isValid, err := token.IsPATValid(rawTok, conf.Repository.PersonalAccessToken())
+		isValid, err := token.IsPATValid(rawTok, conf.Repository.PersonalAccessToken(), tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 		assert.True(t, isValid, "token should be valid")
@@ -28,19 +34,13 @@ func TestGetJWTForUser(t *testing.T) {
 	}, testutils.InitUsers, testutils.InitPATs)
 }
 
-type jwtClaims struct {
-	*jwt.RegisteredClaims
-	UserID  string `json:"user_id"`
-	TokenID string `json:"token_id"`
-}
-
 func TestIsJWTValid(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		originalTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0])
+		originalTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0], tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 
-		isValid, err := token.IsPATValid(originalTok, conf.Repository.PersonalAccessToken())
+		isValid, err := token.IsPATValid(originalTok, conf.Repository.PersonalAccessToken(), tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 		assert.True(t, isValid, "token should be valid")
@@ -52,14 +52,15 @@ func TestIsJWTValid(t *testing.T) {
 
 		assert.Nil(t, err, "error should be nil")
 
-		claims := new(jwtClaims)
+		claims := new(token.JWTClaims)
 
 		err = json.Unmarshal(decodedBytes, &claims)
 		assert.Nil(t, err, "error should be nil")
 
-		claims.RegisteredClaims.Audience = jwt.ClaimStrings{"h"}
+		claims.RegisteredClaims.ID = "1"
 
 		newClaimsStr, err := json.Marshal(claims)
+
 		assert.Nil(t, err, "error should be nil")
 
 		newEncodedBytes := base64.RawStdEncoding.EncodeToString(newClaimsStr)
@@ -68,7 +69,7 @@ func TestIsJWTValid(t *testing.T) {
 
 		newInvalidTok := strings.Join(modifiedTokParts, ".")
 
-		isValid, err = token.IsPATValid(newInvalidTok, conf.Repository.PersonalAccessToken())
+		isValid, err = token.IsPATValid(newInvalidTok, conf.Repository.PersonalAccessToken(), tokenOpts)
 
 		assert.NotNil(t, err, "error should not be nil")
 		assert.False(t, isValid, "invalid token should not be valid")
@@ -84,7 +85,7 @@ func TestIsJWTValid(t *testing.T) {
 		modifiedTokParts2[0] = newEncodedBytes
 
 		newInvalidTok = strings.Join(modifiedTokParts2, ".")
-		isValid, err = token.IsPATValid(newInvalidTok, conf.Repository.PersonalAccessToken())
+		isValid, err = token.IsPATValid(newInvalidTok, conf.Repository.PersonalAccessToken(), tokenOpts)
 
 		assert.NotNil(t, err, "error should not be nil")
 		assert.False(t, isValid, "invalid token should not be valid")
@@ -100,7 +101,7 @@ func TestGenerateTokenFromPATInvalidSigningSecret(t *testing.T) {
 
 		modelCp.SigningSecret = []byte("abcd")
 
-		_, err := token.GenerateTokenFromPAT(modelCp)
+		_, err := token.GenerateTokenFromPAT(modelCp, tokenOpts)
 
 		assert.NotNil(t, err, "error should not be nil")
 		assert.ErrorContains(t, err, "signing secret must be at least 16 bytes in length")
@@ -111,12 +112,12 @@ func TestGenerateTokenFromPATInvalidSigningSecret(t *testing.T) {
 
 func TestGetPATFromEncoded(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		rawTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0])
+		rawTok, err := token.GenerateTokenFromPAT(testutils.PATModels[0], tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 
 		// recover the PAT model
-		pat, err := token.GetPATFromEncoded(rawTok, conf.Repository.PersonalAccessToken())
+		pat, err := token.GetPATFromEncoded(rawTok, conf.Repository.PersonalAccessToken(), tokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 

@@ -30,7 +30,7 @@ func TestCreatePATSuccessful(t *testing.T) {
 		assert.True(t, uuidutils.IsValidUUID(gotPATResp.PersonalAccessToken.ID))
 
 		// check that the generated token is valid
-		isValid, err := token.IsPATValid(gotPATResp.Token, config.DB.Repository.PersonalAccessToken())
+		isValid, err := token.IsPATValid(gotPATResp.Token, config.DB.Repository.PersonalAccessToken(), config.TokenOpts)
 
 		assert.Nil(t, err, "error should be nil")
 		assert.True(t, isValid, "token should be valid")

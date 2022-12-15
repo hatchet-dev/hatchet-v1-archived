@@ -55,6 +55,7 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
 		apiTester.conf, err = loader.LoadServerConfigFromConfigFile(&server.ConfigFile{
 			Port:             8080,
+			ServerURL:        "https://test.hatchet.run",
 			BasicAuthEnabled: true,
 			CookieName:       "hatchet",
 			CookieSecrets: []string{

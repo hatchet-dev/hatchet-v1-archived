@@ -6,6 +6,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/erroralerter"
 	"github.com/hatchet-dev/hatchet/internal/adapter"
 	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
+	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
@@ -152,11 +153,25 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		return nil, fmt.Errorf("could not initialize session store: %v", err)
 	}
 
+	tokenOpts := &token.TokenOpts{
+		Issuer:   sc.TokenIssuerURL,
+		Audience: sc.TokenAudience,
+	}
+
+	if sc.TokenIssuerURL == "" {
+		tokenOpts.Issuer = sc.ServerURL
+	}
+
+	if len(sc.TokenAudience) == 0 {
+		tokenOpts.Audience = []string{sc.ServerURL}
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
 		AuthConfig:          authConfig,
 		ServerRuntimeConfig: serverRuntimeConfig,
 		UserSessionStore:    userSessionStore,
+		TokenOpts:           tokenOpts,
 	}, nil
 }

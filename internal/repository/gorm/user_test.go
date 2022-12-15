@@ -5,6 +5,7 @@ import (
 
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/models/uuidutils"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/testutils"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ func TestCreateUser(t *testing.T) {
 			t.Fatalf("could not create user: %v", err)
 		}
 
+		assert.True(t, uuidutils.IsValidUUID(user.ID))
 		assert.Equal(t, "abelanger5@hatchet.run", user.Email)
 		assert.Equal(t, "A Belanger", user.DisplayName)
 
