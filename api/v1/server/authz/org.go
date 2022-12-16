@@ -1,0 +1,113 @@
+package authz
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+
+	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
+	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
+	"github.com/hatchet-dev/hatchet/api/v1/server/authz/policies"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/opa"
+	"github.com/hatchet-dev/hatchet/internal/repository"
+)
+
+type OrgScopedFactory struct {
+	config *server.Config
+}
+
+func NewOrgScopedFactory(
+	config *server.Config,
+) *OrgScopedFactory {
+	return &OrgScopedFactory{config}
+}
+
+func (p *OrgScopedFactory) Middleware(next http.Handler) http.Handler {
+	return &OrgScopedMiddleware{next, p.config}
+}
+
+type OrgScopedMiddleware struct {
+	next   http.Handler
+	config *server.Config
+}
+
+func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value(types.UserScope).(*models.User)
+
+	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
+	orgID := reqScopes[types.OrgScope].ResourceID
+
+	org, err := p.config.DB.Repository.Org().ReadOrgByID(orgID)
+
+	if err != nil {
+		if errors.Is(err, repository.RepositoryErrorNotFound) {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
+				fmt.Errorf("org with id %s not found ", orgID),
+			), true)
+		} else {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrInternal(err), true)
+		}
+
+		return
+	}
+
+	// TODO(abelanger5): verify that the user has access to this organization and can access all requested resources
+	// This relies on org members, policies, owner concepts, etc.
+
+	// read the org members to verify that the user has access to this resource
+	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(orgID, user.ID)
+
+	if err != nil {
+		if errors.Is(err, repository.RepositoryErrorNotFound) {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
+				fmt.Errorf("org with id %s not found ", orgID),
+			), true)
+		} else {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrInternal(err), true)
+		}
+
+		return
+	}
+
+	// validate against policies
+	isValid := false
+	policyInput := policies.GetInputFromRequest(r)
+
+	for _, policy := range orgMember.OrgPolicies {
+		if !policy.IsCustom {
+			switch policy.PolicyName {
+			case string(models.PresetPolicyNameOwner):
+				allow, err := opa.RunAllowQuery(policies.PresetPolicies.OrgOwnerPolicy.Query, policyInput)
+
+				if err == nil && allow {
+					isValid = true
+					break
+				}
+			case string(models.PresetPolicyNameAdmin):
+			case string(models.PresetPolicyNameMember):
+			default:
+
+			}
+		}
+	}
+
+	if !isValid {
+		apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
+			fmt.Errorf("no policies permit this action"),
+		), true)
+
+		return
+	}
+
+	ctx := NewOrganizationContext(r.Context(), org)
+	r = r.Clone(ctx)
+	p.next.ServeHTTP(w, r)
+}
+
+func NewOrganizationContext(ctx context.Context, org *models.Organization) context.Context {
+	return context.WithValue(ctx, types.OrgScope, org)
+}

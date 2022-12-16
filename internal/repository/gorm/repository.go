@@ -14,6 +14,7 @@ type GormRepository struct {
 	user        repository.UserRepository
 	userSession repository.UserSessionRepository
 	pat         repository.PersonalAccessTokenRepository
+	org         repository.OrgRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -28,6 +29,10 @@ func (t *GormRepository) PersonalAccessToken() repository.PersonalAccessTokenRep
 	return t.pat
 }
 
+func (t *GormRepository) Org() repository.OrgRepository {
+	return t.org
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -35,6 +40,7 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		user:        NewUserRepository(db),
 		userSession: NewUserSessionRepository(db),
 		pat:         NewPersonalAccessTokenRepository(db, key),
+		org:         NewOrgRepository(db),
 	}
 }
 

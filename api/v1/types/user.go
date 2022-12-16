@@ -54,3 +54,16 @@ var InvalidEmailOrPassword APIError = APIError{
 	Code:        InvalidEmailOrPasswordCode,
 	Description: "Invalid email or password combination",
 }
+
+// Public data about the user that other members of the org and team
+// can access
+// swagger:model
+type UserOrgPublishedData struct {
+	// the display name for this user
+	// example: User 1
+	DisplayName string `json:"display_name" form:"required,max=255"`
+
+	// the email address for this user
+	// example: user1@gmail.com
+	Email string `json:"email" form:"required,max=255,email"`
+}

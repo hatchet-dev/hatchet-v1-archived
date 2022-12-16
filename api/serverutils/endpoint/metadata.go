@@ -43,6 +43,9 @@ func (p *Path) GetPathString() (res string) {
 // A context lookup key for determining which scopes are part of this endpoint
 const RequestScopeCtxKey = "requestscopes"
 
+// A context lookup key for retrieving the endpoint metadata
+const EndpointMetadataCtxKey = "endpointmetadata"
+
 // A context lookup key for attaching a websocket read writer to context
 const RequestCtxWebsocketKey = "websocket"
 
@@ -69,4 +72,9 @@ type EndpointMetadata struct {
 
 	// The usage metric that the request should check for, if CheckUsage
 	UsageMetric types.UsageMetric
+}
+
+type RequestAction struct {
+	Verb       types.APIVerb
+	ResourceID string
 }

@@ -21,14 +21,14 @@ type patPathParams struct {
 	PAT string `json:"pat_id"`
 }
 
-func NewUserScopedRegisterer(children ...*router.Registerer) *router.Registerer {
+func NewUserRouteRegisterer(children ...*router.Registerer) *router.Registerer {
 	return &router.Registerer{
-		GetRoutes: GetUserScopedRoutes,
+		GetRoutes: GetUserRoutes,
 		Children:  children,
 	}
 }
 
-func GetUserScopedRoutes(
+func GetUserRoutes(
 	r chi.Router,
 	config *server.Config,
 	basePath *endpoint.Path,

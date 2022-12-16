@@ -55,3 +55,26 @@ func AssertPATsEqual(t *testing.T, pat1, pat2 *models.PersonalAccessToken) {
 
 	assert.Equal(t, pat1Cp, pat2Cp, "pats should be equal")
 }
+
+func AssertOrgsEqual(t *testing.T, org1, org2 *models.Organization, compareMembers, comparePolicies bool) {
+	AssertBaseEqual(t, &org1.Base, &org2.Base)
+
+	org1Cp := *org1
+	org2Cp := *org2
+
+	org1Cp.Base = org2Cp.Base
+
+	AssertUsersEqual(t, &org1.Owner, &org2Cp.Owner)
+
+	org1Cp.Owner = org2Cp.Owner
+
+	if !compareMembers {
+		org1Cp.OrgMembers = org2Cp.OrgMembers
+	}
+
+	if !comparePolicies {
+		org1Cp.OrgPolicies = org2Cp.OrgPolicies
+	}
+
+	assert.Equal(t, org1Cp, org2Cp, "orgs should be equal")
+}

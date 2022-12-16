@@ -40,6 +40,7 @@ type PermissionScope string
 
 const (
 	UserScope PermissionScope = "user_scope"
+	OrgScope  PermissionScope = "org_scope"
 )
 
 // swagger:model

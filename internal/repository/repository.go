@@ -8,6 +8,7 @@ type Repository interface {
 	User() UserRepository
 	UserSession() UserSessionRepository
 	PersonalAccessToken() PersonalAccessTokenRepository
+	Org() OrgRepository
 }
 
 var (

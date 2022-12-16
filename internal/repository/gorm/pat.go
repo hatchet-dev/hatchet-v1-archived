@@ -81,7 +81,6 @@ func (repo *PersonalAccessTokenRepository) ListPersonalAccessTokensByUserID(
 	userID string,
 	opts ...repository.QueryOption,
 ) ([]*models.PersonalAccessToken, *repository.PaginatedResult, repository.RepositoryError) {
-
 	var pats []*models.PersonalAccessToken
 
 	db := repo.db.Model(&models.PersonalAccessToken{})
@@ -90,7 +89,7 @@ func (repo *PersonalAccessTokenRepository) ListPersonalAccessTokensByUserID(
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Find(&pats).Error; err != nil {
+	if err := db.Find(&pats).Where("user_id = ?", userID).Error; err != nil {
 		return nil, nil, err
 	}
 

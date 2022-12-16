@@ -34,6 +34,14 @@ func WithURLParamPAT(initDataIndex uint) GenerateURLParam {
 	}
 }
 
+func WithURLParamOrg(initDataIndex uint) GenerateURLParam {
+	return func(t *testing.T, config *server.Config, currParams map[string]string) map[string]string {
+		currParams[string(types.URLParamOrgID)] = testutils.InitDataAll.Orgs[initDataIndex].ID
+
+		return currParams
+	}
+}
+
 type GenerateRequestCtx func(t *testing.T, config *server.Config) (interface{}, interface{})
 
 // GenerateURLParam takes in the server config and outputs URL params. It's meant to populate

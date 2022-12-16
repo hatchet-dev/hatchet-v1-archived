@@ -5,6 +5,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
 	"github.com/hatchet-dev/hatchet/api/v1/server/authn"
+	"github.com/hatchet-dev/hatchet/api/v1/server/authz"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
@@ -15,7 +16,8 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	endpointFactory := endpoint.NewAPIObjectEndpointFactory(config)
 
 	baseRegisterer := NewBaseRegisterer()
-	userRegisterer := NewUserScopedRegisterer()
+	userRegisterer := NewUserRouteRegisterer()
+	orgRegisterer := NewOrgRouteRegisterer()
 
 	baseRoutePath := "/api/v1"
 
@@ -42,9 +44,21 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 			userRegisterer.Children...,
 		)
 
+		orgRoutes := orgRegisterer.GetRoutes(
+			r,
+			config,
+			&endpoint.Path{
+				Parent:       baseRoutePath,
+				RelativePath: "",
+			},
+			endpointFactory,
+			userRegisterer.Children...,
+		)
+
 		routes := [][]*router.Route{
 			baseRoutes,
 			userRoutes,
+			orgRoutes,
 		}
 
 		var allRoutes []*router.Route
@@ -64,13 +78,21 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	// after authentication. Each subsequent http.Handler can lookup the user in context.
 	authNFactory := authn.NewAuthNFactory(config)
 
+	orgFactory := authz.NewOrgScopedFactory(config)
+
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
 
+		// always register user scopes first
 		for _, scope := range route.Endpoint.Metadata.Scopes {
 			switch scope {
 			case types.UserScope:
 				atomicGroup.Use(authNFactory.NewAuthenticated)
+			case types.OrgScope:
+				endpointMetaFactory := endpoint.NewEndpointMiddleware(config, route.Endpoint.Metadata)
+				atomicGroup.Use(endpointMetaFactory.Middleware)
+
+				atomicGroup.Use(orgFactory.Middleware)
 			}
 		}
 

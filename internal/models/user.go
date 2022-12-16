@@ -26,6 +26,13 @@ func (u *User) ToAPIType() *types.User {
 	}
 }
 
+func (u *User) ToOrgUserPublishedData() *types.UserOrgPublishedData {
+	return &types.UserOrgPublishedData{
+		DisplayName: u.DisplayName,
+		Email:       u.Email,
+	}
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	err := u.Base.BeforeCreate(tx)
 
