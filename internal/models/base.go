@@ -30,3 +30,16 @@ func (b *Base) ToAPITypeMetadata() *types.APIResourceMeta {
 		ID:        b.ID,
 	}
 }
+
+// HasEncryptedFields is used for models which have an encrypted field.
+// After Encrypt() and Decrypt() methods are called, these methods should set FieldsAreEncrypted
+// correspondingly.
+type HasEncryptedFields struct {
+	FieldsAreEncrypted bool `gorm:"-"`
+}
+
+func (h *HasEncryptedFields) AfterFind(tx *gorm.DB) (err error) {
+	h.FieldsAreEncrypted = true
+
+	return
+}

@@ -45,7 +45,8 @@ type AuthConfig struct {
 }
 
 type ServerRuntimeConfig struct {
-	Port int
+	ServerURL string
+	Port      int
 }
 
 type Config struct {

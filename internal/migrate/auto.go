@@ -20,5 +20,6 @@ func AutoMigrate(db *gorm.DB, debug bool) error {
 		&models.Organization{},
 		&models.OrganizationMember{},
 		&models.OrganizationPolicy{},
+		&models.OrganizationInviteLink{},
 	)
 }

@@ -17,6 +17,7 @@ type ValidatorErr string
 const (
 	EmailErr       ValidatorErr = "Invalid email address"
 	PasswordErr    ValidatorErr = "Invalid password. Passwords must be at least 8 characters in length, contain an upper and lowercase letter, and contain at least one number."
+	UUIDErr        ValidatorErr = "Invalid UUID reference"
 	HatchetNameErr ValidatorErr = "Hatchet names must match the regex ^[a-zA-Z0-9\\.\\-_]+$"
 )
 
@@ -72,6 +73,8 @@ func (v *DefaultValidator) Validate(s interface{}) apierrors.RequestError {
 			errorStrs[i] = string(PasswordErr)
 		case "hatchet-name-hatchet-name":
 			errorStrs[i] = string(HatchetNameErr)
+		case "uuid-uuid":
+			errorStrs[i] = string(UUIDErr)
 		default:
 			errorStrs[i] = errObj.SafeExternalError()
 		}

@@ -12,6 +12,7 @@ import (
 // for revoking an otherwise-valid JWT.
 type PersonalAccessToken struct {
 	Base
+	HasEncryptedFields
 
 	// How this token gets displayed to the user
 	DisplayName string
@@ -70,25 +71,33 @@ func (p *PersonalAccessToken) IsExpired() bool {
 }
 
 func (p *PersonalAccessToken) Encrypt(key *[32]byte) error {
-	ciphertext, err := encryption.Encrypt(p.SigningSecret, key)
+	if !p.HasEncryptedFields.FieldsAreEncrypted {
+		ciphertext, err := encryption.Encrypt(p.SigningSecret, key)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		p.SigningSecret = ciphertext
+
+		p.HasEncryptedFields.FieldsAreEncrypted = true
 	}
-
-	p.SigningSecret = ciphertext
 
 	return nil
 }
 
 func (p *PersonalAccessToken) Decrypt(key *[32]byte) error {
-	plaintext, err := encryption.Decrypt(p.SigningSecret, key)
+	if p.HasEncryptedFields.FieldsAreEncrypted {
+		plaintext, err := encryption.Decrypt(p.SigningSecret, key)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		p.SigningSecret = plaintext
+
+		p.HasEncryptedFields.FieldsAreEncrypted = false
 	}
-
-	p.SigningSecret = plaintext
 
 	return nil
 }

@@ -37,6 +37,25 @@ type QueryOption interface {
 	Apply(*Query)
 }
 
+func WithPage(paginationRequest *types.PaginationRequest) QueryOption {
+	var page int
+
+	if paginationRequest == nil {
+		page = 0
+	} else {
+		page = int(paginationRequest.Page)
+	}
+
+	return withPage(page)
+}
+
+type withPage int
+
+func (w withPage) Apply(q *Query) {
+	q.Limit = 50
+	q.Offset = 50 * int(w)
+}
+
 func WithLimit(limit uint) QueryOption {
 	return withLimit(limit)
 }

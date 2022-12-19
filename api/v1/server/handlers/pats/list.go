@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type PATListHandler struct {
@@ -28,7 +29,16 @@ func NewPATListHandler(
 func (u *PATListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(types.UserScope).(*models.User)
 
-	pats, paginate, err := u.Repo().PersonalAccessToken().ListPersonalAccessTokensByUserID(user.ID)
+	req := &types.ListPATsRequest{}
+
+	if ok := u.DecodeAndValidate(w, r, req); !ok {
+		return
+	}
+
+	pats, paginate, err := u.Repo().PersonalAccessToken().ListPersonalAccessTokensByUserID(
+		user.ID,
+		repository.WithPage(req.PaginationRequest),
+	)
 
 	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))

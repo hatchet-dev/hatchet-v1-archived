@@ -89,7 +89,7 @@ func (repo *PersonalAccessTokenRepository) ListPersonalAccessTokensByUserID(
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Find(&pats).Where("user_id = ?", userID).Error; err != nil {
+	if err := db.Where("user_id = ?", userID).Find(&pats).Error; err != nil {
 		return nil, nil, err
 	}
 

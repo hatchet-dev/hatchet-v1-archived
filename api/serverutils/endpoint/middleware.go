@@ -73,6 +73,12 @@ func getRequestActionForEndpoint(
 		switch scope {
 		case types.OrgScope:
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamOrgID)
+		case types.OrgOwnerScope:
+			// in this case, there is no unique resource ID for the "owner" concept, so we simply attach a
+			// resource ID of "owner" to the request
+			resourceID = "owner"
+		case types.OrgMemberScope:
+			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamOrgMemberID)
 		}
 
 		if reqErr != nil {

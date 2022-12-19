@@ -41,6 +41,8 @@ func GetUserRoutes(
 		// POST /api/v1/users -> users.NewCreateUserHandler
 		// swagger:operation POST /api/v1/users createUser
 		//
+		// ### Description
+		//
 		// Creates a new user via email and password-based authentication. This endpoint is only registered if the
 		// environment variable `BASIC_AUTH_ENABLED` is set.
 		//
@@ -101,6 +103,8 @@ func GetUserRoutes(
 	// GET /api/v1/users/current -> users.UserGetCurrentHandler
 	// swagger:operation GET /api/v1/users/current getCurrentUser
 	//
+	// ### Description
+	//
 	// Retrieves the current user object based on the data passed in auth.
 	//
 	// ---
@@ -147,6 +151,8 @@ func GetUserRoutes(
 	// DELETE /api/v1/users/current -> users.UserDeleteCurrentHandler
 	// swagger:operation DELETE /api/v1/users/current deleteCurrentUser
 	//
+	// ### Description
+	//
 	// Deletes the current user.
 	//
 	// ---
@@ -190,6 +196,8 @@ func GetUserRoutes(
 
 	// POST /api/v1/users/current/settings/pats -> pats.NewPATCreateHandler
 	// swagger:operation POST /api/v1/users/current/settings/pats createPersonalAccessToken
+	//
+	// ### Description
 	//
 	// Creates a new personal access token for a user.
 	//
@@ -251,6 +259,8 @@ func GetUserRoutes(
 	// GET /api/v1/users/current/settings/pats/{pat_id} -> pats.NewPATGetHandler
 	// swagger:operation GET /api/v1/users/current/settings/pats/{pat_id} getPersonalAccessToken
 	//
+	// ### Description
+	//
 	// Gets a personal access token for a user, specified by the path param `pat_id`.
 	//
 	// ---
@@ -306,6 +316,8 @@ func GetUserRoutes(
 
 	// GET /api/v1/users/current/settings/pats -> pats.NewPATListHandler
 	// swagger:operation GET /api/v1/users/current/settings/pats listPersonalAccessTokens
+	//
+	// ### Description
 	//
 	// Lists personal access token for a user.
 	//
@@ -363,6 +375,8 @@ func GetUserRoutes(
 	// POST /api/v1/users/current/settings/pats/{pat_id}/revoke -> pats.NewPATRevokeHandler
 	// swagger:operation POST /api/v1/users/current/settings/pats/{pat_id}/revoke revokePersonalAccessToken
 	//
+	// ### Description
+	//
 	// Revokes the personal access token for the user
 	//
 	// ---
@@ -419,6 +433,8 @@ func GetUserRoutes(
 	// DELETE /api/v1/users/current/settings/pats/{pat_id} -> pats.NewPATDeleteHandler
 	// swagger:operation DELETE /api/v1/users/current/settings/pats/{pat_id} deletePersonalAccessToken
 	//
+	// ### Description
+	//
 	// Deletes the personal access token for the user
 	//
 	// ---
@@ -469,6 +485,60 @@ func GetUserRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: deletePATEndpoint,
 		Handler:  deletePATHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/users/current/organizations -> users.NewUserOrgListHandler
+	// swagger:operation GET /api/v1/users/current/organizations listUserOrganizations
+	//
+	// ### Description
+	//
+	// Lists organizations for a user.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List user organizations
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: page
+	// responses:
+	//   '200':
+	//     description: Successfully listed organizations
+	//     schema:
+	//       $ref: '#/definitions/ListUserOrgsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listOrgsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbList,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/organizations",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	listUserOrgsHandler := users.NewUserOrgListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listOrgsEndpoint,
+		Handler:  listUserOrgsHandler,
 		Router:   r,
 	})
 

@@ -5,6 +5,7 @@ import (
 	"unicode"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/hatchet-dev/hatchet/internal/models/uuidutils"
 )
 
 var NameRegex = regexp.MustCompile("^[a-zA-Z0-9\\.\\-_]+$")
@@ -21,6 +22,10 @@ func New() *validator.Validate {
 
 	validate.RegisterValidation("password", func(fl validator.FieldLevel) bool {
 		return passwordValidation(fl.Field().String())
+	})
+
+	validate.RegisterValidation("uuid", func(fl validator.FieldLevel) bool {
+		return uuidutils.IsValidUUID(fl.Field().String())
 	})
 
 	return validate

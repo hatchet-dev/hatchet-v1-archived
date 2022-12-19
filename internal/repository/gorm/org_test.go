@@ -147,8 +147,7 @@ func TestFailedDeleteOrg(t *testing.T) {
 func TestCreateOrgMember(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
 		orgMember := &models.OrganizationMember{
-			InviteLink: "https://my.invite.example.com",
-			UserID:     testutils.InitDataAll.Users[1].ID,
+			UserID: testutils.InitDataAll.Users[1].ID,
 		}
 
 		orgMember, err := conf.Repository.Org().CreateOrgMember(testutils.OrgModels[0], orgMember)

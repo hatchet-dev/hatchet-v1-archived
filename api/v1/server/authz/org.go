@@ -88,7 +88,19 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 					break
 				}
 			case string(models.PresetPolicyNameAdmin):
+				allow, err := opa.RunAllowQuery(policies.PresetPolicies.OrgAdminPolicy.Query, policyInput)
+
+				if err == nil && allow {
+					isValid = true
+					break
+				}
 			case string(models.PresetPolicyNameMember):
+				allow, err := opa.RunAllowQuery(policies.PresetPolicies.OrgMemberPolicy.Query, policyInput)
+
+				if err == nil && allow {
+					isValid = true
+					break
+				}
 			default:
 
 			}
@@ -103,11 +115,14 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx := NewOrganizationContext(r.Context(), org)
+	ctx := NewOrganizationContext(r.Context(), org, orgMember)
 	r = r.Clone(ctx)
 	p.next.ServeHTTP(w, r)
 }
 
-func NewOrganizationContext(ctx context.Context, org *models.Organization) context.Context {
-	return context.WithValue(ctx, types.OrgScope, org)
+func NewOrganizationContext(ctx context.Context, org *models.Organization, orgMember *models.OrganizationMember) context.Context {
+	ctx = context.WithValue(ctx, types.OrgScope, org)
+	ctx = context.WithValue(ctx, types.OrgMemberLookupKey, orgMember)
+
+	return ctx
 }

@@ -138,7 +138,8 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 	}
 
 	serverRuntimeConfig := server.ServerRuntimeConfig{
-		Port: sc.Port,
+		Port:      sc.Port,
+		ServerURL: sc.ServerURL,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{

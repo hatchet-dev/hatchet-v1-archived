@@ -9,18 +9,15 @@ import (
 )
 
 type OrgPolicyInput struct {
-	Endpoint EndpointInput `json:"endpoint"`
+	Endpoint EndpointInput `mapstructure:"endpoint"`
 }
 
 type EndpointInput struct {
-	Verb      string                  `json:"verb"`
-	Resources []EndpointResourceInput `json:"resources"`
-}
+	Verb string `mapstructure:"verb"`
 
-type EndpointResourceInput struct {
-	Verb   string      `json:"verb"`
-	Scope  string      `json:"scope"`
-	Target interface{} `json:"target"`
+	// The resources aren't typed because mapstructure was converting the typed values
+	// to uppercase. Rather than investigate further, this was a simpler approach.
+	Resources []map[string]interface{} `mapstructure:"resources"`
 }
 
 func GetInputFromRequest(r *http.Request) map[string]interface{} {
@@ -31,21 +28,20 @@ func GetInputFromRequest(r *http.Request) map[string]interface{} {
 
 	structuredRes.Endpoint = EndpointInput{
 		Verb:      string(endpointMeta.Verb),
-		Resources: make([]EndpointResourceInput, 0),
+		Resources: make([]map[string]interface{}, 0),
 	}
 
 	for scopeName, scope := range reqScopes {
-		structuredRes.Endpoint.Resources = append(structuredRes.Endpoint.Resources, EndpointResourceInput{
-			Scope:  string(scopeName),
-			Verb:   string(scope.Verb),
-			Target: scope.ResourceID,
+		structuredRes.Endpoint.Resources = append(structuredRes.Endpoint.Resources, map[string]interface{}{
+			"scope":  string(scopeName),
+			"verb":   string(scope.Verb),
+			"target": scope.ResourceID,
 		})
 	}
 
-	// marshal to json
 	res := make(map[string]interface{})
 
-	mapstructure.Decode(structuredRes, res)
+	mapstructure.Decode(structuredRes, &res)
 
 	return res
 }
