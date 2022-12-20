@@ -27,7 +27,7 @@ func NewOrgUpdateMemberPoliciesHandler(
 
 func (o *OrgUpdateMemberPoliciesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	org, _ := r.Context().Value(types.OrgScope).(*models.Organization)
-	orgMember, _ := r.Context().Value(types.OrgMemberLookupKey).(*models.OrganizationMember)
+	orgMember, _ := r.Context().Value(types.OrgMemberScope).(*models.OrganizationMember)
 
 	if reqErr := verifyNotOwner(orgMember); reqErr != nil {
 		o.HandleAPIError(w, r, reqErr)

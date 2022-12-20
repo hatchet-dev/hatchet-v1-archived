@@ -16,27 +16,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetOrgSuccessful(t *testing.T) {
+func TestUpdateOrgSuccessful(t *testing.T) {
 	apitest.RunAPITest(t, func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error {
-		gotOrgResponse := &types.GetOrganizationResponse{}
+		updateOrgResponse := &types.UpdateOrgResponse{}
 
-		err := json.NewDecoder(rr.Body).Decode(gotOrgResponse)
+		err := json.NewDecoder(rr.Body).Decode(updateOrgResponse)
 
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// assert that the uuid on the pat field is valid
-		assert.True(t, uuidutils.IsValidUUID(gotOrgResponse.ID))
+		assert.True(t, uuidutils.IsValidUUID(updateOrgResponse.ID))
 
-		assert.Equal(t, "My Org 1", gotOrgResponse.DisplayName)
-		assert.Equal(t, "user1@gmail.com", gotOrgResponse.Owner.Email)
+		assert.Equal(t, "My Org 1 - Rename", updateOrgResponse.DisplayName)
+		assert.Equal(t, "user1@gmail.com", updateOrgResponse.Owner.Email)
 
 		return nil
 	}, &apitest.APITesterOpts{
-		Method:      "GET",
-		Route:       fmt.Sprintf("/api/v1/organizations/{%s}", string(types.URLParamOrgID)),
-		HandlerInit: orgs.NewOrgGetHandler,
+		Method: "POST",
+		Route:  fmt.Sprintf("/api/v1/organizations/{%s}", string(types.URLParamOrgID)),
+		RequestObj: types.UpdateOrgRequest{
+			DisplayName: "My Org 1 - Rename",
+		},
+		HandlerInit: orgs.NewOrgUpdateHandler,
 		CtxGenerators: []apitest.GenerateRequestCtx{
 			apitest.WithAuthUser(0),
 			apitest.WithOrg(0),

@@ -30,7 +30,6 @@ func NewOrgAcceptMemberInviteHandler(
 
 func (o *OrgAcceptMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(types.UserScope).(*models.User)
-
 	urlParamInviteID, reqErr := handlerutils.GetURLParamString(r, types.URLParamOrgMemberInviteID)
 
 	if reqErr != nil {

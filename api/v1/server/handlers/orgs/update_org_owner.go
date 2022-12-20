@@ -38,22 +38,21 @@ func (o *OrgUpdateOwnerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	ownerPolicy, err := o.Repo().Org().ReadPresetPolicyByName(org.ID, models.PresetPolicyNameOwner)
+	// ensure that the new org member is not the same as the old org member
+	if orgMember.ID == req.NewOwnerMemberID {
+		o.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: fmt.Sprintf("new owner member id must be distinct from previous owner member id"),
+			},
+			http.StatusBadRequest,
+		))
 
-	if err != nil {
-		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
-	adminPolicy, err := o.Repo().Org().ReadPresetPolicyByName(org.ID, models.PresetPolicyNameAdmin)
-
-	if err != nil {
-		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
 
 	// read the new member
-	newOrgMember, err := o.Repo().Org().ReadOrgMemberByUserID(org.ID, req.NewOwnerMemberID)
+	newOrgMember, err := o.Repo().Org().ReadOrgMemberByID(org.ID, req.NewOwnerMemberID)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
@@ -72,10 +71,45 @@ func (o *OrgUpdateOwnerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// ensure that the new org member has an accepted invite and a valid user id
+	if newOrgMember.InviteLink.ID != "" && !newOrgMember.InviteAccepted {
+		o.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: fmt.Sprintf("new owner member must have accepted their invite"),
+			},
+			http.StatusBadRequest,
+		))
+
+		return
+	}
+
+	ownerPolicy, err := o.Repo().Org().ReadPresetPolicyByName(org.ID, models.PresetPolicyNameOwner)
+
+	if err != nil {
+		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	adminPolicy, err := o.Repo().Org().ReadPresetPolicyByName(org.ID, models.PresetPolicyNameAdmin)
+
+	if err != nil {
+		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
 	org.OwnerID = orgMember.UserID
+	org.Owner = orgMember.User
+
+	org, err = o.Repo().Org().UpdateOrg(org)
+
+	if err != nil {
+		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
 
 	// attach the owner policy to the new org member
-	newOrgMember, err = o.Repo().Org().AppendOrgPolicyToOrgMember(newOrgMember, ownerPolicy)
+	newOrgMember, err = o.Repo().Org().ReplaceOrgPoliciesForOrgMember(newOrgMember, []*models.OrganizationPolicy{ownerPolicy})
 
 	if err != nil {
 		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -83,15 +117,7 @@ func (o *OrgUpdateOwnerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 
 	// attach the admin policy to the old org member
-	orgMember, err = o.Repo().Org().RemoveOrgPolicyFromOrgMember(orgMember, adminPolicy)
-
-	if err != nil {
-		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
-	// remove the owner policy from the old org member
-	orgMember, err = o.Repo().Org().RemoveOrgPolicyFromOrgMember(orgMember, ownerPolicy)
+	orgMember, err = o.Repo().Org().ReplaceOrgPoliciesForOrgMember(orgMember, []*models.OrganizationPolicy{adminPolicy})
 
 	if err != nil {
 		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))

@@ -23,6 +23,8 @@ type Config struct {
 	GormDB     *gorm.DB
 	Repository repository.Repository
 
+	InstanceName string
+
 	encryptionKey *[32]byte
 }
 

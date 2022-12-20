@@ -41,7 +41,7 @@ func TestCreateUserSessionDuplicateKeys(t *testing.T) {
 		expires := time.Now().Add(24 * 30 * time.Hour)
 
 		_, failingErr := conf.Repository.UserSession().CreateUserSession(&models.UserSession{
-			Key:       testutils.InitDataAll.UserSessions[0].Key,
+			Key:       testutils.UserSessionModels[0].Key,
 			Data:      []byte("1"),
 			ExpiresAt: expires,
 		})
@@ -55,7 +55,7 @@ func TestCreateUserSessionDuplicateKeys(t *testing.T) {
 
 func TestReadUserSessionByKey(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expUserSess := testutils.InitDataAll.UserSessions[0]
+		expUserSess := testutils.UserSessionModels[0]
 		userSession, err := conf.Repository.UserSession().ReadUserSessionByKey(expUserSess.Key)
 
 		assert.Nil(t, err, "error should be nil")
@@ -79,7 +79,7 @@ func TestReadUserSessionByKeyNotFound(t *testing.T) {
 
 func TestUpdateUserSession(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expUserSess := testutils.InitDataAll.UserSessions[0]
+		expUserSess := testutils.UserSessionModels[0]
 		expUserSess.Data = []byte("newdata")
 
 		userSession, err := conf.Repository.UserSession().UpdateUserSession(expUserSess)
@@ -101,7 +101,7 @@ func TestUpdateUserSession(t *testing.T) {
 
 func TestDeleteUserSession(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expUserSess := testutils.InitDataAll.UserSessions[0]
+		expUserSess := testutils.UserSessionModels[0]
 
 		userSession, err := conf.Repository.UserSession().DeleteUserSession(expUserSess)
 

@@ -46,7 +46,7 @@ func verifyNotOwner(orgMember *models.OrganizationMember) apierrors.RequestError
 		return apierrors.NewErrPassThroughToClient(
 			types.APIError{
 				Code:        types.ErrCodeBadRequest,
-				Description: "Owners cannot be removed from an organization. Please change the owner of the organization before removal.",
+				Description: "Cannot perform this operation on the organization owner. Please change the owner of the organization before attempting this operation.",
 			},
 			http.StatusBadRequest,
 		)

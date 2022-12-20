@@ -17,11 +17,13 @@ type Tester struct {
 	key        *[32]byte
 	dbFileName string
 	conf       *database.Config
-	initData   *InitData
 }
 
 func NewTestEnv(t *testing.T) *Tester {
 	t.Helper()
+
+	// reset init data
+	InitAll()
 
 	tester := new(Tester)
 
@@ -65,7 +67,9 @@ func NewTestEnv(t *testing.T) *Tester {
 		Repository: gorm.NewRepository(db, key),
 	}
 
-	tester.initData = new(InitData)
+	tester.conf.SetEncryptionKey(tester.key)
+
+	tester.conf.InstanceName = randName
 
 	return tester
 }

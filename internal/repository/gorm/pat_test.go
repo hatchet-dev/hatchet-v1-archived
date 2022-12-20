@@ -19,7 +19,7 @@ func TestCreatePAT(t *testing.T) {
 		displayName := "my-pat-1"
 
 		// call population method
-		pat, err := models.NewPATFromUserID(displayName, testutils.InitDataAll.Users[0].ID)
+		pat, err := models.NewPATFromUserID(displayName, testutils.UserModels[0].ID)
 
 		if err != nil {
 			return err
@@ -34,7 +34,7 @@ func TestCreatePAT(t *testing.T) {
 		// ensure that id is set and fields are valid
 		assert.True(t, uuidutils.IsValidUUID(pat.ID))
 		assert.Equal(t, "my-pat-1", pat.DisplayName)
-		assert.Equal(t, testutils.InitDataAll.Users[0].ID, pat.UserID)
+		assert.Equal(t, testutils.UserModels[0].ID, pat.UserID)
 		assert.InDelta(t, expExpires.Unix(), pat.Expires.Unix(), 10)
 
 		return nil
@@ -43,7 +43,7 @@ func TestCreatePAT(t *testing.T) {
 
 func TestReadPATSuccessful(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expPAT := testutils.InitDataAll.PATs[0]
+		expPAT := testutils.PATModels[0]
 
 		pat, err := conf.Repository.PersonalAccessToken().ReadPersonalAccessToken(expPAT.UserID, expPAT.ID)
 
@@ -59,7 +59,7 @@ func TestReadPATSuccessful(t *testing.T) {
 
 func TestReadPATNotFound(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		_, failingErr := conf.Repository.PersonalAccessToken().ReadPersonalAccessToken(testutils.InitDataAll.Users[0].ID, "not-an-id")
+		_, failingErr := conf.Repository.PersonalAccessToken().ReadPersonalAccessToken(testutils.UserModels[0].ID, "not-an-id")
 
 		assert.NotNil(t, failingErr, "err is not nil")
 		assert.ErrorIs(t, repository.RepositoryErrorNotFound, failingErr)
@@ -70,7 +70,8 @@ func TestReadPATNotFound(t *testing.T) {
 
 func TestListPATs(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expPAT := testutils.InitDataAll.PATs[0]
+		expPAT := testutils.PATModels[0]
+		expPAT.FieldsAreEncrypted = true
 
 		pat, pagination, err := conf.Repository.PersonalAccessToken().ListPersonalAccessTokensByUserID(expPAT.UserID)
 
@@ -97,7 +98,7 @@ func TestListPATs(t *testing.T) {
 
 func TestUpdatePAT(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expPAT := testutils.InitDataAll.PATs[0]
+		expPAT := testutils.PATModels[0]
 		expPAT.Revoked = true
 
 		pat, err := conf.Repository.PersonalAccessToken().UpdatePersonalAccessToken(expPAT)
@@ -122,7 +123,7 @@ func TestUpdatePAT(t *testing.T) {
 
 func TestDeletePAT(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		expPAT := testutils.InitDataAll.PATs[0]
+		expPAT := testutils.PATModels[0]
 
 		pat, err := conf.Repository.PersonalAccessToken().DeletePersonalAccessToken(expPAT)
 

@@ -1,6 +1,7 @@
 package orgs
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -9,6 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type OrgCreateMemberInviteHandler struct {
@@ -34,8 +36,25 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// TODO(abelanger5): ensure that there are no previous invite links generated for this user,
-	// or that there are no members with this email address.
+	// ensure that there are no org members with this email address
+	candOrgMember, err := o.Repo().Org().ReadOrgMemberByUserOrInviteeEmail(org.ID, req.InviteeEmail)
+
+	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
+		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	if candOrgMember != nil {
+		o.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: "There is already an organization member with this email address.",
+			},
+			http.StatusBadRequest,
+		))
+
+		return
+	}
 
 	// TODO(abelanger5): add errors to this response type
 	policies := getPoliciesFromRequest(o.Repo().Org(), org.ID, req.InviteePolicies)

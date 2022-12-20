@@ -11,6 +11,7 @@ type OrgRepository interface {
 	DeleteOrg(org *models.Organization) (*models.Organization, RepositoryError)
 
 	CreateOrgMember(org *models.Organization, orgMember *models.OrganizationMember) (*models.OrganizationMember, RepositoryError)
+	ReadOrgMemberByUserOrInviteeEmail(orgID, email string) (*models.OrganizationMember, RepositoryError)
 	ReadOrgMemberByUserID(orgID, userID string) (*models.OrganizationMember, RepositoryError)
 	ReadOrgMemberByID(orgID, memberID string) (*models.OrganizationMember, RepositoryError)
 	ListOrgMembersByOrgID(orgID string, opts ...QueryOption) ([]*models.OrganizationMember, *PaginatedResult, RepositoryError)

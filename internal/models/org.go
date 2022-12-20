@@ -115,6 +115,12 @@ func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember 
 	return res
 }
 
+func (o *OrganizationMember) AfterFind(tx *gorm.DB) (err error) {
+	// this ensures that AfterFind is called on the invite link even if called with a
+	// Joins method, instead of just Preload
+	return o.InviteLink.AfterFind(tx)
+}
+
 type OrganizationInviteLink struct {
 	Base
 	HasEncryptedFields
@@ -174,6 +180,11 @@ func (o *OrganizationInviteLink) ToAPIType(key *[32]byte) *types.OrganizationInv
 }
 
 func (o *OrganizationInviteLink) BeforeCreate(tx *gorm.DB) error {
+	// return an error if encrypt has not been called
+	if !o.FieldsAreEncrypted {
+		return fmt.Errorf("fields should be encrypted before create")
+	}
+
 	err := o.Base.BeforeCreate(tx)
 
 	if err != nil {
@@ -209,7 +220,6 @@ func (o *OrganizationInviteLink) VerifyToken(tok []byte) (bool, error) {
 
 func (o *OrganizationInviteLink) Encrypt(key *[32]byte) error {
 	if !o.HasEncryptedFields.FieldsAreEncrypted {
-
 		ciphertext, err := encryption.Encrypt(o.InviteLinkURL, key)
 
 		if err != nil {
@@ -233,7 +243,6 @@ func (o *OrganizationInviteLink) Decrypt(key *[32]byte) error {
 
 		o.InviteLinkURL = plaintext
 		o.HasEncryptedFields.FieldsAreEncrypted = false
-
 	}
 
 	return nil

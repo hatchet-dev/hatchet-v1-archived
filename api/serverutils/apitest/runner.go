@@ -26,11 +26,12 @@ type HandlerInitFunc func(
 ) http.Handler
 
 type APITesterOpts struct {
-	Method, Route string
-	RequestObj    interface{}
-	HandlerInit   HandlerInitFunc
-	CtxGenerators []GenerateRequestCtx
-	URLGenerators []GenerateURLParam
+	Method, Route  string
+	RequestObj     interface{}
+	HandlerInit    HandlerInitFunc
+	CtxGenerators  []GenerateRequestCtx
+	URLGenerators  []GenerateURLParam
+	BodyGenerators []GenerateBodyParam
 }
 
 type APITestFunc func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error
@@ -76,12 +77,18 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 			}
 		}
 
+		if opts.BodyGenerators == nil {
+			opts.BodyGenerators = make([]GenerateBodyParam, 0)
+		}
+
 		// create a new response recorder
 		req, rr := GetRequestAndRecorder(
 			t,
 			opts.Method,
 			opts.Route,
 			opts.RequestObj,
+			apiTester.conf,
+			opts.BodyGenerators...,
 		)
 
 		req = WithURLParams(t, req, params)

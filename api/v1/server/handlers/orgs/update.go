@@ -34,6 +34,8 @@ func (o *OrgUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	org.DisplayName = req.DisplayName
+
 	org, err := o.Repo().Org().UpdateOrg(org)
 
 	if err != nil {

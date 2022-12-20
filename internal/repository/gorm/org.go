@@ -131,6 +131,16 @@ func (repo *OrgRepository) ReadOrgMemberByUserID(orgID, userID string) (*models.
 	return member, nil
 }
 
+func (repo *OrgRepository) ReadOrgMemberByUserOrInviteeEmail(orgID, email string) (*models.OrganizationMember, repository.RepositoryError) {
+	member := &models.OrganizationMember{}
+
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND (InviteLink.invitee_email = ? OR User.email = ?)", orgID, email, email).First(&member).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return member, nil
+}
+
 func (repo *OrgRepository) ListOrgMembersByOrgID(orgID string, opts ...repository.QueryOption) ([]*models.OrganizationMember, *repository.PaginatedResult, repository.RepositoryError) {
 	var members []*models.OrganizationMember
 
@@ -201,7 +211,11 @@ func (repo *OrgRepository) AppendOrgPolicyToOrgMember(orgMember *models.Organiza
 }
 
 func (repo *OrgRepository) ReplaceOrgPoliciesForOrgMember(orgMember *models.OrganizationMember, policies []*models.OrganizationPolicy) (*models.OrganizationMember, repository.RepositoryError) {
-	if err := repo.db.Model(orgMember).Association("OrgPolicies").Replace(policies); err != nil {
+	if err := repo.db.Model(orgMember).Association("OrgPolicies").Clear(); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	if err := repo.db.Model(orgMember).Association("OrgPolicies").Append(policies); err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
