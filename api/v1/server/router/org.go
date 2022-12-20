@@ -396,7 +396,6 @@ func GetOrganizationRoutes(
 			Scopes: []types.PermissionScope{
 				types.UserScope,
 				types.OrgScope,
-				types.OrgMemberScope,
 			},
 		},
 	)

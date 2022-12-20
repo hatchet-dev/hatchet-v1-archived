@@ -188,7 +188,6 @@ func HandleAPIError(
 
 	if writeErr {
 		// send the external error
-		// TODO: populate error
 		resp := err.APIError()
 
 		// write the status code

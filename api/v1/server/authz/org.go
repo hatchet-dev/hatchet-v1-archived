@@ -55,9 +55,6 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// TODO(abelanger5): verify that the user has access to this organization and can access all requested resources
-	// This relies on org members, policies, owner concepts, etc.
-
 	// read the org members to verify that the user has access to this resource
 	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(orgID, user.ID)
 

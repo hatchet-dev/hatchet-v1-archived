@@ -56,11 +56,22 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// TODO(abelanger5): add errors to this response type
-	policies := getPoliciesFromRequest(o.Repo().Org(), org.ID, req.InviteePolicies)
+	policies, reqErr := getPoliciesFromRequest(o.Repo().Org(), org.ID, req.InviteePolicies)
 
-	if len(policies) == 0 {
-		// TODO(abelanger5): throw error when no policies were matched
+	if reqErr != nil {
+		o.HandleAPIError(w, r, reqErr)
+
+		return
+	} else if len(policies) == 0 {
+		o.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Description: "At least one policy must be requested",
+				Code:        types.ErrCodeBadRequest,
+			},
+			http.StatusBadRequest,
+		))
+
+		return
 	}
 
 	inviteLink, err := models.NewOrganizationInviteLink(o.Config().ServerRuntimeConfig.ServerURL, org.ID)

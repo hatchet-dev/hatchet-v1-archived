@@ -40,10 +40,22 @@ func (o *OrgUpdateMemberPoliciesHandler) ServeHTTP(w http.ResponseWriter, r *htt
 		return
 	}
 
-	policies := getPoliciesFromRequest(o.Repo().Org(), org.ID, req.Policies)
+	policies, reqErr := getPoliciesFromRequest(o.Repo().Org(), org.ID, req.Policies)
 
-	if len(policies) == 0 {
-		// TODO(abelanger5): throw error when no policies were matched
+	if reqErr != nil {
+		o.HandleAPIError(w, r, reqErr)
+
+		return
+	} else if len(policies) == 0 {
+		o.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Description: "At least one policy must be requested",
+				Code:        types.ErrCodeBadRequest,
+			},
+			http.StatusBadRequest,
+		))
+
+		return
 	}
 
 	orgMember, err := o.Repo().Org().ReplaceOrgPoliciesForOrgMember(orgMember, policies)

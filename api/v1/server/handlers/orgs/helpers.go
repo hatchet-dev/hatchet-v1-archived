@@ -1,6 +1,7 @@
 package orgs
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -9,8 +10,10 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
-func getPoliciesFromRequest(orgRepo repository.OrgRepository, orgID string, refs []types.OrganizationPolicyReference) []*models.OrganizationPolicy {
+func getPoliciesFromRequest(orgRepo repository.OrgRepository, orgID string, refs []types.OrganizationPolicyReference) ([]*models.OrganizationPolicy, apierrors.RequestError) {
 	policies := make([]*models.OrganizationPolicy, 0)
+
+	errs := make([]types.APIError, 0)
 
 	// load any preset policies
 	for _, policyReq := range refs {
@@ -19,8 +22,22 @@ func getPoliciesFromRequest(orgRepo repository.OrgRepository, orgID string, refs
 
 		if policyReq.Name != "" {
 			policy, err = orgRepo.ReadPresetPolicyByName(orgID, models.PresetPolicyName(policyReq.Name))
+
+			if err != nil {
+				errs = append(errs, types.APIError{
+					Code:        types.ErrCodeBadRequest,
+					Description: fmt.Sprintf("Policy not found with name %s", policyReq.Name),
+				})
+			}
 		} else if policyReq.ID != "" {
 			policy, err = orgRepo.ReadPolicyByID(orgID, policyReq.ID)
+
+			if err != nil {
+				errs = append(errs, types.APIError{
+					Code:        types.ErrCodeBadRequest,
+					Description: fmt.Sprintf("Policy not found with id %s", policyReq.ID),
+				})
+			}
 		}
 
 		if err == nil {
@@ -28,7 +45,13 @@ func getPoliciesFromRequest(orgRepo repository.OrgRepository, orgID string, refs
 		}
 	}
 
-	return policies
+	if len(errs) > 0 {
+		return nil, apierrors.NewErrPassThroughToClientMulti(types.APIErrors{
+			Errors: errs,
+		}, http.StatusBadRequest)
+	}
+
+	return policies, nil
 }
 
 func verifyNotOwner(orgMember *models.OrganizationMember) apierrors.RequestError {
