@@ -49,5 +49,11 @@ func SaveUserUnauthenticated(
 	session.Values["authenticated"] = false
 	session.Values["user_id"] = nil
 	session.Values["email"] = nil
+
+	// we set the maxage of the session so that the session gets deleted. This avoids cases
+	// where the same cookie can get re-authed to a different user, which would be problematic
+	// if the session values weren't properly cleared on logout.
+	session.Options.MaxAge = -1
+
 	return session.Save(r, w)
 }

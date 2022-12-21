@@ -46,7 +46,25 @@ type CreateUserRequest struct {
 }
 
 // swagger:model
+type LoginUserRequest struct {
+	// the email address for this user
+	//
+	// required: true
+	// example: user1@gmail.com
+	Email string `json:"email" form:"required,max=255,email"`
+
+	// the password for this user
+	//
+	// required: true
+	// example: Securepassword123
+	Password string `json:"password" form:"required,max=255,password"`
+}
+
+// swagger:model
 type CreateUserResponse User
+
+// swagger:model
+type LoginUserResponse User
 
 const InvalidEmailOrPasswordCode uint = 2403
 

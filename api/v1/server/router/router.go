@@ -77,6 +77,7 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	// Create a new "user-scoped" factory which will create a new user-scoped request
 	// after authentication. Each subsequent http.Handler can lookup the user in context.
 	authNFactory := authn.NewAuthNFactory(config)
+	noAuthNFactory := authn.NewNoAuthNFactory(config)
 
 	orgFactory := authz.NewOrgScopedFactory(config)
 	orgMemberFactory := authz.NewOrgMemberScopedFactory(config)
@@ -89,6 +90,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 			switch scope {
 			case types.UserScope:
 				atomicGroup.Use(authNFactory.NewAuthenticated)
+			case types.NoUserScope:
+				atomicGroup.Use(noAuthNFactory.NewNotAuthenticated)
 			case types.OrgScope:
 				endpointMetaFactory := endpoint.NewEndpointMiddleware(config, route.Endpoint.Metadata)
 				atomicGroup.Use(endpointMetaFactory.Middleware)

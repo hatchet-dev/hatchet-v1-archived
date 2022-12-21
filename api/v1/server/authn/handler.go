@@ -51,7 +51,7 @@ type AuthN struct {
 // or serves a forbidden error. If authenticated, it calls the next handler.
 func (authn *AuthN) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// first check for a bearer token
-	tok, err := authn.getPATFromRequest(r)
+	tok, err := getPATFromRequest(r, authn.config)
 
 	// if the error is not an invalid auth header error, the token was invalid, and we throw error
 	// forbidden. If the error was an invalid auth error, we look for a cookie.
@@ -69,11 +69,9 @@ func (authn *AuthN) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, store.GetName())
 
 	if err != nil {
-		session.Values["authenticated"] = false
-
 		// we attempt to save the session, but do not catch the error since we send the
 		// forbidden error regardless
-		session.Save(r, w)
+		SaveUserUnauthenticated(w, r, authn.config)
 
 		authn.sendForbiddenError(err, w, r)
 		return
@@ -142,7 +140,7 @@ var errInvalidAuthHeader = fmt.Errorf("invalid authorization header in request")
 
 // getPATFromRequest finds an `Authorization` header of the form `Bearer <token>`,
 // and returns a valid token if it exists.
-func (authn *AuthN) getPATFromRequest(r *http.Request) (*models.PersonalAccessToken, error) {
+func getPATFromRequest(r *http.Request, config *server.Config) (*models.PersonalAccessToken, error) {
 	reqToken := r.Header.Get("Authorization")
 	splitToken := strings.Split(reqToken, "Bearer")
 
@@ -152,7 +150,7 @@ func (authn *AuthN) getPATFromRequest(r *http.Request) (*models.PersonalAccessTo
 
 	reqToken = strings.TrimSpace(splitToken[1])
 
-	pat, err := token.GetPATFromEncoded(reqToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
+	pat, err := token.GetPATFromEncoded(reqToken, config.DB.Repository.PersonalAccessToken(), config.TokenOpts)
 
 	if err != nil {
 		return nil, errInvalidToken

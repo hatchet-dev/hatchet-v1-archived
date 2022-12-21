@@ -83,7 +83,9 @@ func GetUserRoutes(
 					Parent:       basePath,
 					RelativePath: "/users",
 				},
-				Scopes: []types.PermissionScope{},
+				Scopes: []types.PermissionScope{
+					types.NoUserScope,
+				},
 			},
 		)
 
@@ -98,7 +100,120 @@ func GetUserRoutes(
 			Handler:  createUserHandler,
 			Router:   r,
 		})
+
+		// POST /api/v1/users/login -> users.NewUserLoginHandler
+		// swagger:operation POST /api/v1/users/login loginUser
+		//
+		// ### Description
+		//
+		// Logs a user in via email and password-based authentication. This endpoint is only registered if the
+		// environment variable `BASIC_AUTH_ENABLED` is set.
+		//
+		// ---
+		// produces:
+		// - application/json
+		// summary: Login user
+		// tags:
+		// - Users
+		// parameters:
+		//   - in: body
+		//     name: LoginUserRequest
+		//     description: The credentials for basic login
+		//     schema:
+		//       $ref: '#/definitions/LoginUserRequest'
+		// responses:
+		//   '200':
+		//     description: Successfully logged in
+		//     schema:
+		//       $ref: '#/definitions/LoginUserResponse'
+		//   '400':
+		//     description: A malformed or bad request
+		//     schema:
+		//       $ref: '#/definitions/APIErrorBadRequestExample'
+		//   '403':
+		//     description: Forbidden
+		//     schema:
+		//       $ref: '#/definitions/APIErrorForbiddenExample'
+		//   '405':
+		//     description: This endpoint is not supported on this Hatchet instance.
+		//     schema:
+		//       $ref: '#/definitions/APIErrorNotSupportedExample'
+		loginUserEndpoint := factory.NewAPIEndpoint(
+			&endpoint.EndpointMetadata{
+				Verb:   types.APIVerbCreate,
+				Method: types.HTTPVerbPost,
+				Path: &endpoint.Path{
+					Parent:       basePath,
+					RelativePath: "/users/login",
+				},
+				Scopes: []types.PermissionScope{
+					types.NoUserScope,
+				},
+			},
+		)
+
+		loginUserHandler := users.NewUserLoginHandler(
+			config,
+			factory.GetDecoderValidator(),
+			factory.GetResultWriter(),
+		)
+
+		routes = append(routes, &router.Route{
+			Endpoint: loginUserEndpoint,
+			Handler:  loginUserHandler,
+			Router:   r,
+		})
 	}
+
+	// POST /api/v1/users/logout -> users.NewUserLogoutHandler
+	// swagger:operation POST /api/v1/users/logout logoutUser
+	//
+	// ### Description
+	//
+	// Logs a user out. This endpoint only performs an action if it's called with cookie-based authentication.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Logout user
+	// tags:
+	// - Users
+	// responses:
+	//   '200':
+	//     description: Successfully logged out
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	logoutUserEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbCreate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/logout",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	logoutUserHandler := users.NewUserLogoutHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: logoutUserEndpoint,
+		Handler:  logoutUserHandler,
+		Router:   r,
+	})
 
 	// GET /api/v1/users/current -> users.UserGetCurrentHandler
 	// swagger:operation GET /api/v1/users/current getCurrentUser
