@@ -109,5 +109,6 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey()))
 }

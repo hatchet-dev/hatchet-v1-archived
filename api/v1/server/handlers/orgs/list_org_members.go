@@ -47,11 +47,11 @@ func (o *OrgListMembersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	resp := &types.ListOrgMembersResponse{
 		Pagination: paginate.ToAPIType(),
-		Rows:       make([]*types.OrganizationMember, 0),
+		Rows:       make([]*types.OrganizationMemberSanitized, 0),
 	}
 
 	for _, member := range members {
-		resp.Rows = append(resp.Rows, member.ToAPIType(o.Config().DB.GetEncryptionKey()))
+		resp.Rows = append(resp.Rows, member.ToAPITypeSanitized())
 	}
 
 	o.WriteResult(w, r, resp)

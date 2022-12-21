@@ -79,6 +79,7 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	authNFactory := authn.NewAuthNFactory(config)
 
 	orgFactory := authz.NewOrgScopedFactory(config)
+	orgMemberFactory := authz.NewOrgMemberScopedFactory(config)
 
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
@@ -93,6 +94,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(endpointMetaFactory.Middleware)
 
 				atomicGroup.Use(orgFactory.Middleware)
+			case types.OrgMemberScope:
+				atomicGroup.Use(orgMemberFactory.Middleware)
 			}
 		}
 

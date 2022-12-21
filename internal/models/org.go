@@ -86,16 +86,10 @@ type OrganizationMember struct {
 	OrgPolicies []OrganizationPolicy `gorm:"many2many:organization_member_policies;"`
 }
 
-func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember {
-	res := &types.OrganizationMember{
+func (o *OrganizationMember) ToAPITypeSanitized() *types.OrganizationMemberSanitized {
+	res := &types.OrganizationMemberSanitized{
 		APIResourceMeta: o.ToAPITypeMetadata(),
 		InviteAccepted:  o.InviteAccepted,
-	}
-
-	invite := &o.InviteLink
-
-	if invite != nil {
-		res.Invite = *invite.ToAPIType(key)
 	}
 
 	user := &o.User
@@ -111,6 +105,25 @@ func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember 
 	}
 
 	res.OrgPolicies = policies
+
+	return res
+}
+
+func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember {
+	sanitized := o.ToAPITypeSanitized()
+
+	res := &types.OrganizationMember{
+		APIResourceMeta: sanitized.APIResourceMeta,
+		User:            sanitized.User,
+		InviteAccepted:  sanitized.InviteAccepted,
+		OrgPolicies:     sanitized.OrgPolicies,
+	}
+
+	invite := &o.InviteLink
+
+	if invite != nil {
+		res.Invite = *invite.ToAPIType(key)
+	}
 
 	return res
 }

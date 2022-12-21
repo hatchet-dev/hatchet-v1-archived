@@ -6,8 +6,11 @@ import future.keywords.if
 import future.keywords.in
 
 allow if {
-	resource := input.endpoint.resources[_]
+	not has_org_owner_scope
+}
 
-	# admins cannot perform any actions on the org owner resource
-	resource.scope != "org_owner_scope"
+has_org_owner_scope if {
+	some i
+	resource := input.endpoint.resources[i]
+	resource.scope == "org_owner_scope"
 }

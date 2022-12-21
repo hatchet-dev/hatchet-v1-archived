@@ -21,6 +21,19 @@ type Organization struct {
 	Owner UserOrgPublishedData `json:"owner"`
 }
 
+// OrganizationMemberSanitized represents an organization member without a sensitive invite
+// link exposed.
+// swagger:model
+type OrganizationMemberSanitized struct {
+	*APIResourceMeta
+
+	User UserOrgPublishedData `json:"user"`
+
+	InviteAccepted bool `json:"invite_accepted"`
+
+	OrgPolicies []OrganizationPolicyMeta `json:"organization_policies"`
+}
+
 // swagger:model
 type OrganizationMember struct {
 	*APIResourceMeta
@@ -115,9 +128,12 @@ type ListOrgMembersRequest struct {
 
 // swagger:model
 type ListOrgMembersResponse struct {
-	Pagination *PaginationResponse   `json:"pagination"`
-	Rows       []*OrganizationMember `json:"rows"`
+	Pagination *PaginationResponse            `json:"pagination"`
+	Rows       []*OrganizationMemberSanitized `json:"rows"`
 }
+
+// swagger:model
+type GetOrgMemberResponse OrganizationMember
 
 // swagger:model
 type UpdateOrgMemberPoliciesRequest struct {

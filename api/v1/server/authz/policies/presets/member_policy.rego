@@ -12,6 +12,7 @@ write_verbs = {"create", "update", "delete"}
 allow if {
 	not has_org_write_scope
 	not has_org_owner_scope
+	not is_org_get_member
 }
 
 has_org_owner_scope if {
@@ -26,4 +27,13 @@ has_org_write_scope if {
 	resource := input.endpoint.resources[i]
 	resource.scope == "org_scope"
 	resource.verb == write_verbs[j]
+}
+
+# members cannot call GET operations on other members, as this may contain
+# sensitive information such as active invite links
+is_org_get_member if {
+	some i
+	resource := input.endpoint.resources[i]
+	resource.scope == "org_scope"
+	resource.verb == "get"
 }

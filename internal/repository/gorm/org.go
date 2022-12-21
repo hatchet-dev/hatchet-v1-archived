@@ -114,7 +114,7 @@ func (repo *OrgRepository) CreateOrgMember(org *models.Organization, orgMember *
 func (repo *OrgRepository) ReadOrgMemberByID(orgID, memberID string) (*models.OrganizationMember, repository.RepositoryError) {
 	member := &models.OrganizationMember{}
 
-	if err := repo.db.Preload("OrgPolicies").Where("organization_members.organization_id = ? AND id = ?", orgID, memberID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.id = ?", orgID, memberID).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -124,7 +124,7 @@ func (repo *OrgRepository) ReadOrgMemberByID(orgID, memberID string) (*models.Or
 func (repo *OrgRepository) ReadOrgMemberByUserID(orgID, userID string) (*models.OrganizationMember, repository.RepositoryError) {
 	member := &models.OrganizationMember{}
 
-	if err := repo.db.Preload("OrgPolicies").Where("organization_members.organization_id = ? AND user_id = ?", orgID, userID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.user_id = ?", orgID, userID).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

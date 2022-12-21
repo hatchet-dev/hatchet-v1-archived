@@ -20,8 +20,14 @@ type orgPathParams struct {
 	Org string `json:"org_id"`
 }
 
-// swagger:parameters deleteOrgMember updateOrgMemberPolicies
+// swagger:parameters deleteOrgMember updateOrgMemberPolicies getOrgMember
 type orgMemberPathParams struct {
+	// The org id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Org string `json:"org_id"`
+
 	// The org member id
 	// in: path
 	// required: true
@@ -409,6 +415,63 @@ func GetOrganizationRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: listOrgMembersEndpoint,
 		Handler:  listOrgMembersHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/organizations/{org_id}/members/{org_member_id} -> orgs.NewOrgGetMemberHandler
+	// swagger:operation GET /api/v1/organizations/{org_id}/members/{org_member_id} getOrgMember
+	//
+	// ### Description
+	//
+	// Get organization member. Only admins and owner can read full member data.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get organization member.
+	// tags:
+	// - Organizations
+	// parameters:
+	//   - name: org_id
+	//   - name: org_member_id
+	// responses:
+	//   '200':
+	//     description: Successfully got member
+	//     schema:
+	//       $ref: '#/definitions/GetOrgMemberResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getOrgMemberEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/organizations/{%s}/members/{%s}", string(types.URLParamOrgID), string(types.URLParamOrgMemberID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.OrgScope,
+				types.OrgMemberScope,
+			},
+		},
+	)
+
+	getOrgMemberHandler := orgs.NewOrgGetMemberHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getOrgMemberEndpoint,
+		Handler:  getOrgMemberHandler,
 		Router:   r,
 	})
 
