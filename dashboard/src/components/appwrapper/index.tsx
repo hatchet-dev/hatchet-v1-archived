@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const AppWrapper = styled.div`
+export const AppWrapper = styled.div<{ background?: string }>`
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -9,4 +9,5 @@ export const AppWrapper = styled.div`
   margin: 0;
   display: flex;
   justify-content: center;
+  background: ${(props) => props.theme.bg.default};
 `;

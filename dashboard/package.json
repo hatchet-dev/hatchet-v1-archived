@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@tanstack/react-query": "^4.20.4",
     "@visx/visx": "^2.12.2",
     "axios": "^0.27.2",
     "core-js": "^3.22.4",

@@ -7,11 +7,11 @@ export const PaginatorWrapper = styled(FlexRow)`
   max-width: fit-content;
   border-radius: 6px;
   margin: 8px 0;
+  color: ${(props) => props.theme.text.default};
 `;
 
 export const PaginatorText = styled.div`
   ${textFontStack}
-  color: ${theme.text.default};
   font-size: 12px;
   margin: 0 8px;
 `;

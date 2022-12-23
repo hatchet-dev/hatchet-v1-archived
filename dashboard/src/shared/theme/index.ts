@@ -3,6 +3,7 @@ import { createGlobalStyle } from "styled-components";
 export const theme = {
   bg: {
     default: "#04061c",
+    highlight: "#180B5F",
     reverse: "#16171A",
     wash: "#FAFAFA",
     divider: "white",
@@ -26,6 +27,37 @@ export const theme = {
   text: {
     default: "#ffffffcc",
     alt: "white",
+    inactive: "#999999aa",
+  },
+};
+
+export const invertedTheme = {
+  bg: {
+    default: "#180B5F",
+    highlight: "#180B5F",
+    reverse: "#16171A",
+    wash: "#FAFAFA",
+    divider: "white",
+    border: "white",
+    inactive: "#DFE7EF",
+    shadeone: "#eee",
+    shadetwo: "#e2e2e2",
+    buttonone: "#3F16E4",
+    hover: "#211F2D",
+    hovertwo: "#ffffff0b",
+  },
+  font: {
+    header: "Ubuntu",
+    text: "Noto Sans Tai Le",
+  },
+  line: {
+    default: "1px solid #ffffff22",
+    thick: "2px solid #ffffff22",
+    selected: "1px solid #ffffffaa",
+  },
+  text: {
+    default: "black",
+    alt: "black",
     inactive: "#999999aa",
   },
 };

@@ -23,11 +23,14 @@ import {
   DeleteOrganizationResponse,
   DeletePATResponse,
   GetOrganizationResponse,
+  GetOrgMemberResponse,
   GetPATResponse,
   GetUserResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
   ListUserOrgsResponse,
+  LoginUserRequest,
+  LoginUserResponse,
   RevokePATResponseExample,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
@@ -208,6 +211,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/organizations/${orgId}/members/${orgMemberId}`,
       method: "DELETE",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Get organization member. Only admins and owner can read full member data.
+   *
+   * @tags Organizations
+   * @name GetOrgMember
+   * @summary Get organization member.
+   * @request GET:/api/v1/organizations/{org_id}/members/{org_member_id}
+   * @secure
+   */
+  getOrgMember = (orgId: string, orgMemberId: string, params: RequestParams = {}) =>
+    this.request<GetOrgMemberResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/organizations/${orgId}/members/${orgMemberId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -411,6 +431,43 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: "POST",
       secure: true,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Logs a user in via email and password-based authentication. This endpoint is only registered if the environment variable `BASIC_AUTH_ENABLED` is set.
+   *
+   * @tags Users
+   * @name LoginUser
+   * @summary Login user
+   * @request POST:/api/v1/users/login
+   * @secure
+   */
+  loginUser = (data?: LoginUserRequest, params: RequestParams = {}) =>
+    this.request<LoginUserResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>(
+      {
+        path: `/api/v1/users/login`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      },
+    );
+  /**
+   * @description Logs a user out. This endpoint only performs an action if it's called with cookie-based authentication.
+   *
+   * @tags Users
+   * @name LogoutUser
+   * @summary Logout user
+   * @request POST:/api/v1/users/logout
+   * @secure
+   */
+  logoutUser = (params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/logout`,
+      method: "POST",
+      secure: true,
       ...params,
     });
 }

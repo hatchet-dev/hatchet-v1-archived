@@ -24,15 +24,15 @@ export const RunStatusWrapper = styled(FlexRow)`
 export const DateWrapper = styled(FlexRow)`
   min-width: 200px;
   font-size: 13px;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
 `;
 
 export const RunWrapper = styled(FlexRow)`
   ${fadeInAnimation}
   ${textFontStack}
-  border: ${theme.line.default};
-  background: ${theme.bg.shadeone};
-  color: ${theme.text.default};
+  border: ${(props) => props.theme.line.default};
+  background: ${(props) => props.theme.bg.shadeone};
+  color: ${(props) => props.theme.text.default};
   cursor: pointer;
   margin-bottom: 3px;
   border-radius: 10px;
@@ -42,7 +42,7 @@ export const RunWrapper = styled(FlexRow)`
 
   .next-icon {
     display: none;
-    color: ${theme.text.default};
+    color: ${(props) => props.theme.text.default};
   }
 
   :hover .next-icon {

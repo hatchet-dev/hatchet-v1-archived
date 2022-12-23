@@ -175,16 +175,18 @@ export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
 
+export type GetOrgMemberResponse = OrganizationMember;
+
 export type GetOrganizationResponse = Organization;
 
 export type GetPATResponse = PersonalAccessToken;
 
 export type GetUserResponse = User;
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite_link_url":"invite_link_url"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite_link_url":"invite_link_url"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
 export interface ListOrgMembersResponse {
   pagination?: PaginationResponse;
-  rows?: OrganizationMember[];
+  rows?: OrganizationMemberSanitized[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"expires":"2023-01-12T22:09:28.350Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"cli-token-1234","revoked":false},{"expires":"2023-01-12T22:09:28.350Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"cli-token-1234","revoked":false}]} */
@@ -198,6 +200,22 @@ export interface ListUserOrgsResponse {
   pagination?: PaginationResponse;
   rows?: Organization[];
 }
+
+/** @example {"password":"Securepassword123","email":"user1@gmail.com"} */
+export interface LoginUserRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the password for this user
+   * @example "Securepassword123"
+   */
+  password: string;
+}
+
+export type LoginUserResponse = User;
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {
@@ -269,6 +287,38 @@ export interface OrganizationMember {
    */
   id?: string;
   invite?: OrganizationInvite;
+  invite_accepted?: boolean;
+  organization_policies?: OrganizationPolicyMeta[];
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+  /**
+   * Public data about the user that other members of the org and team
+   * can access
+   */
+  user?: UserOrgPublishedData;
+}
+
+/**
+ * OrganizationMemberSanitized represents an organization member without a sensitive invite
+ * link exposed.
+ * @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}}
+ */
+export interface OrganizationMemberSanitized {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
   invite_accepted?: boolean;
   organization_policies?: OrganizationPolicyMeta[];
   /**
@@ -533,4 +583,17 @@ export interface CreatePersonalAccessTokenRequest {
    * @example "cli-token-1234"
    */
   display_name: string;
+}
+
+export interface LoginUserRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the password for this user
+   * @example "Securepassword123"
+   */
+  password: string;
 }

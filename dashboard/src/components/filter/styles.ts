@@ -8,11 +8,11 @@ export const FilterWrapper = styled(FlexRow)`
   max-width: fit-content;
   border-radius: 6px;
   margin: 8px 0;
+  color: ${(props) => props.theme.text.default};
 `;
 
 export const FilterText = styled.div`
   ${textFontStack}
-  color: ${theme.text.default};
   margin-left: 8px;
   font-size: 12px;
 `;

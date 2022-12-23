@@ -13,60 +13,60 @@ export const StyledTHead = styled.thead`
   position: sticky;
 
   > tr {
-    background: ${theme.bg.shadeone};
+    background: ${(props) => props.theme.bg.shadeone};
     line-height: 2.5em;
 
     > th {
       ${tableHeaderFontStack};
-      border-top: ${theme.line.default};
-      border-bottom: ${theme.line.default};
+      border-top: ${(props) => props.theme.line.default};
+      border-bottom: ${(props) => props.theme.line.default};
     }
   }
 
   > tr:first-child {
     > th:first-child {
       border-top-left-radius: 6px;
-      border-left: ${theme.line.default};
+      border-left: ${(props) => props.theme.line.default};
     }
 
     > th:last-child {
       border-top-right-radius: 6px;
-      border-right: ${theme.line.default};
+      border-right: ${(props) => props.theme.line.default};
     }
   }
 `;
 
 export const StyledTBody = styled.tbody<{ rowHeight?: string }>`
   > tr {
-    background: ${theme.bg.shadeone};
+    background: ${(props) => props.theme.bg.shadeone};
     line-height: ${(props) => props.rowHeight || "2.5em"};
     cursor: pointer;
     :hover {
-      background: ${theme.bg.hover};
+      background: ${(props) => props.theme.bg.hover};
     }
 
     > td {
-      border-bottom: ${theme.line.default};
+      border-bottom: ${(props) => props.theme.line.default};
     }
 
     > td:first-child {
-      border-left: ${theme.line.default};
+      border-left: ${(props) => props.theme.line.default};
     }
 
     > td:last-child {
-      border-right: ${theme.line.default};
+      border-right: ${(props) => props.theme.line.default};
     }
   }
 
   > tr:last-child {
     > td:first-child {
       border-bottom-left-radius: 6px;
-      border-left: ${theme.line.default};
+      border-left: ${(props) => props.theme.line.default};
     }
 
     > td:last-child {
       border-bottom-right-radius: 6px;
-      border-right: ${theme.line.default};
+      border-right: ${(props) => props.theme.line.default};
     }
   }
 `;
@@ -74,7 +74,7 @@ export const StyledTBody = styled.tbody<{ rowHeight?: string }>`
 export const StyledTd = styled.td`
   ${textFontStack}
   font-size: 13px;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   :first-child {
     padding-left: 20px;
   }
@@ -92,7 +92,7 @@ export const StyledTh = styled.th`
   text-align: left;
   font-size: 13px;
   font-weight: 500;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   :first-child {
     padding-left: 20px;
   }

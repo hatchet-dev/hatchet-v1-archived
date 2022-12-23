@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 export const GridCard = styled.div`
   ${fadeInAnimation}
-  border: ${theme.line.default};
+  border: ${(props) => props.theme.line.default};
   align-items: center;
   user-select: none;
   border-radius: 8px;
@@ -14,11 +14,11 @@ export const GridCard = styled.div`
   padding: 3px 0px 5px;
   justify-content: center;
   cursor: pointer;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   position: relative;
-  background: ${theme.bg.shadeone};
+  background: ${(props) => props.theme.bg.shadeone};
   box-shadow: 0 4px 15px 0px #00000044;
   :hover {
-    background: ${theme.bg.hover};
+    background: ${(props) => props.theme.bg.hover};
   }
 `;

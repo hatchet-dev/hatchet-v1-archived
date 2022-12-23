@@ -8,12 +8,12 @@ export const BackArrowContainer = styled.div`
 
 export const BackArrow = styled.div`
   > i {
-    color: ${theme.text.default};
+    color: ${(props) => props.theme.text.default};
     font-size: 18px;
     margin-right: 6px;
   }
 
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   display: flex;
   align-items: center;
   font-size: 14px;

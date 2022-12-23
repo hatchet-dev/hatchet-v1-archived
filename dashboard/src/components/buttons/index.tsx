@@ -7,6 +7,7 @@ export type Props = {
   label: string;
   size?: "small" | "default";
   icon_side?: "left" | "right";
+  margin?: string;
   on_click?: () => void;
 };
 
@@ -15,10 +16,13 @@ const StandardButton: React.FC<Props> = ({
   label,
   size = "default",
   icon_side = "left",
+  margin = "0 8px",
   on_click,
 }) => {
   const children = [
-    <MaterialIcon className="material-icons">{material_icon}</MaterialIcon>,
+    <MaterialIcon key="0" className="material-icons">
+      {material_icon}
+    </MaterialIcon>,
     label,
   ];
 
@@ -29,6 +33,7 @@ const StandardButton: React.FC<Props> = ({
         has_icon={true}
         onClick={on_click}
         icon_side={icon_side}
+        margin={margin}
       >
         {icon_side == "left" ? children : children.reverse()}
       </StyledStandardButton>

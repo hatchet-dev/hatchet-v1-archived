@@ -3,8 +3,8 @@ import theme from "shared/theme";
 import styled from "styled-components";
 
 export const TopBarWrapper = styled.nav`
-  border-bottom: ${theme.line.default};
-  background-color: ${theme.bg.default};
+  border-bottom: ${(props) => props.theme.line.default};
+  background-color: ${(props) => props.theme.bg.default};
   width: 100%;
   opacity: 1;
   padding: 16px 24px;
@@ -29,9 +29,10 @@ export const ProfileContainer = styled(FlexRow)`
   border-radius: 6px;
   padding: 4px 6px;
   cursor: pointer;
+  color: ${(props) => props.theme.text.default};
 
   :hover {
-    background-color: ${theme.bg.hover};
+    background-color: ${(props) => props.theme.bg.hover};
   }
 `;
 

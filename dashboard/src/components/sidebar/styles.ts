@@ -8,8 +8,8 @@ import theme from "shared/theme";
 import styled from "styled-components";
 
 export const SidebarWrapper = styled.section`
-  border-right: ${theme.line.default};
-  background-color: ${theme.bg.default};
+  border-right: ${(props) => props.theme.line.default};
+  background-color: ${(props) => props.theme.bg.default};
   height: 100%;
   width: 230px;
   opacity: 1;
@@ -36,6 +36,6 @@ export const SidebarLink = styled.a<{ current: boolean }>`
   border-radius: 6px;
 
   :hover {
-    background-color: ${theme.bg.hover};
+    background-color: ${(props) => props.theme.bg.hover};
   }
 `;

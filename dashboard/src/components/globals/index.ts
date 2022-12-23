@@ -22,8 +22,8 @@ export const Transition = {
 };
 
 export const headerFontStack = css`
-  font-family: "${theme.font.header}", -apple-system, BlinkMacSystemFont,
-    "Helvetica", "Segoe", sans-serif;
+  font-family: "${(props) => props.theme.font.header}", -apple-system,
+    BlinkMacSystemFont, "Helvetica", "Segoe", sans-serif;
 `;
 
 export const tableHeaderFontStack = css`
@@ -41,7 +41,7 @@ export const altTextFontStack = css`
 `;
 
 export const textFontStack = css`
-  font-family: "${theme.font.text}", Arial, sans-serif;
+  font-family: "${(props) => props.theme.font.text}", Arial, sans-serif;
 `;
 
 export const monoStack = css`
@@ -56,7 +56,7 @@ export const Label = styled.label`
   font-weight: 500;
   font-size: 0.875rem;
   letter-spacing: -0.4px;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   &:not(:first-of-type) {
     margin-top: 1.5rem;
   }
@@ -67,7 +67,7 @@ export const Label = styled.label`
 
 export const H1 = styled.h1`
   ${headerFontStack};
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   font-weight: 900;
   font-size: 1.8rem;
   line-height: 1.3;
@@ -76,7 +76,7 @@ export const H1 = styled.h1`
 `;
 
 export const H2 = styled.h2`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${headerFontStack};
   font-weight: 700;
   font-size: 1.25rem;
@@ -86,7 +86,7 @@ export const H2 = styled.h2`
 `;
 
 export const H3 = styled.h3`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${headerFontStack};
   font-weight: 500;
   font-size: 1rem;
@@ -96,7 +96,7 @@ export const H3 = styled.h3`
 `;
 
 export const H4 = styled.h4`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${headerFontStack};
   font-weight: 500;
   font-size: 16px;
@@ -106,7 +106,7 @@ export const H4 = styled.h4`
 `;
 
 export const H5 = styled.h5`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${headerFontStack};
   font-weight: 500;
   font-size: 0.75rem;
@@ -116,7 +116,7 @@ export const H5 = styled.h5`
 `;
 
 export const H6 = styled.h6`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${headerFontStack};
   font-weight: 600;
   text-transform: uppercase;
@@ -127,7 +127,7 @@ export const H6 = styled.h6`
 `;
 
 export const P = styled.p`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${textFontStack};
   font-weight: 400;
   font-size: 0.875rem;
@@ -137,7 +137,7 @@ export const P = styled.p`
 `;
 
 export const Span = styled.span`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   ${textFontStack};
   font-weight: 400;
   font-size: 0.875rem;
@@ -181,7 +181,6 @@ export const Grid = styled.div`
 `;
 
 export const MaterialIcon = styled.i`
-  color: ${theme.text.default};
   font-size: 16px;
   margin: 6px 0;
 `;
@@ -192,7 +191,7 @@ export const HoverableMaterialIcon = styled(MaterialIcon)`
   border-radius: 4px;
 
   :hover {
-    background-color: ${theme.bg.hover};
+    background-color: ${(props) => props.theme.bg.hover};
   }
 `;
 

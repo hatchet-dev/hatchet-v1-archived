@@ -8,16 +8,16 @@ import theme from "shared/theme";
 import styled from "styled-components";
 
 export const StyledSelector = styled(FlexCol)`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   font-size: 12px;
-  background: ${theme.bg.shadeone};
-  border: ${theme.line.default};
+  background: ${(props) => props.theme.bg.shadeone};
+  border: ${(props) => props.theme.line.default};
   padding: 8px 10px;
   border-radius: 5px;
   cursor: pointer;
   width: fit-content;
   :hover {
-    background: ${theme.bg.hover};
+    background: ${(props) => props.theme.bg.hover};
   }
 `;
 
@@ -56,9 +56,9 @@ export const Dropdown = styled.div`
   z-index: 999;
   overflow-y: auto;
   margin-bottom: 20px;
-  background: ${theme.bg.shadeone};
+  background: ${(props) => props.theme.bg.shadeone};
   border-radius: 5px;
-  border: ${theme.line.default};
+  border: ${(props) => props.theme.line.default};
 `;
 
 export const ScrollableWrapper = styled.div`
@@ -82,10 +82,10 @@ export const StyledSelection = styled(FlexRowLeft)`
     ${altTextFontStack}
     font-size: 13px;
     margin: 0px 8px;
-    color: ${theme.text.default};
+    color: ${(props) => props.theme.text.default};
   }
 
   :hover {
-    background: ${theme.bg.hover};
+    background: ${(props) => props.theme.bg.hover};
   }
 `;

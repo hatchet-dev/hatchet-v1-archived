@@ -6,6 +6,7 @@ export const StyledStandardButton = styled(FlexRowRight)<{
   size?: "small" | "default";
   has_icon?: boolean;
   icon_side?: "left" | "right";
+  margin?: string;
 }>`
   ${tableHeaderFontStack};
   padding: ${(props) =>
@@ -18,11 +19,11 @@ export const StyledStandardButton = styled(FlexRowRight)<{
     !props.has_icon ? "" : props.icon_side == "left" ? "20px" : "16px"};
   padding-left: ${(props) =>
     !props.has_icon ? "" : props.icon_side == "right" ? "20px" : "16px"};
-  background-color: ${theme.bg.buttonone};
+  background-color: ${(props) => props.theme.bg.buttonone};
   color: white;
   border-radius: 4px;
   font-size: 13px;
-  margin: 0 8px;
+  margin: ${(props) => (props.margin ? props.margin : "0 8px")};
   cursor: pointer;
   font-weight: ${(props) => (props.size == "small" ? "400" : "500")};
   gap: 8px;

@@ -1,18 +1,25 @@
+import { Span } from "components/globals";
 import theme from "shared/theme";
 import styled from "styled-components";
 
-export const StyledInput = styled.input`
+export const StyledInput = styled.input<{ width?: string }>`
   outline: none;
   border: none;
   font-size: 13px;
-  width: 250px;
+  width: ${(props) => (props.width ? props.width : "250px")};
   padding: 10px 12px;
-  background: ${theme.bg.shadeone};
-  border: ${theme.line.default};
+  background: ${(props) => props.theme.bg.shadeone};
+  border: ${(props) => props.theme.line.default};
   border-radius: 4px;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
 
   ::placeholder {
-    color: ${theme.text.inactive};
+    color: ${(props) => props.theme.text.inactive};
   }
+`;
+
+export const SmallSpan = styled(Span)`
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
 `;

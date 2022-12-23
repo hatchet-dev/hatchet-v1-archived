@@ -4,10 +4,21 @@ import { StyledSectionArea } from "./styles";
 
 export type Props = {
   width?: number;
+  height?: number;
+  background?: string;
 };
 
-const SectionArea: React.FC<Props> = ({ width, children }) => {
-  return <StyledSectionArea width={width}>{children}</StyledSectionArea>;
+const SectionArea: React.FC<Props> = ({
+  width,
+  height,
+  background,
+  children,
+}) => {
+  return (
+    <StyledSectionArea width={width} height={height} background={background}>
+      {children}
+    </StyledSectionArea>
+  );
 };
 
 export default SectionArea;

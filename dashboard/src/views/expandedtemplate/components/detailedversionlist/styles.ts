@@ -7,7 +7,7 @@ export const VersionListWrapper = styled(FlexCol)`
 `;
 
 export const VersionWrapper = styled(FlexRow)`
-  border: ${theme.line.default};
+  border: ${(props) => props.theme.line.default};
   border-radius: 6px;
   margin: 6px 0;
   height: 60px;
@@ -16,7 +16,7 @@ export const VersionWrapper = styled(FlexRow)`
 export const VersionMetadataContainer = styled(FlexRow)``;
 
 export const Version = styled(FlexRowLeft)<{ selected?: boolean }>`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   padding: 2px 4px 0 4px;
   margin: 0 10px;
   min-width: 80px;
@@ -33,7 +33,7 @@ export const Version = styled(FlexRowLeft)<{ selected?: boolean }>`
   }
 
   :hover {
-    border-bottom: ${theme.line.selected};
+    border-bottom: ${(props) => props.theme.line.selected};
     margin-bottom: -1px;
   }
 
@@ -44,5 +44,5 @@ export const Version = styled(FlexRowLeft)<{ selected?: boolean }>`
 
 export const DeployedInfo = styled.div`
   font-size: 13px;
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
 `;

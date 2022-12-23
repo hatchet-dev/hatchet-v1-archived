@@ -10,14 +10,14 @@ export const BreadcrumbWrapper = styled(FlexRow)`
 export const Breadcrumb = styled.a<{
   clickable: boolean;
 }>`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   font-weight: ${(props) => (props.clickable ? "700" : "500")};
   font-size: 11px;
   cursor: ${(props) => (props.clickable ? "pointer" : "default")};
 `;
 
 export const BreadcrumbArrow = styled(MaterialIcon)`
-  color: ${theme.text.default};
+  color: ${(props) => props.theme.text.default};
   margin: 0 12px;
   font-size: 14px;
 `;
