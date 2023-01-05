@@ -3,10 +3,17 @@ import { useHistory } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 
-const AuthChecker: React.FunctionComponent = ({ children }) => {
+type Props = {
+  check_authenticated?: boolean;
+};
+
+const AuthChecker: React.FunctionComponent<Props> = ({
+  check_authenticated = true,
+  children,
+}) => {
   let history = useHistory();
 
-  const { status, data, error, isFetching } = useQuery({
+  const { error, isLoading, isInitialLoading } = useQuery({
     queryKey: ["current_user"],
     queryFn: async () => {
       const res = await api.getCurrentUser();
@@ -14,11 +21,20 @@ const AuthChecker: React.FunctionComponent = ({ children }) => {
     },
     // Requery every 10 seconds for the current user
     refetchInterval: 10000,
-    retry: 2,
+    retry: false,
   });
 
-  if (error) {
-    history.push("/login");
+  // TODO(abelanger5): style loading
+  // if (isInitialLoading) {
+  //   return <div>Loading...</div>;
+  // }
+
+  if (!isLoading) {
+    if (check_authenticated && error) {
+      history.push("/login");
+    } else if (!check_authenticated && !error) {
+      history.push("/");
+    }
   }
 
   return <>{children}</>;

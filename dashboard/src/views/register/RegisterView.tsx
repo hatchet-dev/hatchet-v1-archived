@@ -1,11 +1,14 @@
 import {
+  FlexCol,
   FlexRow,
   FlexRowRight,
   H2,
   HorizontalSpacer,
+  SmallSpan,
+  StyledSmallLink,
 } from "components/globals";
 import TextInput from "components/textinput";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
@@ -14,39 +17,60 @@ import SectionArea from "components/sectionarea";
 import theme, { invertedTheme } from "shared/theme";
 import styled, { css, ThemeProvider } from "styled-components";
 import { AppWrapper } from "components/appwrapper";
+import ErrorBar from "components/errorbar";
 
 const RegisterView: React.FunctionComponent = () => {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
   const history = useHistory();
 
   const { mutate, isLoading } = useMutation(api.createUser, {
     onSuccess: (data) => {
-      console.log(data);
       history.push("/");
     },
     onError: (err: any) => {
-      console.log("ERR", err.error);
-    },
-    onSettled: () => {
-      //   queryClient.invalidateQueries('login_user');
+      if (!err.error.errors || err.error.errors.length == 0) {
+        setErr("An unexpected error occurred. Please try again.");
+      }
+
+      setErr(err.error.errors[0].description);
     },
   });
 
+  const handleKeyPress = useCallback(
+    (e: any) => {
+      e.key === "Enter" && submit();
+    },
+    [displayName, email, password]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   const submit = () => {
-    mutate({
-      display_name: displayName,
-      email: email,
-      password: password,
-    });
+    setErr("");
+
+    if (displayName != "" && email != "" && password != "") {
+      mutate({
+        display_name: displayName,
+        email: email,
+        password: password,
+      });
+    }
   };
 
   return (
-    <ThemeProvider theme={invertedTheme}>
-      <AppWrapper>
-        <FlexRow>
-          <SectionArea width={400} background={"white"}>
+    <AppWrapper>
+      <FlexRow>
+        <FlexCol>
+          <SectionArea width={400}>
             <H2>Create an Account</H2>
             <HorizontalSpacer
               spacepixels={10}
@@ -76,7 +100,7 @@ const RegisterView: React.FunctionComponent = () => {
             />
             <HorizontalSpacer spacepixels={20} />
             <TextInput
-              placeholder=""
+              placeholder="Password"
               label="Your password"
               type="password"
               width="100%"
@@ -84,6 +108,8 @@ const RegisterView: React.FunctionComponent = () => {
                 setPassword(val);
               }}
             />
+            <HorizontalSpacer spacepixels={30} />
+            {err && <ErrorBar text={err} />}
             <HorizontalSpacer spacepixels={30} />
             <FlexRowRight>
               <StandardButton
@@ -94,12 +120,21 @@ const RegisterView: React.FunctionComponent = () => {
                   submit();
                 }}
                 margin={"0"}
+                disabled={displayName == "" || email == "" || password == ""}
+                is_loading={isLoading}
               />
             </FlexRowRight>
           </SectionArea>
-        </FlexRow>
-      </AppWrapper>
-    </ThemeProvider>
+          <HorizontalSpacer spacepixels={20} />
+          <FlexRowRight>
+            <SmallSpan>
+              Already have an account?{" "}
+              <StyledSmallLink to="/login">Sign in here.</StyledSmallLink>
+            </SmallSpan>
+          </FlexRowRight>
+        </FlexCol>
+      </FlexRow>
+    </AppWrapper>
   );
 };
 

@@ -263,6 +263,60 @@ func GetUserRoutes(
 		Router:   r,
 	})
 
+	// POST /api/v1/users/current -> users.UserUpdateCurrentHandler
+	// swagger:operation POST /api/v1/users/current updateCurrentUser
+	//
+	// ### Description
+	//
+	// Updates the current user.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Update the current user.
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: UpdateUserRequest
+	//     description: The user parameters to update
+	//     schema:
+	//       $ref: '#/definitions/UpdateUserRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully updated the user.
+	//     schema:
+	//       $ref: '#/definitions/UpdateUserResponse'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	updateUserCurrentEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	updateUserCurrentHandler := users.NewUserUpdateCurrentHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: updateUserCurrentEndpoint,
+		Handler:  updateUserCurrentHandler,
+		Router:   r,
+	})
+
 	// DELETE /api/v1/users/current -> users.UserDeleteCurrentHandler
 	// swagger:operation DELETE /api/v1/users/current deleteCurrentUser
 	//

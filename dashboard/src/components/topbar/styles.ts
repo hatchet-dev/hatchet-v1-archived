@@ -1,5 +1,4 @@
-import { FlexCol, FlexRow, Span } from "components/globals";
-import theme from "shared/theme";
+import { FlexCol, Span } from "components/globals";
 import styled from "styled-components";
 
 export const TopBarWrapper = styled.nav`
@@ -21,21 +20,4 @@ export const TopBarProductName = styled(Span)`
   font-family: "Ubuntu", sans-serif;
   font-size: 20px;
   letter-spacing: 1px;
-`;
-
-export const ProfileContainer = styled(FlexRow)`
-  max-width: fit-content;
-  margin-right: 10px;
-  border-radius: 6px;
-  padding: 4px 6px;
-  cursor: pointer;
-  color: ${(props) => props.theme.text.default};
-
-  :hover {
-    background-color: ${(props) => props.theme.bg.hover};
-  }
-`;
-
-export const ProfileName = styled(Span)`
-  padding: 0 6px;
 `;

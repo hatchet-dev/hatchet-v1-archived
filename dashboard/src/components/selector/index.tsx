@@ -21,6 +21,7 @@ export type Props = {
   placeholder_icon?: string;
   placeholder_material_icon?: string;
   options: Selection[];
+  option_alignment?: "left" | "right";
   select?: (option: Selection) => void;
 };
 
@@ -29,6 +30,7 @@ const Selector: React.FC<Props> = ({
   placeholder_icon,
   placeholder_material_icon,
   options,
+  option_alignment = "left",
   select,
 }) => {
   const [selection, setSelection] = useState<Selection>();
@@ -65,7 +67,7 @@ const Selector: React.FC<Props> = ({
   const renderDropdown = () => {
     if (expanded) {
       return (
-        <DropdownWrapper>
+        <DropdownWrapper align={option_alignment}>
           <Dropdown ref={wrapperRef}>
             {options.length > 0 ? (
               <ScrollableWrapper>

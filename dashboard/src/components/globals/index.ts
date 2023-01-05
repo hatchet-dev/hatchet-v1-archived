@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import theme from "shared/theme";
 import styled, { css } from "styled-components";
 
@@ -144,6 +145,25 @@ export const Span = styled.span`
   line-height: 1.4;
   margin: 0;
   padding: 0;
+`;
+
+export const SmallSpan = styled(Span)`
+  font-size: 0.8rem;
+`;
+
+export const StyledLink = styled(Link)`
+  color: ${(props) => props.theme.text.link};
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+`;
+
+export const StyledSmallLink = styled(StyledLink)`
+  font-size: 0.8rem;
 `;
 
 export const Relative = styled.div`

@@ -35,6 +35,7 @@ import {
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
+  UpdateUserResponse,
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
@@ -299,6 +300,25 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/users/current`,
       method: "GET",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Updates the current user.
+   *
+   * @tags Users
+   * @name UpdateCurrentUser
+   * @summary Update the current user.
+   * @request POST:/api/v1/users/current
+   * @secure
+   */
+  updateCurrentUser = (data?: UpdateOrganizationRequest, params: RequestParams = {}) =>
+    this.request<UpdateUserResponse, APIErrorForbiddenExample>({
+      path: `/api/v1/users/current`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });

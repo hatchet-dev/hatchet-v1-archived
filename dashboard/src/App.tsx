@@ -11,10 +11,10 @@ import theme, { GlobalStyle } from "shared/theme";
 import TemplatesView from "views/templates/TemplatesView";
 import ModulesView from "views/modules/ModulesView";
 import TopBar from "components/topbar";
-import SideBar from "components/sidebar";
+import SideBar, { SidebarLink } from "components/sidebar";
 import { ViewWrapper } from "components/viewwrapper";
 import EnvironmentsView from "views/environments/EnvironmentsView";
-import HomeView from "views/homeview/HomeView";
+import HomeView from "views/home/HomeView";
 import MonitoringView from "views/monitoring/MonitoringView";
 import LinkModuleView from "views/linkmodule/LinkModuleView";
 import ExpandedModuleView from "views/expandedmodule/ExpandedModuleView";
@@ -29,6 +29,7 @@ import RegisterView from "views/register/RegisterView";
 import AuthChecker from "shared/auth/AuthChecker";
 import api from "shared/api";
 import { ThemeProvider } from "styled-components";
+import UserSettingsView from "views/usersettings/UserSettingsView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -49,50 +50,99 @@ const App: React.FunctionComponent = () => {
 
 export default App;
 
+const DashboardSidebarLinks: SidebarLink[] = [
+  {
+    name: "Home",
+    href: "/home",
+  },
+  {
+    name: "Modules",
+    href: "/modules",
+  },
+  {
+    name: "Monitoring",
+    href: "/monitoring",
+  },
+  {
+    name: "Templates",
+    href: "/templates",
+  },
+  {
+    name: "Integrations",
+    href: "/integrations",
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+  },
+];
+
+const UserSidebarLinks: SidebarLink[] = [
+  {
+    name: "Profile",
+    href: "/user/settings",
+  },
+  {
+    name: "Personal Access Tokens",
+    href: "/user/settings/pats",
+  },
+];
+
 const AppContents: React.FunctionComponent = () => {
-  const history = useHistory();
-  const location = useLocation();
-
-  const authCheckEnabled =
-    location.pathname != "/login" && location.pathname != "/register";
-
-  const { status, data, error, isFetching } = useQuery({
-    queryKey: ["initial_current_user"],
-    queryFn: async () => {
-      const res = await api.getCurrentUser();
-      return res;
-    },
-    retry: false,
-    enabled: authCheckEnabled,
-  });
-
-  // TODO(abelanger5): style/case on loading
-  if (isFetching) {
-    console.log("IS FETCHING");
-    return <div>Loading...</div>;
-  }
-
-  if (authCheckEnabled && error) {
-    history.push("/login");
-  }
-
   const renderAppContents = () => {
     return (
       <>
         <Switch>
-          <Route path="/login" render={() => <LoginView />}></Route>
-          <Route path="/register" render={() => <RegisterView />}></Route>
+          <Route
+            path="/login"
+            render={() => (
+              <AuthChecker check_authenticated={false}>
+                <LoginView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/register"
+            render={() => (
+              <AuthChecker check_authenticated={false}>
+                <RegisterView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/user/*"
+            render={() => renderUserSettingsContents()}
+          ></Route>
           <Route path="/" render={() => renderHomeContents()}></Route>
         </Switch>
       </>
     );
   };
 
+  const renderUserSettingsContents = () => {
+    return (
+      <AuthChecker check_authenticated={true}>
+        <TopBar />
+        <SideBar links={UserSidebarLinks} />
+        <ViewWrapper>
+          <>
+            <Switch>
+              <Route
+                path="/user/settings"
+                render={() => <UserSettingsView />}
+              ></Route>
+            </Switch>
+          </>
+        </ViewWrapper>
+      </AuthChecker>
+    );
+  };
+
   const renderHomeContents = () => {
     return (
-      <AuthChecker>
+      <AuthChecker check_authenticated={true}>
         <TopBar />
-        <SideBar />
+        <SideBar links={DashboardSidebarLinks} />
         <ViewWrapper>
           <>
             <Switch>

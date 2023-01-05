@@ -484,6 +484,16 @@ export interface UpdateOrgRequest {
 
 export type UpdateOrgResponse = Organization;
 
+export interface UpdateUserRequest {
+  /**
+   * the display name for this user
+   * @example "User 1"
+   */
+  display_name: string;
+}
+
+export type UpdateUserResponse = User;
+
 /** @example {"email_verified":false,"updated_at":"2022-12-13T20:06:48.888Z","icon":"https://avatars.githubusercontent.com/u/25448214?v=4","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"User 1","email":"user1@gmail.com"} */
 export interface User {
   /**

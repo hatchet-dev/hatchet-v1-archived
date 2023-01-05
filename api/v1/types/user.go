@@ -85,3 +85,15 @@ type UserOrgPublishedData struct {
 	// example: user1@gmail.com
 	Email string `json:"email" form:"required,max=255,email"`
 }
+
+// swagger:model
+type UpdateUserRequest struct {
+	// the display name for this user
+	//
+	// required: true
+	// example: User 1
+	DisplayName string `json:"display_name" form:"required,max=255"`
+}
+
+// swagger:model
+type UpdateUserResponse User

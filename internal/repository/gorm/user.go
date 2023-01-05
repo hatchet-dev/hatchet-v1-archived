@@ -47,6 +47,15 @@ func (repo *UserRepository) ReadUserByEmail(email string) (*models.User, reposit
 	return user, nil
 }
 
+// UpdateUser updates a user in the database
+func (repo *UserRepository) UpdateUser(user *models.User) (*models.User, repository.RepositoryError) {
+	if err := repo.db.Save(user).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return user, nil
+}
+
 // DeleteUser deletes a single user using their unique id
 func (repo *UserRepository) DeleteUser(user *models.User) (*models.User, repository.RepositoryError) {
 	del := repo.db.Delete(&user)

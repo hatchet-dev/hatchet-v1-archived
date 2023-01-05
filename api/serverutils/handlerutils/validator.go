@@ -80,15 +80,26 @@ func (v *DefaultValidator) Validate(s interface{}) apierrors.RequestError {
 		}
 	}
 
-	return NewErrFailedRequestValidation(strings.Join(errorStrs, ","))
+	return NewErrFailedRequestValidation(errorStrs...)
 }
 
-func NewErrFailedRequestValidation(valError string) apierrors.RequestError {
+func NewErrFailedRequestValidation(valErrors ...string) apierrors.RequestError {
+	res := make([]types.APIError, 0)
+
+	for _, valErr := range valErrors {
+		res = append(res, types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: valErr,
+		})
+	}
+
 	// return 400 error since a validation error indicates an issue with the user request
-	return apierrors.NewErrPassThroughToClient(types.APIError{
-		Code:        types.ErrCodeBadRequest,
-		Description: valError,
-	}, http.StatusBadRequest)
+	return apierrors.NewErrPassThroughToClientMulti(
+		types.APIErrors{
+			Errors: res,
+		},
+		http.StatusBadRequest,
+	)
 }
 
 // ValidationErrObject represents an error referencing a specific field in a struct that

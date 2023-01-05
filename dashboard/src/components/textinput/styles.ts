@@ -2,7 +2,7 @@ import { Span } from "components/globals";
 import theme from "shared/theme";
 import styled from "styled-components";
 
-export const StyledInput = styled.input<{ width?: string }>`
+export const StyledInput = styled.input<{ width?: string; disabled?: boolean }>`
   outline: none;
   border: none;
   font-size: 13px;
@@ -11,7 +11,8 @@ export const StyledInput = styled.input<{ width?: string }>`
   background: ${(props) => props.theme.bg.shadeone};
   border: ${(props) => props.theme.line.default};
   border-radius: 4px;
-  color: ${(props) => props.theme.text.default};
+  color: ${(props) =>
+    props.disabled ? props.theme.text.inactive : props.theme.text.default};
 
   ::placeholder {
     color: ${(props) => props.theme.text.inactive};

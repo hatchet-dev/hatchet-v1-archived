@@ -3,6 +3,7 @@ import {
   FlexRow,
   altTextFontStack,
   FlexRowLeft,
+  FlexRowRight,
 } from "components/globals";
 import theme from "shared/theme";
 import styled from "styled-components";
@@ -42,7 +43,9 @@ export const SelectorPlaceholder = styled(FlexRow)`
   }
 `;
 
-export const DropdownWrapper = styled.div`
+export const DropdownWrapper = styled(FlexRow)<{ align: "right" | "left" }>`
+  justify-content: ${(props) =>
+    props.align == "right" ? "flex-end" : "flex-start"};
   position: absolute;
   width: 100%;
   right: 0;
@@ -51,7 +54,7 @@ export const DropdownWrapper = styled.div`
 `;
 
 export const Dropdown = styled.div`
-  width: 260px;
+  width: fit-content;
   border-radius: 3px;
   z-index: 999;
   overflow-y: auto;
@@ -76,6 +79,7 @@ export const StyledSelection = styled(FlexRowLeft)`
     width: 16px;
     height: 16px;
     margin: 0px 8px 0px 0px;
+    color: ${(props) => props.theme.text.default};
   }
 
   > div {

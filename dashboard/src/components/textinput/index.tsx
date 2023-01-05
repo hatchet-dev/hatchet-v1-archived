@@ -10,20 +10,24 @@ export type Selection = {
 
 export type Props = {
   placeholder: string;
+  initial_value?: string;
   label?: string;
   type?: "text" | "password";
   width?: string;
+  disabled?: boolean;
   on_change?: (val: string) => void;
 };
 
 const TextInput: React.FC<Props> = ({
   placeholder,
+  initial_value = "",
   label,
   type = "text",
   width = "250px",
+  disabled = false,
   on_change,
 }) => {
-  const [text, setText] = useState<string>("");
+  const [text, setText] = useState<string>(initial_value);
 
   const input = (
     <StyledInput
@@ -35,6 +39,7 @@ const TextInput: React.FC<Props> = ({
         setText(e.target.value);
         on_change && on_change(e.target.value);
       }}
+      disabled={disabled}
     />
   );
 
