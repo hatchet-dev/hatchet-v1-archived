@@ -179,7 +179,7 @@ func TestValidation(t *testing.T) {
 		)
 
 		if err != nil && test.expErr {
-			readableStrArr := strings.Split(err.Error(), ",")
+			readableStrArr := strings.Split(err.Error(), ", ")
 			expReadableStrArr := test.expErrStrings
 
 			assert.ElementsMatch(
