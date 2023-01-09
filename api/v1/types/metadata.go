@@ -63,4 +63,7 @@ type APIResourceMeta struct {
 	ID string `json:"id"`
 }
 
+// swagger:model
+type EmptyResponse struct{}
+
 type UsageMetric string

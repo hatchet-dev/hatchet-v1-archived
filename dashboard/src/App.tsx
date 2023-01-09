@@ -30,6 +30,9 @@ import AuthChecker from "shared/auth/AuthChecker";
 import api from "shared/api";
 import { ThemeProvider } from "styled-components";
 import UserSettingsView from "views/usersettings/UserSettingsView";
+import CreateOrganizationView from "views/createorganization/CreateOrganizationView";
+import Populator from "shared/populator/Populator";
+import UserPATsView from "views/userpatsview/UserPATsView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -113,6 +116,10 @@ const AppContents: React.FunctionComponent = () => {
             path="/user/*"
             render={() => renderUserSettingsContents()}
           ></Route>
+          <Route
+            path="/organizations/create"
+            render={() => renderOnboardingContents()}
+          ></Route>
           <Route path="/" render={() => renderHomeContents()}></Route>
         </Switch>
       </>
@@ -128,6 +135,10 @@ const AppContents: React.FunctionComponent = () => {
           <>
             <Switch>
               <Route
+                path="/user/settings/pats"
+                render={() => <UserPATsView />}
+              ></Route>
+              <Route
                 path="/user/settings"
                 render={() => <UserSettingsView />}
               ></Route>
@@ -138,41 +149,66 @@ const AppContents: React.FunctionComponent = () => {
     );
   };
 
-  const renderHomeContents = () => {
+  const renderOnboardingContents = () => {
     return (
       <AuthChecker check_authenticated={true}>
         <TopBar />
-        <SideBar links={DashboardSidebarLinks} />
         <ViewWrapper>
           <>
             <Switch>
               <Route
-                path="/monitoring"
-                render={() => <MonitoringView />}
+                path="/organizations/create"
+                render={() => <CreateOrganizationView />}
               ></Route>
-              <Route
-                path="/modules/link/:step"
-                render={() => <LinkModuleView />}
-              ></Route>
-              <Route
-                path="/modules/:module"
-                render={() => <ExpandedModuleView />}
-              ></Route>
-              <Route path="/modules" render={() => <ModulesView />}></Route>
-              <Route
-                path="/templates/:template"
-                render={() => <ExpandedTemplateView />}
-              ></Route>
-              <Route path="/templates" render={() => <TemplatesView />}></Route>
-              <Route
-                path="/environments"
-                render={() => <EnvironmentsView />}
-              ></Route>
-              <Route path="/home" render={() => <HomeView />}></Route>
-              <Route path="/" render={() => <HomeView />}></Route>
             </Switch>
           </>
         </ViewWrapper>
+      </AuthChecker>
+    );
+  };
+
+  const renderHomeContents = () => {
+    console.log("RENDERING HOME CONTENTS ");
+
+    return (
+      <AuthChecker check_authenticated={true}>
+        <TopBar />
+        <Populator organization>
+          <SideBar links={DashboardSidebarLinks} />
+          <ViewWrapper>
+            <>
+              <Switch>
+                <Route
+                  path="/monitoring"
+                  render={() => <MonitoringView />}
+                ></Route>
+                <Route
+                  path="/modules/link/:step"
+                  render={() => <LinkModuleView />}
+                ></Route>
+                <Route
+                  path="/modules/:module"
+                  render={() => <ExpandedModuleView />}
+                ></Route>
+                <Route path="/modules" render={() => <ModulesView />}></Route>
+                <Route
+                  path="/templates/:template"
+                  render={() => <ExpandedTemplateView />}
+                ></Route>
+                <Route
+                  path="/templates"
+                  render={() => <TemplatesView />}
+                ></Route>
+                <Route
+                  path="/environments"
+                  render={() => <EnvironmentsView />}
+                ></Route>
+                <Route path="/home" render={() => <HomeView />}></Route>
+                <Route path="/" render={() => <HomeView />}></Route>
+              </Switch>
+            </>
+          </ViewWrapper>
+        </Populator>
       </AuthChecker>
     );
   };

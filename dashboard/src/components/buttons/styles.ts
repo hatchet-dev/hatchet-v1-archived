@@ -29,6 +29,7 @@ export const StyledStandardButton = styled(FlexRowRight)<{
   cursor: ${(props) => (props.disabled ? "default" : "pointer")};
   font-weight: ${(props) => (props.size == "small" ? "400" : "500")};
   gap: 8px;
+  white-space: nowrap;
 
   > i {
     font-weight: 700;

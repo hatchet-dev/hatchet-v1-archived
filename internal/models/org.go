@@ -106,6 +106,12 @@ func (o *OrganizationMember) ToAPITypeSanitized() *types.OrganizationMemberSanit
 
 	res.OrgPolicies = policies
 
+	invite := &o.InviteLink
+
+	if invite != nil {
+		res.Invite = *invite.ToAPITypeSanitized()
+	}
+
 	return res
 }
 
@@ -186,9 +192,18 @@ func (o *OrganizationInviteLink) ToAPIType(key *[32]byte) *types.OrganizationInv
 	o.Decrypt(key)
 
 	return &types.OrganizationInvite{
-		InviteLinkURL: string(o.InviteLinkURL),
-		InviteeEmail:  o.InviteeEmail,
-		Expires:       o.Expires,
+		APIResourceMeta: o.ToAPITypeMetadata(),
+		InviteLinkURL:   string(o.InviteLinkURL),
+		InviteeEmail:    o.InviteeEmail,
+		Expires:         o.Expires,
+	}
+}
+
+func (o *OrganizationInviteLink) ToAPITypeSanitized() *types.OrganizationInviteSanitized {
+	return &types.OrganizationInviteSanitized{
+		APIResourceMeta: o.ToAPITypeMetadata(),
+		InviteeEmail:    o.InviteeEmail,
+		Expires:         o.Expires,
 	}
 }
 

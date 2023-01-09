@@ -60,6 +60,7 @@ const TopBar: React.FunctionComponent = () => {
           options={options}
           select={onSelect}
           option_alignment="right"
+          fill_selection={false}
         />
       </FlexRow>
     </TopBarWrapper>

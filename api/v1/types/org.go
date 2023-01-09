@@ -29,9 +29,19 @@ type OrganizationMemberSanitized struct {
 
 	User UserOrgPublishedData `json:"user"`
 
-	InviteAccepted bool `json:"invite_accepted"`
+	InviteAccepted bool                        `json:"invite_accepted"`
+	Invite         OrganizationInviteSanitized `json:"invite"`
 
 	OrgPolicies []OrganizationPolicyMeta `json:"organization_policies"`
+}
+
+// swagger:model
+type OrganizationInviteSanitized struct {
+	*APIResourceMeta
+
+	InviteeEmail string `json:"invitee_email"`
+
+	Expires *time.Time `json:"expires"`
 }
 
 // swagger:model
@@ -114,8 +124,8 @@ type CreateOrgMemberInviteRequest struct {
 
 // swagger:model
 type OrganizationPolicyReference struct {
-	Name string `form:"omitempty,oneof=admin member"`
-	ID   string `form:"omitempty,uuid"`
+	Name string `json:"name" form:"omitempty,oneof=admin member"`
+	ID   string `json:"id" form:"omitempty,uuid"`
 }
 
 // swagger:model

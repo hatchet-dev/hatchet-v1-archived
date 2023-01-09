@@ -11,7 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization
+// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization leaveOrg
 type orgPathParams struct {
 	// The org id
 	// in: path
@@ -262,6 +262,11 @@ func GetOrganizationRoutes(
 	// - Organizations
 	// parameters:
 	//   - name: org_id
+	//   - in: body
+	//     name: CreateOrgMemberInviteRequest
+	//     description: The org member to create
+	//     schema:
+	//       $ref: '#/definitions/CreateOrgMemberInviteRequest'
 	// responses:
 	//   '201':
 	//     description: Successfully created the invite.
@@ -325,6 +330,8 @@ func GetOrganizationRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully accepted the invite.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:
@@ -494,6 +501,8 @@ func GetOrganizationRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully changed organization owner.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:
@@ -587,6 +596,62 @@ func GetOrganizationRoutes(
 		Router:   r,
 	})
 
+	// POST /api/v1/organizations/{org_id}/leave -> orgs.NewOrgLeaveHandler
+	// swagger:operation POST /api/v1/organizations/{org_id}/leave leaveOrg
+	//
+	// ### Description
+	//
+	// Leave an organization. The currently authenticated user will leave this organization.
+	// Owners cannot leave an organization without changing the owner first.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Leave an organization
+	// tags:
+	// - Organizations
+	// parameters:
+	//   - name: org_id
+	// responses:
+	//   '202':
+	//     description: Successfully triggered organization member removal.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	leaveOrgEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/organizations/{%s}/leave", string(types.URLParamOrgID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.OrgScope,
+			},
+		},
+	)
+
+	leaveOrgHandler := orgs.NewOrgLeaveHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: leaveOrgEndpoint,
+		Handler:  leaveOrgHandler,
+		Router:   r,
+	})
+
 	// DELETE /api/v1/organizations/{org_id}/members/{org_member_id} -> orgs.NewOrgDeleteMemberHandler
 	// swagger:operation DELETE /api/v1/organizations/{org_id}/members/{org_member_id} deleteOrgMember
 	//
@@ -607,6 +672,8 @@ func GetOrganizationRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully triggered organization member deletion.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:

@@ -15,6 +15,7 @@ import {
   APIErrorNotSupportedExample,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
+  CreateOrgMemberInviteRequest,
   CreateOrgMemberInviteResponse,
   CreatePATResponse,
   CreatePersonalAccessTokenRequest,
@@ -22,6 +23,7 @@ import {
   CreateUserResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
+  EmptyResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -50,10 +52,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   acceptOrgMemberInvite = (orgMemberInviteId: string, orgMemberInviteTok: string, params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
       path: `/api/v1/invites/${orgMemberInviteId}/${orgMemberInviteTok}`,
       method: "POST",
       secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -144,10 +147,28 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   updateOrgOwner = (orgId: string, params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/change_owner`,
       method: "POST",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Leave an organization. The currently authenticated user will leave this organization. Owners cannot leave an organization without changing the owner first.
+   *
+   * @tags Organizations
+   * @name LeaveOrg
+   * @summary Leave an organization
+   * @request POST:/api/v1/organizations/{org_id}/leave
+   * @secure
+   */
+  leaveOrg = (orgId: string, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/organizations/${orgId}/leave`,
+      method: "POST",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -187,14 +208,16 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/v1/organizations/{org_id}/members
    * @secure
    */
-  createOrgMemberInvite = (orgId: string, params: RequestParams = {}) =>
+  createOrgMemberInvite = (orgId: string, data?: CreateOrgMemberInviteRequest, params: RequestParams = {}) =>
     this.request<
       CreateOrgMemberInviteResponse,
       APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample
     >({
       path: `/api/v1/organizations/${orgId}/members`,
       method: "POST",
+      body: data,
       secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });
@@ -208,10 +231,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   deleteOrgMember = (orgId: string, orgMemberId: string, params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/members/${orgMemberId}`,
       method: "DELETE",
       secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -280,10 +304,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   deleteCurrentUser = (params: RequestParams = {}) =>
-    this.request<void, APIErrorForbiddenExample>({
+    this.request<EmptyResponse, APIErrorForbiddenExample>({
       path: `/api/v1/users/current`,
       method: "DELETE",
       secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -484,10 +509,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   logoutUser = (params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/users/logout`,
       method: "POST",
       secure: true,
+      format: "json",
       ...params,
     });
 }

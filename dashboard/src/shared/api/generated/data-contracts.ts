@@ -109,6 +109,7 @@ export interface APIResourceMeta {
   updated_at?: string;
 }
 
+/** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
   /**
    * the email address to use for the invite
@@ -175,6 +176,8 @@ export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
 
+export type EmptyResponse = object;
+
 export type GetOrgMemberResponse = OrganizationMember;
 
 export type GetOrganizationResponse = Organization;
@@ -183,7 +186,7 @@ export type GetPATResponse = PersonalAccessToken;
 
 export type GetUserResponse = User;
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
 export interface ListOrgMembersResponse {
   pagination?: PaginationResponse;
   rows?: OrganizationMemberSanitized[];
@@ -273,6 +276,30 @@ export interface OrganizationInvite {
   updated_at?: string;
 }
 
+/** @example {"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+export interface OrganizationInviteSanitized {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /** @format date-time */
+  expires?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  invitee_email?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
 /** @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite_link_url":"invite_link_url"},"user":{"display_name":"User 1","email":"user1@gmail.com"}} */
 export interface OrganizationMember {
   /**
@@ -305,7 +332,7 @@ export interface OrganizationMember {
 /**
  * OrganizationMemberSanitized represents an organization member without a sensitive invite
  * link exposed.
- * @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","user":{"display_name":"User 1","email":"user1@gmail.com"}}
+ * @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}
  */
 export interface OrganizationMemberSanitized {
   /**
@@ -319,6 +346,7 @@ export interface OrganizationMemberSanitized {
    * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
    */
   id?: string;
+  invite?: OrganizationInviteSanitized;
   invite_accepted?: boolean;
   organization_policies?: OrganizationPolicyMeta[];
   /**
@@ -356,9 +384,10 @@ export interface OrganizationPolicyMeta {
   updated_at?: string;
 }
 
+/** @example {"name":"name","id":"id"} */
 export interface OrganizationPolicyReference {
-  ID?: string;
-  Name?: string;
+  id?: string;
+  name?: string;
 }
 
 /** @example {"next_page":3,"num_pages":10,"current_page":2} */
@@ -567,6 +596,16 @@ export interface UpdateOrganizationRequest {
    * @example "User 1"
    */
   display_name: string;
+}
+
+export interface CreateOrgMemberInviteRequest {
+  /**
+   * the email address to use for the invite
+   * @example "user1@gmail.com"
+   */
+  invitee_email: string;
+  /** the set of policies for this user */
+  invitee_policies: OrganizationPolicyReference[];
 }
 
 export interface CreateUserRequest {

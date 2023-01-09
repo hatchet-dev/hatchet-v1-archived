@@ -1,12 +1,15 @@
-import { MaterialIcon, Relative, Span } from "components/globals";
+import { FlexRowLeft, MaterialIcon, Relative, Span } from "components/globals";
 import React, { useEffect, useRef, useState } from "react";
+import usePrevious from "shared/hooks/useprevious";
 import {
   Dropdown,
   DropdownWrapper,
+  InnerSelectorPlaceholder,
   ScrollableWrapper,
   SelectorPlaceholder,
   StyledSelection,
   StyledSelector,
+  StyledSelectorWrapper,
 } from "./styles";
 
 export type Selection = {
@@ -21,8 +24,11 @@ export type Props = {
   placeholder_icon?: string;
   placeholder_material_icon?: string;
   options: Selection[];
+  orientation?: "horizontal" | "vertical";
   option_alignment?: "left" | "right";
+  fill_selection?: boolean;
   select?: (option: Selection) => void;
+  reset?: number;
 };
 
 const Selector: React.FC<Props> = ({
@@ -30,8 +36,11 @@ const Selector: React.FC<Props> = ({
   placeholder_icon,
   placeholder_material_icon,
   options,
+  orientation = "horizontal",
   option_alignment = "left",
+  fill_selection = true,
   select,
+  reset,
 }) => {
   const [selection, setSelection] = useState<Selection>();
 
@@ -39,6 +48,13 @@ const Selector: React.FC<Props> = ({
 
   const wrapperRef = useRef<HTMLInputElement>(null);
   const parentRef = useRef<HTMLInputElement>(null);
+  const prevReset = usePrevious(reset);
+
+  useEffect(() => {
+    if (reset != prevReset) {
+      setSelection(null);
+    }
+  }, [reset]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside.bind(this));
@@ -67,13 +83,16 @@ const Selector: React.FC<Props> = ({
   const renderDropdown = () => {
     if (expanded) {
       return (
-        <DropdownWrapper align={option_alignment}>
+        <DropdownWrapper align={option_alignment} orientation={orientation}>
           <Dropdown ref={wrapperRef}>
             {options.length > 0 ? (
               <ScrollableWrapper>
                 {options.map((option) => {
                   return (
-                    <StyledSelection onClick={() => onClickSelection(option)}>
+                    <StyledSelection
+                      onClick={() => onClickSelection(option)}
+                      key={option.value}
+                    >
                       {option.icon ? (
                         <img src={option.icon} />
                       ) : (
@@ -96,45 +115,60 @@ const Selector: React.FC<Props> = ({
   };
 
   const renderPlaceholder = () => {
-    if (selection) {
+    if (fill_selection && selection) {
       return (
         <SelectorPlaceholder>
-          {selection.icon ? (
-            <img src={selection.icon} />
-          ) : (
-            <MaterialIcon className="material-icons">
-              {selection.material_icon}
-            </MaterialIcon>
-          )}
-          <div>{selection.label}</div>
-          <i className="material-icons">expand_more</i>
+          <InnerSelectorPlaceholder>
+            {selection.icon ? (
+              <img src={selection.icon} />
+            ) : (
+              <MaterialIcon className="material-icons">
+                {selection.material_icon}
+              </MaterialIcon>
+            )}
+            <div>{selection.label}</div>
+          </InnerSelectorPlaceholder>
+
+          <i className="material-icons">
+            {orientation == "horizontal" ? "expand_more" : "chevron_right"}
+          </i>
         </SelectorPlaceholder>
       );
     }
 
     return (
       <SelectorPlaceholder>
-        {placeholder_icon ? (
-          <img src={placeholder_icon} />
-        ) : (
-          <MaterialIcon className="material-icons">
-            {placeholder_material_icon}
-          </MaterialIcon>
-        )}
+        <InnerSelectorPlaceholder>
+          {placeholder_icon ? (
+            <img src={placeholder_icon} />
+          ) : (
+            <MaterialIcon className="material-icons">
+              {placeholder_material_icon}
+            </MaterialIcon>
+          )}
 
-        <div>{placeholder}</div>
-        <i className="material-icons">expand_more</i>
+          <div>{placeholder}</div>
+        </InnerSelectorPlaceholder>
+        <i className="material-icons">
+          {orientation == "horizontal" ? "expand_more" : "chevron_right"}
+        </i>
       </SelectorPlaceholder>
     );
   };
 
   return (
-    <Relative>
-      <StyledSelector onClick={() => setExpanded(!expanded)} ref={parentRef}>
+    <StyledSelectorWrapper orientation={orientation}>
+      <StyledSelector
+        onClick={() => {
+          setExpanded(!expanded);
+        }}
+        ref={parentRef}
+        orientation={orientation}
+      >
         {renderPlaceholder()}
       </StyledSelector>
       {renderDropdown()}
-    </Relative>
+    </StyledSelectorWrapper>
   );
 };
 

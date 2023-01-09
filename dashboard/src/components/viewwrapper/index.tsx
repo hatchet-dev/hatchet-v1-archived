@@ -8,3 +8,7 @@ export const ViewWrapper = styled.div`
   position: absolute;
   padding: 40px 80px;
 `;
+
+export const CenteredContainer = styled.div`
+  margin: 0 auto;
+`;

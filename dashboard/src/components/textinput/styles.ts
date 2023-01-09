@@ -7,7 +7,7 @@ export const StyledInput = styled.input<{ width?: string; disabled?: boolean }>`
   border: none;
   font-size: 13px;
   width: ${(props) => (props.width ? props.width : "250px")};
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: ${(props) => props.theme.bg.shadeone};
   border: ${(props) => props.theme.line.default};
   border-radius: 4px;

@@ -4,11 +4,21 @@ import {
   altTextFontStack,
   FlexRowLeft,
   FlexRowRight,
+  Relative,
 } from "components/globals";
 import theme from "shared/theme";
 import styled from "styled-components";
 
-export const StyledSelector = styled(FlexCol)`
+export const StyledSelectorWrapper = styled(Relative)<{
+  orientation: "horizontal" | "vertical";
+}>`
+  ${(props) => (props.orientation == "vertical" ? "width: 100%;" : "")}
+  overflow: visible;
+`;
+
+export const StyledSelector = styled(FlexCol)<{
+  orientation: "horizontal" | "vertical";
+}>`
   color: ${(props) => props.theme.text.default};
   font-size: 12px;
   background: ${(props) => props.theme.bg.shadeone};
@@ -16,13 +26,23 @@ export const StyledSelector = styled(FlexCol)`
   padding: 8px 10px;
   border-radius: 5px;
   cursor: pointer;
-  width: fit-content;
+  width: ${(props) =>
+    props.orientation == "vertical" ? "100%" : "fit-content"};
+  overflow-x: visible;
   :hover {
     background: ${(props) => props.theme.bg.hover};
   }
 `;
 
 export const SelectorPlaceholder = styled(FlexRow)`
+  > i:last-child {
+    font-size: 18px;
+    padding-top: 1px;
+    margin-left: 4px;
+  }
+`;
+
+export const InnerSelectorPlaceholder = styled(FlexRowLeft)`
   > img,
   i:first-child {
     width: 16px;
@@ -35,22 +55,36 @@ export const SelectorPlaceholder = styled(FlexRow)`
     font-size: 13px;
     margin: 0px 8px;
   }
-
-  > i:last-child {
-    font-size: 18px;
-    padding-top: 1px;
-    margin-left: 4px;
-  }
 `;
 
-export const DropdownWrapper = styled(FlexRow)<{ align: "right" | "left" }>`
+export const DropdownWrapper = styled(FlexRow)<{
+  align: "right" | "left";
+  orientation: "horizontal" | "vertical";
+}>`
   justify-content: ${(props) =>
     props.align == "right" ? "flex-end" : "flex-start"};
   position: absolute;
-  width: 100%;
+  ${(props) =>
+    props.orientation == "vertical"
+      ? `
+  left: calc(100% + 5px);
+  bottom: -20px; 
+  `
+      : ""}
+  ${(props) =>
+    props.orientation == "horizontal"
+      ? `
+  top: 42px;
+  `
+      : ""}
+  ${(props) =>
+    props.orientation == "horizontal" &&
+    (props.align == "right"
+      ? `
   right: 0;
-  z-index: 1;
-  top: calc(100% + 5px);
+  `
+      : "left: 0;")}
+  z-index: 5;
 `;
 
 export const Dropdown = styled.div`
@@ -73,6 +107,7 @@ export const ScrollableWrapper = styled.div`
 export const StyledSelection = styled(FlexRowLeft)`
   padding: 10px 10px;
   cursor: pointer;
+  white-space: nowrap;
 
   > img,
   i {

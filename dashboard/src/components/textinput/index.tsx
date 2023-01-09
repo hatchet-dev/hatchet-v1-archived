@@ -1,5 +1,6 @@
 import { FlexCol, Relative, Span } from "components/globals";
 import React, { useEffect, useRef, useState } from "react";
+import usePrevious from "shared/hooks/useprevious";
 import { SmallSpan, StyledInput } from "./styles";
 
 export type Selection = {
@@ -16,6 +17,7 @@ export type Props = {
   width?: string;
   disabled?: boolean;
   on_change?: (val: string) => void;
+  reset?: number;
 };
 
 const TextInput: React.FC<Props> = ({
@@ -26,8 +28,16 @@ const TextInput: React.FC<Props> = ({
   width = "250px",
   disabled = false,
   on_change,
+  reset,
 }) => {
   const [text, setText] = useState<string>(initial_value);
+  const prevReset = usePrevious(reset);
+
+  useEffect(() => {
+    if (reset != prevReset) {
+      setText("");
+    }
+  }, [reset]);
 
   const input = (
     <StyledInput

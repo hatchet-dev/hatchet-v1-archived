@@ -181,6 +181,8 @@ func GetUserRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully logged out
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:
@@ -333,6 +335,8 @@ func GetUserRoutes(
 	// responses:
 	//   '202':
 	//     description: Successfully triggered user deletion
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
 	//   '403':
 	//     description: Forbidden
 	//     schema:

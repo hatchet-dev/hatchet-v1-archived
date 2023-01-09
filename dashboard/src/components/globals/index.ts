@@ -192,6 +192,14 @@ export const FlexCol = styled.div`
   align-items: stretch;
 `;
 
+export const FlexColCenter = styled(FlexCol)`
+  align-items: center;
+`;
+
+export const FlexColScroll = styled(FlexCol)`
+  overflow-x: auto;
+`;
+
 export const Grid = styled.div`
   display: grid;
   grid-column-gap: 25px;

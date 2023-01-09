@@ -1,5 +1,6 @@
 import {
   FlexCol,
+  FlexRow,
   headerFontStack,
   sidebarHeaderFontStack,
   textFontStack,
@@ -14,10 +15,14 @@ export const SidebarWrapper = styled.section`
   width: 230px;
   opacity: 1;
   padding: 8px;
-  margin-top: 60px;
+  padding-top: 60px;
   position: fixed;
   left: 0;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
 `;
 
 export const LinkWrapper = styled(FlexCol)`
@@ -38,4 +43,8 @@ export const SidebarLink = styled.a<{ current: boolean }>`
   :hover {
     background-color: ${(props) => props.theme.bg.hover};
   }
+`;
+
+export const UtilWrapper = styled(FlexRow)`
+  height: fit-content;
 `;
