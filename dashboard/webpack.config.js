@@ -27,6 +27,7 @@ module.exports = () => {
 
   let htmlPluginOpts = {
     template: path.resolve(__dirname, "src", "index.html"),
+    favicon: path.resolve(__dirname, "src", "assets", "favicon.ico"),
   };
 
   if (env.IS_HOSTED) {
