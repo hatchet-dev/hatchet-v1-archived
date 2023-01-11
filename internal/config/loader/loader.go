@@ -173,7 +173,8 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 
 	var notifier notifier.UserNotifier
 
-	if sc.SendgridAPIKey != "" && sc.SendgridSenderEmail != "" && sc.SendgridPWResetTemplateID != "" && sc.SendgridVerifyEmailTemplateID != "" {
+	if sc.SendgridAPIKey != "" && sc.SendgridSenderEmail != "" && sc.SendgridPWResetTemplateID != "" && sc.SendgridVerifyEmailTemplateID != "" &&
+		sc.SendgridInviteLinkTemplateID != "" {
 		notifier = sendgrid.NewUserNotifier(&sendgrid.UserNotifierOpts{
 			SharedOpts: &sendgrid.SharedOpts{
 				APIKey:                 sc.SendgridAPIKey,
@@ -182,6 +183,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 			},
 			PWResetTemplateID:     sc.SendgridPWResetTemplateID,
 			VerifyEmailTemplateID: sc.SendgridVerifyEmailTemplateID,
+			InviteLinkTemplateID:  sc.SendgridInviteLinkTemplateID,
 		})
 
 		authConfig.RequireEmailVerification = true

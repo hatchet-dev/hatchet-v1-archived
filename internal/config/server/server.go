@@ -52,6 +52,7 @@ type ConfigFile struct {
 	SendgridAPIKey                string `env:"SENDGRID_API_KEY"`
 	SendgridPWResetTemplateID     string `env:"SENDGRID_PW_RESET_TEMPLATE_ID"`
 	SendgridVerifyEmailTemplateID string `env:"SENDGRID_VERIFY_EMAIL_TEMPLATE_ID"`
+	SendgridInviteLinkTemplateID  string `env:"SENDGRID_INVITE_LINK_TEMPLATE_ID"`
 	SendgridSenderEmail           string `env:"SENDGRID_SENDER_EMAIL"`
 }
 

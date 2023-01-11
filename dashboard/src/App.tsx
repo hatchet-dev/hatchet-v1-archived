@@ -25,6 +25,7 @@ import UserPATsView from "views/userpatsview/UserPATsView";
 import InitiateResetPasswordView from "views/initiateresetpassword/InitiateResetPasswordView";
 import FinalizeResetPasswordView from "views/finalizeresetpassword/FinalizeResetPasswordView";
 import VerifyEmailView from "views/verifyemail/VerifyEmail";
+import AcceptOrganizationInviteView from "views/acceptorganizationinvite/AcceptOrganizationInviteView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -134,6 +135,14 @@ const AppContents: React.FunctionComponent = () => {
                 require_unverified_email={true}
               >
                 <VerifyEmailView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/organization_invite/accept"
+            render={() => (
+              <AuthChecker check_authenticated={true}>
+                <AcceptOrganizationInviteView />
               </AuthChecker>
             )}
           ></Route>

@@ -18,3 +18,7 @@ func (s *UserNotifier) SendPasswordResetEmail(opts *notifier.SendPasswordResetEm
 func (s *UserNotifier) SendVerificationEmail(opts *notifier.SendVerificationEmailOpts) error {
 	return nil
 }
+
+func (s *UserNotifier) SendInviteLinkEmail(opts *notifier.SendInviteLinkEmailOpts) error {
+	return nil
+}

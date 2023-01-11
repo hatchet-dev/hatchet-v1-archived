@@ -17,6 +17,7 @@ type UserNotifierOpts struct {
 	*SharedOpts
 	PWResetTemplateID     string
 	VerifyEmailTemplateID string
+	InviteLinkTemplateID  string
 }
 
 type SharedOpts struct {
@@ -92,6 +93,44 @@ func (s *UserNotifier) SendVerificationEmail(opts *notifier.SendVerificationEmai
 			Name:    "Hatchet",
 		},
 		TemplateID: s.opts.VerifyEmailTemplateID,
+	}
+
+	request.Body = mail.GetRequestBody(sgMail)
+
+	_, err := sendgrid.API(request)
+
+	return err
+}
+
+func (s *UserNotifier) SendInviteLinkEmail(opts *notifier.SendInviteLinkEmailOpts) error {
+	if allowed := s.isAllowed(opts.Email); !allowed {
+		return fmt.Errorf("target email %s is not in restricted domain group", opts.Email)
+	}
+
+	request := sendgrid.GetRequest(s.opts.APIKey, "/v3/mail/send", "https://api.sendgrid.com")
+	request.Method = "POST"
+
+	sgMail := &mail.SGMailV3{
+		Personalizations: []*mail.Personalization{
+			{
+				To: []*mail.Email{
+					{
+						Address: opts.Email,
+					},
+				},
+				DynamicTemplateData: map[string]interface{}{
+					"url":               opts.URL,
+					"email":             opts.Email,
+					"organization_name": opts.OrganizationName,
+					"inviter_address":   opts.InviterAddress,
+				},
+			},
+		},
+		From: &mail.Email{
+			Address: s.opts.SenderEmail,
+			Name:    "Hatchet",
+		},
+		TemplateID: s.opts.InviteLinkTemplateID,
 	}
 
 	request.Body = mail.GetRequestBody(sgMail)
