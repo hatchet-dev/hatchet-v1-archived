@@ -83,13 +83,13 @@ func (repo *PersonalAccessTokenRepository) ListPersonalAccessTokensByUserID(
 ) ([]*models.PersonalAccessToken, *repository.PaginatedResult, repository.RepositoryError) {
 	var pats []*models.PersonalAccessToken
 
-	db := repo.db.Model(&models.PersonalAccessToken{})
+	db := repo.db.Model(&models.PersonalAccessToken{}).Where("user_id = ?", userID)
 
 	paginatedResult := &repository.PaginatedResult{}
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Where("user_id = ?", userID).Find(&pats).Error; err != nil {
+	if err := db.Find(&pats).Error; err != nil {
 		return nil, nil, err
 	}
 

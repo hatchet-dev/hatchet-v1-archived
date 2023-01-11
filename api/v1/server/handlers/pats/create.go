@@ -42,7 +42,7 @@ func (u *PATCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if existingPAT != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 			Code:        types.ErrCodeBadRequest,
-			Description: fmt.Sprintf("Personal access token already exists with display_name %s for this user", request.DisplayName),
+			Description: fmt.Sprintf("Personal access token already exists with name %s for this user", request.DisplayName),
 		}, http.StatusBadRequest))
 
 		return

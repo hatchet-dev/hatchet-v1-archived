@@ -1,56 +1,80 @@
-import Breadcrumbs from "components/breadcrumbs";
 import {
-  FlexCol,
   FlexColCenter,
-  FlexRowRight,
-  Grid,
   H1,
   H2,
   HorizontalSpacer,
   P,
-  Span,
+  SmallSpan,
+  FlexColScroll,
 } from "components/globals";
-import { GridCard } from "components/gridcard";
-import Example from "components/heirarchygraph";
-import Paginator from "components/paginator";
-import RunsList from "components/runslist";
-import Table from "components/table";
-import TabList from "components/tablist";
-import React, { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import React from "react";
 
-import { useHistory } from "react-router-dom";
-import api from "shared/api";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import Spinner from "components/loaders";
-import SectionCard from "components/sectioncard";
-import ErrorBar from "components/errorbar";
-import OrgList from "components/orglist";
 import UserMetaForm from "./components/UserMetaForm";
 import UserOrgs from "./components/UserOrgs";
-import { CenteredContainer } from "components/viewwrapper";
+import ResetPasswordForm from "./components/ResetPasswordForm";
+import { css } from "styled-components";
+import theme from "shared/theme";
+import DeleteUserForm from "./components/DeleteUserForm";
 
 const UserSettingsView: React.FunctionComponent = () => {
   return (
-    <FlexColCenter>
-      <FlexCol>
+    <FlexColCenter height={"100%"}>
+      <FlexColScroll width="100%" maxWidth="640px" height={"100%"}>
         <H1>Profile</H1>
-        <HorizontalSpacer spacepixels={16} />
+        <HorizontalSpacer spacepixels={14} />
+        <P>Manage your Hatchet profile.</P>
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
         <H2>Display Name</H2>
+        <HorizontalSpacer spacepixels={14} />
+        <SmallSpan>
+          Your display name is what is shown to other members in your
+          organizations and teams. You cannot change your email address without
+          contacting an admin.
+        </SmallSpan>
         <HorizontalSpacer spacepixels={16} />
         <UserMetaForm />
-        <HorizontalSpacer spacepixels={20} />
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
         <H2>Organizations</H2>
-        <HorizontalSpacer spacepixels={16} />
+        <HorizontalSpacer spacepixels={14} />
+        <SmallSpan>
+          All organizations that you're a member of. Note that you cannot leave
+          an organization if you are an owner. You must either delete the
+          organization or transfer ownership to another member from organization
+          settings.
+        </SmallSpan>
+        <HorizontalSpacer spacepixels={14} />
         <UserOrgs />
-        <HorizontalSpacer spacepixels={16} />
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
         <H2>Reset Password</H2>
+        <HorizontalSpacer spacepixels={8} />
+        <SmallSpan>Reset your password.</SmallSpan>
         <HorizontalSpacer spacepixels={16} />
+        <ResetPasswordForm />
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
         <H2>Delete User</H2>
         <HorizontalSpacer spacepixels={16} />
-      </FlexCol>
+        <DeleteUserForm />
+      </FlexColScroll>
     </FlexColCenter>
   );
 };

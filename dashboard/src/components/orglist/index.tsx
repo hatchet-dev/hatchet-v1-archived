@@ -1,20 +1,8 @@
 import StandardButton from "components/buttons";
 import ErrorBar from "components/errorbar";
-import {
-  FlexCol,
-  FlexRow,
-  HorizontalSpacer,
-  MaterialIcon,
-} from "components/globals";
-import SectionArea from "components/sectionarea";
-import Selector from "components/selector";
-import TextInput from "components/textinput";
-import React, { useEffect, useState } from "react";
-import {
-  Organization,
-  OrganizationMemberSanitized,
-} from "shared/api/generated/data-contracts";
-import { capitalize } from "shared/utils";
+import { HorizontalSpacer } from "components/globals";
+import React from "react";
+import { Organization } from "shared/api/generated/data-contracts";
 import { OrgListContainer, OrgContainer, OrgName } from "./styles";
 
 export type Props = {
@@ -32,6 +20,7 @@ const OrgList: React.FC<Props> = ({ orgs, leave_org, err }) => {
             <OrgName>{org.display_name}</OrgName>
             <StandardButton
               label="Leave Organization"
+              style_kind="muted"
               on_click={() => leave_org(org)}
             />
           </OrgContainer>

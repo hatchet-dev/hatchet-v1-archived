@@ -4,6 +4,9 @@ VERSION ?= dev
 test:
 	go test ./... -tags test -cover
 
+migrate:
+	sh ./hack/dev/migrate.sh
+
 start-dev:
 	sh ./hack/dev/start.sh
 

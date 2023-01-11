@@ -1,4 +1,3 @@
-import theme from "shared/theme";
 import styled from "styled-components";
 
 const SectionCard = styled.div`

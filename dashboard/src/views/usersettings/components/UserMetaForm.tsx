@@ -1,41 +1,15 @@
-import Breadcrumbs from "components/breadcrumbs";
-import {
-  FlexCol,
-  FlexRowRight,
-  Grid,
-  H1,
-  H2,
-  HorizontalSpacer,
-  P,
-  Span,
-} from "components/globals";
-import { GridCard } from "components/gridcard";
-import Example from "components/heirarchygraph";
-import Paginator from "components/paginator";
-import RunsList from "components/runslist";
-import Table from "components/table";
-import TabList from "components/tablist";
+import { FlexRowRight, HorizontalSpacer } from "components/globals";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { useHistory } from "react-router-dom";
 import api from "shared/api";
 import TextInput from "components/textinput";
 import SectionArea from "components/sectionarea";
 import StandardButton from "components/buttons";
-import Spinner from "components/loaders";
-import SectionCard from "components/sectioncard";
 import ErrorBar from "components/errorbar";
-import OrgList from "components/orglist";
-
-const TabOptions = ["Runs", "Resource Explorer", "Configuration", "Settings"];
 
 const UserMetaForm: React.FunctionComponent = () => {
-  const [selectedTab, setSelectedTab] = useState(TabOptions[0]);
   const [displayName, setDisplayName] = useState("");
   const [err, setErr] = useState("");
-
-  let history = useHistory();
 
   const query = useQuery({
     queryKey: ["current_user"],
@@ -70,12 +44,8 @@ const UserMetaForm: React.FunctionComponent = () => {
     }
   };
 
-  if (isUserLoading) {
-    return <Spinner></Spinner>;
-  }
-
   return (
-    <SectionArea width={600}>
+    <SectionArea width={600} loading={isUserLoading}>
       <TextInput
         placeholder="Hatchet User"
         initial_value={data?.data?.display_name}

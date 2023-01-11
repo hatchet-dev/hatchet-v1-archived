@@ -1,5 +1,4 @@
 import { FlexRow, tableHeaderFontStack } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const TabWrapper = styled(FlexRow)`
@@ -16,7 +15,7 @@ export const Tab = styled.div<{ selected?: boolean }>`
   cursor: pointer;
   padding: 4px 6px 8px 6px;
   border-bottom: ${(props) =>
-    props.selected ? `${(props) => props.theme.line.selected}` : "none"};
+    props.selected ? `${props.theme.line.selected}` : "none"};
   border-bottom-width: ${(props) => (props.selected ? "2px" : "0px")};
   margin: 0 10px;
   margin-bottom: ${(props) => (props.selected ? "-2px" : "0")};

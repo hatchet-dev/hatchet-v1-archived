@@ -1,8 +1,10 @@
 import { FlexCol, Span } from "components/globals";
 import styled from "styled-components";
 
-export const TopBarWrapper = styled.nav`
-  border-bottom: ${(props) => props.theme.line.default};
+export const TopBarWrapper = styled.nav<{ is_authenticated?: boolean }>`
+  ${(props) =>
+    props.is_authenticated && `border-bottom: ${props.theme.line.default};`}
+
   background-color: ${(props) => props.theme.bg.default};
   width: 100%;
   opacity: 1;
@@ -20,4 +22,5 @@ export const TopBarProductName = styled(Span)`
   font-family: "Ubuntu", sans-serif;
   font-size: 20px;
   letter-spacing: 1px;
+  margin-left: 12px;
 `;

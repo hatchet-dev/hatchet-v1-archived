@@ -1,9 +1,4 @@
-import {
-  fadeInAnimation,
-  FlexRowLeft,
-  SmallSpan,
-  textFontStack,
-} from "components/globals";
+import { fadeInAnimation, FlexRowLeft, SmallSpan } from "components/globals";
 import styled from "styled-components";
 
 export const StyledErrorBar = styled(FlexRowLeft)<{ color?: string }>`

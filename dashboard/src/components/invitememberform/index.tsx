@@ -1,11 +1,5 @@
 import ErrorBar from "components/errorbar";
-import {
-  FlexCol,
-  FlexRow,
-  HorizontalSpacer,
-  MaterialIcon,
-} from "components/globals";
-import SectionArea from "components/sectionarea";
+import { FlexCol, HorizontalSpacer, MaterialIcon } from "components/globals";
 import Selector from "components/selector";
 import TextInput from "components/textinput";
 import React, { useEffect, useState } from "react";

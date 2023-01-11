@@ -1,14 +1,6 @@
 import Breadcrumbs from "components/breadcrumbs";
-import {
-  FlexRowRight,
-  H1,
-  HorizontalSpacer,
-  P,
-  Span,
-} from "components/globals";
+import { H1, HorizontalSpacer, P, Span } from "components/globals";
 import Example from "components/heirarchygraph";
-import Paginator from "components/paginator";
-import Table from "components/table";
 import TabList from "components/tablist";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -25,8 +17,6 @@ const TabOptions = [
 
 const ExpandedModuleView: React.FunctionComponent = () => {
   const [selectedTab, setSelectedTab] = useState(TabOptions[0]);
-
-  let history = useHistory();
 
   const renderTabContents = () => {
     switch (selectedTab) {

@@ -97,3 +97,74 @@ type UpdateUserRequest struct {
 
 // swagger:model
 type UpdateUserResponse User
+
+// swagger:model
+type ResetPasswordManualRequest struct {
+	// the old password for this user
+	//
+	// required: true
+	// example: Securepassword123
+	OldPassword string `json:"old_password" form:"required,max=255,password"`
+
+	// the new password for this user
+	//
+	// required: true
+	// example: Newpassword123
+	NewPassword string `json:"new_password" form:"required,max=255,password"`
+}
+
+// swagger:model
+type ResetPasswordEmailRequest struct {
+	// the email address for this user
+	//
+	// required: true
+	// example: user1@gmail.com
+	Email string `json:"email" form:"required,max=255,email"`
+}
+
+// swagger:model
+type ResetPasswordEmailVerifyTokenRequest struct {
+	// the email address for this user
+	//
+	// required: true
+	// example: user1@gmail.com
+	Email string `json:"email" form:"required,max=255,email"`
+
+	// the token id
+	//
+	// required: true
+	// example: bb214807-246e-43a5-a25d-41761d1cff9e
+	TokenID string `json:"token_id" form:"required"`
+
+	// the token
+	//
+	// required: true
+	// example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....
+	Token string `json:"token" form:"required"`
+}
+
+// swagger:model
+type ResetPasswordEmailFinalizeRequest struct {
+	*ResetPasswordEmailVerifyTokenRequest
+
+	// the new password for this user
+	//
+	// required: true
+	// example: Newpassword123
+	NewPassword string `json:"new_password" form:"required,max=255,password"`
+}
+
+// swagger:model
+type VerifyEmailRequest struct {
+	// the token id
+	//
+	// required: true
+	// example: bb214807-246e-43a5-a25d-41761d1cff9e
+	TokenID string `json:"token_id" form:"required"`
+
+	// the token
+	//
+	// required: true
+	// example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....
+	Token string `json:"token" form:"required"`
+}

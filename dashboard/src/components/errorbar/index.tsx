@@ -1,4 +1,4 @@
-import { FlexCol, MaterialIcon, SmallSpan } from "components/globals";
+import { MaterialIcon } from "components/globals";
 import React from "react";
 import { StyledErrorBar, StyledErrorText } from "./styles";
 

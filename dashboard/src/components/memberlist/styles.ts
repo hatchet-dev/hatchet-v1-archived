@@ -1,11 +1,4 @@
-import {
-  altTextFontStack,
-  FlexCol,
-  FlexColScroll,
-  FlexRow,
-  tableHeaderFontStack,
-} from "components/globals";
-import theme from "shared/theme";
+import { altTextFontStack, FlexColScroll, FlexRow } from "components/globals";
 import styled from "styled-components";
 
 export const MemberListContainer = styled(FlexColScroll)`

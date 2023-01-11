@@ -1,10 +1,14 @@
 package server
 
 import (
+	"strings"
+
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/notifier"
 )
 
 type ConfigFile struct {
@@ -19,6 +23,9 @@ type ConfigFile struct {
 	ServerURL string `env:"SERVER_URL,default=https://hatchet.run"`
 
 	// Authn and authz options
+
+	// RestrictedEmailDomains sets the restricted email domains for the instance.
+	RestrictedEmailDomains []string `env:"RESTRICTED_EMAIL_DOMAINS"`
 
 	// BasedAuthEnabled controls whether email and password-based login is enabled for this
 	// Hatchet instances
@@ -38,10 +45,37 @@ type ConfigFile struct {
 	// This field should INCLUDE the protocol.
 	// If this is not set, it is set to the SERVER_URL variable.
 	TokenAudience []string `env:"TOKEN_AUDIENCE"`
+
+	// Notification options
+
+	// Sendgrid notifier options
+	SendgridAPIKey                string `env:"SENDGRID_API_KEY"`
+	SendgridPWResetTemplateID     string `env:"SENDGRID_PW_RESET_TEMPLATE_ID"`
+	SendgridVerifyEmailTemplateID string `env:"SENDGRID_VERIFY_EMAIL_TEMPLATE_ID"`
+	SendgridSenderEmail           string `env:"SENDGRID_SENDER_EMAIL"`
 }
 
 type AuthConfig struct {
-	BasicAuthEnabled bool
+	RequireEmailVerification bool
+	BasicAuthEnabled         bool
+	RestrictedEmailDomains   []string
+}
+
+func (a *AuthConfig) IsEmailAllowed(email string) bool {
+	if len(a.RestrictedEmailDomains) == 0 {
+		return true
+	}
+
+	targetComponents := strings.Split(email, "@")
+	targetDomain := targetComponents[1]
+
+	for _, domain := range a.RestrictedEmailDomains {
+		if domain == targetDomain {
+			return true
+		}
+	}
+
+	return false
 }
 
 type ServerRuntimeConfig struct {
@@ -61,4 +95,14 @@ type Config struct {
 	UserSessionStore *cookie.UserSessionStore
 
 	TokenOpts *token.TokenOpts
+
+	UserNotifier notifier.UserNotifier
+}
+
+func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {
+	return &types.APIServerMetadata{
+		Auth: &types.APIServerMetadataAuth{
+			RequireEmailVerification: c.AuthConfig.RequireEmailVerification,
+		},
+	}
 }

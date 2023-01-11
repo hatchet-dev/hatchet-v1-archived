@@ -13,6 +13,7 @@ import {
   APIErrorBadRequestExample,
   APIErrorForbiddenExample,
   APIErrorNotSupportedExample,
+  APIServerMetadata,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   CreateOrgMemberInviteRequest,
@@ -33,11 +34,16 @@ import {
   ListUserOrgsResponse,
   LoginUserRequest,
   LoginUserResponse,
+  ResetPasswordEmailFinalizeRequest,
+  ResetPasswordEmailRequest,
+  ResetPasswordEmailVerifyRequest,
+  ResetPasswordManualRequest,
   RevokePATResponseExample,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
   UpdateUserResponse,
+  VerifyEmailRequest,
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
@@ -55,6 +61,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
       path: `/api/v1/invites/${orgMemberInviteId}/${orgMemberInviteTok}`,
       method: "POST",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets the metadata for the Hatchet instance.
+   *
+   * @tags Metadata
+   * @name GetServerMetadata
+   * @summary Get server metadata
+   * @request GET:/api/v1/metadata
+   * @secure
+   */
+  getServerMetadata = (params: RequestParams = {}) =>
+    this.request<APIServerMetadata, any>({
+      path: `/api/v1/metadata`,
+      method: "GET",
       secure: true,
       format: "json",
       ...params,
@@ -375,6 +398,25 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Resets a password for a user using the old password as validation.
+   *
+   * @tags Users
+   * @name ResetPasswordManual
+   * @summary Reset password (manual)
+   * @request POST:/api/v1/users/current/reset_password_manual
+   * @secure
+   */
+  resetPasswordManual = (data?: ResetPasswordManualRequest, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/current/reset_password_manual`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Lists personal access token for a user.
    *
    * @tags Users
@@ -479,6 +521,42 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Verifies a user's email via a token-based mechanism.
+   *
+   * @tags Users
+   * @name VerifyEmail
+   * @summary Verify email
+   * @request POST:/api/v1/users/current/verify_email/finalize
+   * @secure
+   */
+  verifyEmail = (data?: VerifyEmailRequest, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/current/verify_email/finalize`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Resends a verification email for the user.
+   *
+   * @tags Users
+   * @name ResendVerificationEmail
+   * @summary Resend verification email.
+   * @request POST:/api/v1/users/current/verify_email/resend
+   * @secure
+   */
+  resendVerificationEmail = (params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/current/verify_email/resend`,
+      method: "POST",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Logs a user in via email and password-based authentication. This endpoint is only registered if the environment variable `BASIC_AUTH_ENABLED` is set.
    *
    * @tags Users
@@ -513,6 +591,63 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/users/logout`,
       method: "POST",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Resets a password for a user by sending them a verification email.
+   *
+   * @tags Users
+   * @name ResetPasswordEmail
+   * @summary Reset password (email)
+   * @request POST:/api/v1/users/reset_password_email
+   * @secure
+   */
+  resetPasswordEmail = (data?: ResetPasswordEmailRequest, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/reset_password_email`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Resets a user's password given a token-based reset password mechanism.
+   *
+   * @tags Users
+   * @name ResetPasswordEmailFinalize
+   * @summary Reset password
+   * @request POST:/api/v1/users/reset_password_email/finalize
+   * @secure
+   */
+  resetPasswordEmailFinalize = (data?: ResetPasswordEmailFinalizeRequest, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/reset_password_email/finalize`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Verifies that the token id and token are valid for a given reset password request.
+   *
+   * @tags Users
+   * @name ResetPasswordEmailVerify
+   * @summary Verify password reset data
+   * @request POST:/api/v1/users/reset_password_email/verify
+   * @secure
+   */
+  resetPasswordEmailVerify = (data?: ResetPasswordEmailVerifyRequest, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/reset_password_email/verify`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });

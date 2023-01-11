@@ -67,3 +67,15 @@ type APIResourceMeta struct {
 type EmptyResponse struct{}
 
 type UsageMetric string
+
+// swagger:model
+type APIServerMetadata struct {
+	// auth metadata options
+	Auth *APIServerMetadataAuth `json:"auth"`
+}
+
+// swagger:model
+type APIServerMetadataAuth struct {
+	// whether email verification is required in order to use the api/dashboard
+	RequireEmailVerification bool `json:"require_email_verification"`
+}

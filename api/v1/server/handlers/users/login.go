@@ -34,6 +34,11 @@ func (u *UserLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !u.Config().AuthConfig.IsEmailAllowed(request.Email) {
+		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmailOrPassword, http.StatusUnauthorized, "email is not in restricted domain list"))
+		return
+	}
+
 	// determine if the user exists
 	existingUser, err := u.Repo().User().ReadUserByEmail(request.Email)
 

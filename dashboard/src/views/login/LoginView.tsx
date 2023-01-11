@@ -1,12 +1,11 @@
 import {
   FlexCol,
+  FlexColCenter,
   FlexRow,
   FlexRowRight,
   H2,
   HorizontalSpacer,
   SmallSpan,
-  Span,
-  StyledLink,
   StyledSmallLink,
 } from "components/globals";
 import TextInput from "components/textinput";
@@ -15,12 +14,11 @@ import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
 import StandardButton from "components/buttons";
-import SectionArea from "components/sectionarea";
-import theme, { invertedTheme } from "shared/theme";
-import styled, { css, ThemeProvider } from "styled-components";
+import theme from "shared/theme";
+import { css } from "styled-components";
 import { AppWrapper } from "components/appwrapper";
 import ErrorBar from "components/errorbar";
-import Spinner from "components/loaders";
+import SectionAreaWithLogo from "components/sectionareawithlogo";
 
 const LoginView: React.FunctionComponent = () => {
   const [email, setEmail] = useState("");
@@ -72,8 +70,11 @@ const LoginView: React.FunctionComponent = () => {
     <AppWrapper>
       <FlexRow>
         <FlexCol>
-          <SectionArea width={400}>
-            <H2>Login</H2>
+          <SectionAreaWithLogo width={400}>
+            <HorizontalSpacer spacepixels={18} />
+            <FlexColCenter>
+              <H2>Sign In to Hatchet</H2>
+            </FlexColCenter>
             <HorizontalSpacer
               spacepixels={10}
               overrides={css({
@@ -103,7 +104,10 @@ const LoginView: React.FunctionComponent = () => {
             <HorizontalSpacer spacepixels={30} />
             {err && <ErrorBar text={err} />}
             <HorizontalSpacer spacepixels={30} />
-            <FlexRowRight>
+            <FlexRow>
+              <StyledSmallLink to="reset_password/initiate">
+                Forgot password?
+              </StyledSmallLink>
               <StandardButton
                 label="Login"
                 material_icon="chevron_right"
@@ -115,8 +119,8 @@ const LoginView: React.FunctionComponent = () => {
                 margin={"0"}
                 is_loading={isLoading}
               />
-            </FlexRowRight>
-          </SectionArea>
+            </FlexRow>
+          </SectionAreaWithLogo>
           <HorizontalSpacer spacepixels={20} />
           <FlexRowRight>
             <SmallSpan>

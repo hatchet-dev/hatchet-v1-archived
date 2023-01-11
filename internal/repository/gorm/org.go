@@ -77,13 +77,13 @@ func (repo *OrgRepository) ListOrgsByUserID(userID string, opts ...repository.Qu
 	// get org members first, then list orgs
 	var orgMembers []*models.OrganizationMember
 
-	db := repo.db.Model(&models.OrganizationMember{})
+	db := repo.db.Model(&models.OrganizationMember{}).Where("user_id = ?", userID)
 
 	paginatedResult := &repository.PaginatedResult{}
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Where("user_id = ?", userID).Find(&orgMembers).Error; err != nil {
+	if err := db.Find(&orgMembers).Error; err != nil {
 		return nil, nil, err
 	}
 
@@ -144,13 +144,13 @@ func (repo *OrgRepository) ReadOrgMemberByUserOrInviteeEmail(orgID, email string
 func (repo *OrgRepository) ListOrgMembersByOrgID(orgID string, opts ...repository.QueryOption) ([]*models.OrganizationMember, *repository.PaginatedResult, repository.RepositoryError) {
 	var members []*models.OrganizationMember
 
-	db := repo.db.Model(&models.OrganizationMember{})
+	db := repo.db.Model(&models.OrganizationMember{}).Where("organization_id = ?", orgID)
 
 	paginatedResult := &repository.PaginatedResult{}
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Preload("InviteLink").Preload("User").Preload("OrgPolicies").Where("organization_id = ?", orgID).Find(&members).Error; err != nil {
+	if err := db.Preload("InviteLink").Preload("User").Preload("OrgPolicies").Find(&members).Error; err != nil {
 		return nil, nil, err
 	}
 
@@ -268,13 +268,13 @@ func (repo *OrgRepository) ReadPolicyByID(orgID, policyID string) (*models.Organ
 func (repo *OrgRepository) ListOrgPoliciesByOrgID(orgID string, opts ...repository.QueryOption) ([]*models.OrganizationPolicy, *repository.PaginatedResult, repository.RepositoryError) {
 	var policies []*models.OrganizationPolicy
 
-	db := repo.db.Model(&models.OrganizationPolicy{})
+	db := repo.db.Model(&models.OrganizationPolicy{}).Where("organization_id = ?", orgID)
 
 	paginatedResult := &repository.PaginatedResult{}
 
 	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
 
-	if err := db.Where("organization_id = ?", orgID).Find(&policies).Error; err != nil {
+	if err := db.Find(&policies).Error; err != nil {
 		return nil, nil, err
 	}
 

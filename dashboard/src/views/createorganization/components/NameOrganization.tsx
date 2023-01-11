@@ -1,12 +1,4 @@
-import {
-  FlexCol,
-  FlexRow,
-  FlexRowRight,
-  H2,
-  HorizontalSpacer,
-  SmallSpan,
-  StyledSmallLink,
-} from "components/globals";
+import { FlexRowRight, H2, HorizontalSpacer } from "components/globals";
 import TextInput from "components/textinput";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -14,11 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
 import StandardButton from "components/buttons";
 import SectionArea from "components/sectionarea";
-import theme, { invertedTheme } from "shared/theme";
-import styled, { css, ThemeProvider } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
 import ErrorBar from "components/errorbar";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 
 const NameOrganization: React.FunctionComponent = () => {

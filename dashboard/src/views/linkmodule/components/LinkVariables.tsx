@@ -1,14 +1,8 @@
-import Breadcrumbs from "components/breadcrumbs";
-import { FlexRowRight, H1, H2, HorizontalSpacer, P } from "components/globals";
+import { H2, HorizontalSpacer, P } from "components/globals";
 import Selector, { Selection } from "components/selector";
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import gitRepository from "assets/git_repository.png";
-import github from "assets/github.png";
-import branch from "assets/branch.png";
 import TextInput from "components/textinput";
 import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
 import { css } from "styled-components";
 import theme from "shared/theme";
 
@@ -31,8 +25,6 @@ const variableOptions = [
 ];
 
 const LinkVariables: React.FunctionComponent = () => {
-  let history = useHistory();
-
   const [varOption, setSelectedVarOption] = useState<string>();
 
   const selectVariableOption = (option: Selection) => {

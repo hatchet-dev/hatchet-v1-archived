@@ -1,11 +1,13 @@
-import { Relative, Span } from "components/globals";
-import React, { useEffect, useRef, useState } from "react";
+import { FlexColCenter } from "components/globals";
+import Spinner from "components/loaders";
+import React from "react";
 import { StyledSectionArea } from "./styles";
 
 export type Props = {
   width?: number;
   height?: number;
   background?: string;
+  loading?: boolean;
 };
 
 const SectionArea: React.FC<Props> = ({
@@ -13,10 +15,21 @@ const SectionArea: React.FC<Props> = ({
   height,
   background,
   children,
+  loading,
 }) => {
   return (
-    <StyledSectionArea width={width} height={height} background={background}>
-      {children}
+    <StyledSectionArea
+      width={width && width + "px"}
+      height={height && height + "px"}
+      background={background}
+    >
+      {loading ? (
+        <FlexColCenter>
+          <Spinner />
+        </FlexColCenter>
+      ) : (
+        children
+      )}
     </StyledSectionArea>
   );
 };

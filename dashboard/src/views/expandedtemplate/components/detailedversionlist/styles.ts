@@ -1,5 +1,4 @@
 import { FlexCol, FlexRow, FlexRowLeft } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const VersionListWrapper = styled(FlexCol)`

@@ -17,6 +17,8 @@ func AutoMigrate(db *gorm.DB, debug bool) error {
 		&models.User{},
 		&models.UserSession{},
 		&models.PersonalAccessToken{},
+		&models.PasswordResetToken{},
+		&models.VerifyEmailToken{},
 		&models.Organization{},
 		&models.OrganizationMember{},
 		&models.OrganizationPolicy{},

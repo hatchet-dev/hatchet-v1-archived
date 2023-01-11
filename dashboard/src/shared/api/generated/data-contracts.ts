@@ -109,6 +109,17 @@ export interface APIResourceMeta {
   updated_at?: string;
 }
 
+/** @example {"auth":{"require_email_verification":true}} */
+export interface APIServerMetadata {
+  auth?: APIServerMetadataAuth;
+}
+
+/** @example {"require_email_verification":true} */
+export interface APIServerMetadataAuth {
+  /** whether email verification is required in order to use the api/dashboard */
+  require_email_verification?: boolean;
+}
+
 /** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
   /**
@@ -449,6 +460,71 @@ export interface PersonalAccessToken {
   updated_at?: string;
 }
 
+/** @example {"token_id":"bb214807-246e-43a5-a25d-41761d1cff9e","new_password":"Newpassword123","email":"user1@gmail.com","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."} */
+export interface ResetPasswordEmailFinalizeRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the new password for this user
+   * @example "Newpassword123"
+   */
+  new_password: string;
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
+}
+
+/** @example {"email":"user1@gmail.com"} */
+export interface ResetPasswordEmailRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+}
+
+export interface ResetPasswordEmailVerifyTokenRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
+}
+
+/** @example {"old_password":"Securepassword123","new_password":"Newpassword123"} */
+export interface ResetPasswordManualRequest {
+  /**
+   * the new password for this user
+   * @example "Newpassword123"
+   */
+  new_password: string;
+  /**
+   * the old password for this user
+   * @example "Securepassword123"
+   */
+  old_password: string;
+}
+
 export type RevokePATResponse = PersonalAccessToken;
 
 /** @example {"expires":"2023-01-12T22:09:28.350Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"cli-token-1234","revoked":true} */
@@ -582,6 +658,20 @@ export interface UserOrgPublishedData {
   email?: string;
 }
 
+/** @example {"token_id":"bb214807-246e-43a5-a25d-41761d1cff9e","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."} */
+export interface VerifyEmailRequest {
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
+}
+
 export interface CreateOrganizationRequest {
   /**
    * the display name for this user
@@ -626,12 +716,38 @@ export interface CreateUserRequest {
   password: string;
 }
 
+export interface ResetPasswordManualRequest {
+  /**
+   * the new password for this user
+   * @example "Newpassword123"
+   */
+  new_password: string;
+  /**
+   * the old password for this user
+   * @example "Securepassword123"
+   */
+  old_password: string;
+}
+
 export interface CreatePersonalAccessTokenRequest {
   /**
    * the display name for the personal access token
    * @example "cli-token-1234"
    */
   display_name: string;
+}
+
+export interface VerifyEmailRequest {
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
 }
 
 export interface LoginUserRequest {
@@ -645,4 +761,53 @@ export interface LoginUserRequest {
    * @example "Securepassword123"
    */
   password: string;
+}
+
+export interface ResetPasswordEmailRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+}
+
+export interface ResetPasswordEmailFinalizeRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the new password for this user
+   * @example "Newpassword123"
+   */
+  new_password: string;
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
+}
+
+export interface ResetPasswordEmailVerifyRequest {
+  /**
+   * the email address for this user
+   * @example "user1@gmail.com"
+   */
+  email: string;
+  /**
+   * the token
+   * @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+   */
+  token: string;
+  /**
+   * the token id
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  token_id: string;
 }

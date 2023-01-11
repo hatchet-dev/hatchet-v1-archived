@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import theme from "shared/theme";
 import styled, { css } from "styled-components";
 
 export const Shadow = {
@@ -132,7 +131,7 @@ export const P = styled.p`
   ${textFontStack};
   font-weight: 400;
   font-size: 0.875rem;
-  line-height: 1.4;
+  line-height: 1.6;
   margin: 0;
   padding: 0;
 `;
@@ -142,13 +141,21 @@ export const Span = styled.span`
   ${textFontStack};
   font-weight: 400;
   font-size: 0.875rem;
-  line-height: 1.4;
+  line-height: 1.6;
   margin: 0;
   padding: 0;
 `;
 
 export const SmallSpan = styled(Span)`
   font-size: 0.8rem;
+`;
+
+export const StyledClickableP = styled(P)`
+  color: ${(props) => props.theme.text.link};
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  cursor: pointer;
 `;
 
 export const StyledLink = styled(Link)`
@@ -170,11 +177,13 @@ export const Relative = styled.div`
   position: relative;
 `;
 
-export const FlexRow = styled.div`
+export const FlexRow = styled.div<{ height?: string; maxHeight?: string }>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  ${(props) => props.height && `height: ${props.height};`}
+  ${(props) => props.maxHeight && `max-height: ${props.maxHeight};`}
 `;
 
 export const FlexRowRight = styled(FlexRow)`
@@ -185,11 +194,20 @@ export const FlexRowLeft = styled(FlexRow)`
   justify-content: flex-start;
 `;
 
-export const FlexCol = styled.div`
+export const FlexCol = styled.div<{
+  width?: string;
+  maxWidth?: string;
+  height?: string;
+  maxHeight?: string;
+}>`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+  ${(props) => props.width && `width: ${props.width};`}
+  ${(props) => props.maxWidth && `max-width: ${props.maxWidth};`}
+  ${(props) => props.height && `height: ${props.height};`}
+  ${(props) => props.maxHeight && `max-height: ${props.maxHeight};`}
 `;
 
 export const FlexColCenter = styled(FlexCol)`
@@ -228,7 +246,8 @@ export const HorizontalSpacer = styled.div<{
   overrides?: string;
 }>`
   width: 100%;
-  height: ${(props) => props.spacepixels}px;
+  border-top: 0px solid red;
+  margin: ${(props) => Math.round(props.spacepixels / 2.0)}px 0;
   ${(props) => props?.overrides}
 `;
 
@@ -242,4 +261,16 @@ export const fadeInAnimation = css`
       opacity: 1;
     }
   }
+`;
+
+export const StyledDeprecatedText = styled(FlexRow)`
+  ${tableHeaderFontStack};
+  padding: 8px 16px;
+  background-color: ${(props) => props.theme.bg.shadetwo};
+  border: ${(props) => props.theme.line.default};
+  color: white;
+  border-radius: 4px;
+  height: 28px;
+  font-weight: 500;
+  width: fit-content;
 `;

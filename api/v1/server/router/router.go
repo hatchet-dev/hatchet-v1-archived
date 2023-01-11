@@ -89,7 +89,11 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 		for _, scope := range route.Endpoint.Metadata.Scopes {
 			switch scope {
 			case types.UserScope:
-				atomicGroup.Use(authNFactory.NewAuthenticated)
+				if !config.AuthConfig.RequireEmailVerification || route.Endpoint.Metadata.AllowUnverifiedEmails {
+					atomicGroup.Use(authNFactory.NewAuthenticatedWithoutEmailVerification)
+				} else {
+					atomicGroup.Use(authNFactory.NewAuthenticated)
+				}
 			case types.NoUserScope:
 				atomicGroup.Use(noAuthNFactory.NewNotAuthenticated)
 			case types.OrgScope:

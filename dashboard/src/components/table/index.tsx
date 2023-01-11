@@ -1,3 +1,5 @@
+import { SmallSpan } from "components/globals";
+import Placeholder from "components/placeholder";
 import React from "react";
 import {
   Column,
@@ -17,6 +19,7 @@ import {
 export type TableProps = {
   columns: Column<any>[];
   data: any[];
+  dataName?: string;
   onRowClick?: (row: Row) => void;
   rowHeight?: string;
 };
@@ -24,6 +27,7 @@ export type TableProps = {
 const Table: React.FC<TableProps> = ({
   columns: columnsData,
   data,
+  dataName,
   onRowClick,
   rowHeight,
 }) => {
@@ -51,7 +55,7 @@ const Table: React.FC<TableProps> = ({
           return (
             <tr
               {...row.getRowProps()}
-              enablePointer={!!onRowClick}
+              enablepointer={(!!onRowClick).toString()}
               onClick={() => onRowClick && onRowClick(row)}
               selected={false}
             >
@@ -74,6 +78,14 @@ const Table: React.FC<TableProps> = ({
     );
   };
 
+  if (rows.length == 0) {
+    return (
+      <Placeholder>
+        <SmallSpan>No {dataName || "data"} found.</SmallSpan>
+      </Placeholder>
+    );
+  }
+
   return (
     <>
       <StyledTable {...getTableProps()}>
@@ -88,7 +100,11 @@ const Table: React.FC<TableProps> = ({
             </tr>
           ))}
         </StyledTHead>
-        <StyledTBody rowHeight={rowHeight} {...getTableBodyProps()}>
+        <StyledTBody
+          rowHeight={rowHeight}
+          {...getTableBodyProps()}
+          canClick={!!onRowClick}
+        >
           {renderRows()}
         </StyledTBody>
       </StyledTable>

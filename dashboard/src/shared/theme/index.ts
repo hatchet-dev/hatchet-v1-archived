@@ -27,6 +27,7 @@ export const theme = {
   text: {
     default: "#ffffffcc",
     link: "#ae85ff",
+    codehighlight: "#6b84ff",
     alt: "white",
     inactive: "#999999aa",
   },

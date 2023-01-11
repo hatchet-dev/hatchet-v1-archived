@@ -41,7 +41,19 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	}
 
 	// hash the password before create using bcrypt
-	// hash the password using bcrypt
+	hashedPw, err := bcrypt.GenerateFromPassword([]byte(u.Password), 8)
+
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPw)
+
+	return nil
+}
+
+func (u *User) HashPassword() error {
+	// hash the new password using bcrypt
 	hashedPw, err := bcrypt.GenerateFromPassword([]byte(u.Password), 8)
 
 	if err != nil {

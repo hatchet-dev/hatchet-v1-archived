@@ -7,6 +7,8 @@ type RepositoryError error
 type Repository interface {
 	User() UserRepository
 	UserSession() UserSessionRepository
+	PasswordResetToken() PasswordResetTokenRepository
+	VerifyEmailToken() VerifyEmailTokenRepository
 	PersonalAccessToken() PersonalAccessTokenRepository
 	Org() OrgRepository
 }

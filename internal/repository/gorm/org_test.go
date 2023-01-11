@@ -283,7 +283,7 @@ func TestListOrgMembersByOrgID(t *testing.T) {
 			NextPage:    0,
 		}, pagination, "pagination should be equal")
 
-		assert.Equal(t, 2, len(orgMembers), "length of org members should be 1")
+		assert.Equal(t, 2, len(orgMembers), "length of org members should be 2")
 
 		return nil
 	}, testutils.InitUsers, testutils.InitOrgs, testutils.InitOrgAdditionalMemberAdmin)

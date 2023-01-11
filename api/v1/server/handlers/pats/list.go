@@ -37,6 +37,8 @@ func (u *PATListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	pats, paginate, err := u.Repo().PersonalAccessToken().ListPersonalAccessTokensByUserID(
 		user.ID,
+		repository.WithSortBy("created_at"),
+		repository.WithOrder(repository.OrderDesc),
 		repository.WithPage(req.PaginationRequest),
 	)
 

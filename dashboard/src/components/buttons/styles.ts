@@ -1,18 +1,18 @@
 import { FlexRowRight, tableHeaderFontStack } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const StyledStandardButton = styled(FlexRowRight)<{
   size?: "small" | "default";
   has_icon?: boolean;
   icon_side?: "left" | "right";
+  style_kind?: "default" | "muted";
   margin?: string;
   disabled?: boolean;
 }>`
   ${tableHeaderFontStack};
   padding: ${(props) =>
     props.size == "small"
-      ? "6px 10px"
+      ? "6px 14px"
       : props.has_icon
       ? "2px 16px"
       : "8px 16px"};
@@ -21,13 +21,20 @@ export const StyledStandardButton = styled(FlexRowRight)<{
   padding-left: ${(props) =>
     !props.has_icon ? "" : props.icon_side == "right" ? "20px" : "16px"};
   background-color: ${(props) =>
-    props.disabled ? props.theme.bg.inactive : props.theme.bg.buttonone};
+    props.disabled
+      ? props.theme.bg.inactive
+      : props.style_kind == "muted"
+      ? props.theme.bg.shadeone
+      : props.theme.bg.buttonone};
+  ${(props) =>
+    props.style_kind == "muted" && `border: ${props.theme.line.default};`}
   color: white;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: ${(props) => (props.size == "small" ? "12px" : "13px")};
+  ${(props) => props.size == "small" && "height: 28px;"}
   margin: ${(props) => (props.margin ? props.margin : "0 8px")};
   cursor: ${(props) => (props.disabled ? "default" : "pointer")};
-  font-weight: ${(props) => (props.size == "small" ? "400" : "500")};
+  font-weight: 500;
   gap: 8px;
   white-space: nowrap;
 

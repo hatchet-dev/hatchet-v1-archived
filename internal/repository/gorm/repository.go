@@ -14,6 +14,8 @@ type GormRepository struct {
 	user        repository.UserRepository
 	userSession repository.UserSessionRepository
 	pat         repository.PersonalAccessTokenRepository
+	prt         repository.PasswordResetTokenRepository
+	vet         repository.VerifyEmailTokenRepository
 	org         repository.OrgRepository
 }
 
@@ -29,6 +31,14 @@ func (t *GormRepository) PersonalAccessToken() repository.PersonalAccessTokenRep
 	return t.pat
 }
 
+func (t *GormRepository) PasswordResetToken() repository.PasswordResetTokenRepository {
+	return t.prt
+}
+
+func (t *GormRepository) VerifyEmailToken() repository.VerifyEmailTokenRepository {
+	return t.vet
+}
+
 func (t *GormRepository) Org() repository.OrgRepository {
 	return t.org
 }
@@ -40,6 +50,8 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		user:        NewUserRepository(db),
 		userSession: NewUserSessionRepository(db),
 		pat:         NewPersonalAccessTokenRepository(db, key),
+		prt:         NewPasswordResetTokenRepository(db),
+		vet:         NewVerifyEmailTokenRepository(db),
 		org:         NewOrgRepository(db),
 	}
 }

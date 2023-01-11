@@ -2,18 +2,23 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
+import VerifyEmailPromptView from "views/verifyemailprompt/VerifyEmailPromptView";
 
 type Props = {
   check_authenticated?: boolean;
+  require_unverified_email?: boolean;
+  allow_unverified_email?: boolean;
 };
 
 const AuthChecker: React.FunctionComponent<Props> = ({
   check_authenticated = true,
+  require_unverified_email = false,
+  allow_unverified_email = false,
   children,
 }) => {
   let history = useHistory();
 
-  const { error, isLoading, isInitialLoading } = useQuery({
+  const currentUserQuery = useQuery({
     queryKey: ["current_user"],
     queryFn: async () => {
       const res = await api.getCurrentUser();
@@ -24,15 +29,39 @@ const AuthChecker: React.FunctionComponent<Props> = ({
     retry: false,
   });
 
-  // TODO(abelanger5): style loading
-  // if (isInitialLoading) {
-  //   return <div>Loading...</div>;
-  // }
+  const metadataQuery = useQuery({
+    queryKey: ["api_metadata"],
+    queryFn: async () => {
+      const res = await api.getServerMetadata();
+      return res;
+    },
+    retry: false,
+  });
 
-  if (!isLoading) {
-    if (check_authenticated && error) {
+  if (!currentUserQuery.isLoading && !metadataQuery.isLoading) {
+    if (check_authenticated && currentUserQuery.error) {
       history.push("/login");
-    } else if (!check_authenticated && !error) {
+    } else if (!check_authenticated && !currentUserQuery.error) {
+      history.push("/");
+    }
+
+    if (
+      !allow_unverified_email &&
+      check_authenticated &&
+      !currentUserQuery.error &&
+      !currentUserQuery.data?.data?.email_verified &&
+      metadataQuery.data?.data?.auth.require_email_verification
+    ) {
+      return <VerifyEmailPromptView />;
+    }
+
+    if (
+      require_unverified_email &&
+      check_authenticated &&
+      !currentUserQuery.error &&
+      currentUserQuery.data?.data?.email_verified &&
+      metadataQuery.data?.data?.auth.require_email_verification
+    ) {
       history.push("/");
     }
   }

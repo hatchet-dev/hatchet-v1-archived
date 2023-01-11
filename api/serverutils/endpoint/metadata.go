@@ -72,6 +72,10 @@ type EndpointMetadata struct {
 
 	// The usage metric that the request should check for, if CheckUsage
 	UsageMetric types.UsageMetric
+
+	// AllowUnverifiedEmails controls whether or not the endpoint should permit authenticated
+	// users with unverified email addresses
+	AllowUnverifiedEmails bool
 }
 
 type RequestAction struct {

@@ -3,10 +3,8 @@ import {
   FlexRow,
   altTextFontStack,
   FlexRowLeft,
-  FlexRowRight,
   Relative,
 } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const StyledSelectorWrapper = styled(Relative)<{

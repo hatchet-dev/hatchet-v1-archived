@@ -1,5 +1,4 @@
 import { Span } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const StyledInput = styled.input<{ width?: string; disabled?: boolean }>`

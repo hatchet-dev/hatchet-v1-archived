@@ -1,12 +1,6 @@
 import { AppWrapper } from "components/appwrapper";
-import React, { Component } from "react";
-import {
-  BrowserRouter,
-  Route,
-  Switch,
-  useHistory,
-  useLocation,
-} from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import theme, { GlobalStyle } from "shared/theme";
 import TemplatesView from "views/templates/TemplatesView";
 import ModulesView from "views/modules/ModulesView";
@@ -20,19 +14,17 @@ import LinkModuleView from "views/linkmodule/LinkModuleView";
 import ExpandedModuleView from "views/expandedmodule/ExpandedModuleView";
 import ExpandedTemplateView from "views/expandedtemplate/ExpandedTemplateView";
 import LoginView from "views/login/LoginView";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import RegisterView from "views/register/RegisterView";
 import AuthChecker from "shared/auth/AuthChecker";
-import api from "shared/api";
 import { ThemeProvider } from "styled-components";
 import UserSettingsView from "views/usersettings/UserSettingsView";
 import CreateOrganizationView from "views/createorganization/CreateOrganizationView";
 import Populator from "shared/populator/Populator";
 import UserPATsView from "views/userpatsview/UserPATsView";
+import InitiateResetPasswordView from "views/initiateresetpassword/InitiateResetPasswordView";
+import FinalizeResetPasswordView from "views/finalizeresetpassword/FinalizeResetPasswordView";
+import VerifyEmailView from "views/verifyemail/VerifyEmail";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -83,7 +75,11 @@ const DashboardSidebarLinks: SidebarLink[] = [
 const UserSidebarLinks: SidebarLink[] = [
   {
     name: "Profile",
-    href: "/user/settings",
+    href: "/user/settings/profile",
+  },
+  {
+    name: "Linked Accounts",
+    href: "/user/settings/accounts",
   },
   {
     name: "Personal Access Tokens",
@@ -100,6 +96,7 @@ const AppContents: React.FunctionComponent = () => {
             path="/login"
             render={() => (
               <AuthChecker check_authenticated={false}>
+                <TopBar is_authenticated={false} />
                 <LoginView />
               </AuthChecker>
             )}
@@ -109,6 +106,34 @@ const AppContents: React.FunctionComponent = () => {
             render={() => (
               <AuthChecker check_authenticated={false}>
                 <RegisterView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/reset_password/initiate"
+            render={() => (
+              <AuthChecker check_authenticated={false}>
+                <InitiateResetPasswordView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/reset_password/finalize"
+            render={() => (
+              <AuthChecker check_authenticated={false}>
+                <FinalizeResetPasswordView />
+              </AuthChecker>
+            )}
+          ></Route>
+          <Route
+            path="/verify_email/finalize"
+            render={() => (
+              <AuthChecker
+                check_authenticated={true}
+                allow_unverified_email={true}
+                require_unverified_email={true}
+              >
+                <VerifyEmailView />
               </AuthChecker>
             )}
           ></Route>
@@ -139,7 +164,7 @@ const AppContents: React.FunctionComponent = () => {
                 render={() => <UserPATsView />}
               ></Route>
               <Route
-                path="/user/settings"
+                path="/user/settings/profile"
                 render={() => <UserSettingsView />}
               ></Route>
             </Switch>
@@ -168,8 +193,6 @@ const AppContents: React.FunctionComponent = () => {
   };
 
   const renderHomeContents = () => {
-    console.log("RENDERING HOME CONTENTS ");
-
     return (
       <AuthChecker check_authenticated={true}>
         <TopBar />

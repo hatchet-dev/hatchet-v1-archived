@@ -1,44 +1,10 @@
 import Breadcrumbs from "components/breadcrumbs";
-import { FlexRowRight, H1, H2, HorizontalSpacer, P } from "components/globals";
-import Selector from "components/selector";
-import React, { useState } from "react";
+import { FlexRowRight, H1, HorizontalSpacer } from "components/globals";
+import React from "react";
 import { useHistory, useParams } from "react-router-dom";
-import gitRepository from "assets/git_repository.png";
-import github from "assets/github.png";
-import branch from "assets/branch.png";
-import TextInput from "components/textinput";
-import FormArea from "components/sectionarea";
 import StandardButton from "components/buttons";
-import { css } from "styled-components";
-import theme from "shared/theme";
 import ChooseGitSource from "./components/ChooseGitSource";
 import LinkVariables from "./components/LinkVariables";
-
-const options = [
-  {
-    icon: github,
-    label: "hatchet-dev/hatchet",
-    value: "hatchet-dev/hatchet",
-  },
-  {
-    icon: github,
-    label: "hatchet-dev/hatchet-2",
-    value: "hatchet-dev/hatchet-2",
-  },
-];
-
-const branchOptions = [
-  {
-    icon: branch,
-    label: "master",
-    value: "master",
-  },
-  {
-    icon: branch,
-    label: "belanger/feat-1",
-    value: "belanger/feat-1",
-  },
-];
 
 const LinkModuleView: React.FunctionComponent = () => {
   let history = useHistory();

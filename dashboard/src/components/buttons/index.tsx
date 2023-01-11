@@ -5,9 +5,11 @@ import { StyledStandardButton } from "./styles";
 
 export type Props = {
   material_icon?: string;
+  id?: string;
   label: string;
   size?: "small" | "default";
   icon_side?: "left" | "right";
+  style_kind?: "default" | "muted";
   margin?: string;
   disabled?: boolean;
   on_click?: () => void;
@@ -15,9 +17,11 @@ export type Props = {
 };
 
 const StandardButton: React.FC<Props> = ({
+  id,
   material_icon,
   label,
   size = "default",
+  style_kind = "default",
   icon_side = "left",
   margin = "0 8px",
   disabled = false,
@@ -29,12 +33,14 @@ const StandardButton: React.FC<Props> = ({
 
     return (
       <StyledStandardButton
+        id={id}
         size={size}
         has_icon={true}
         onClick={on_click}
         icon_side={icon_side}
         margin={margin}
         disabled={disabled}
+        style_kind={style_kind}
       >
         {icon_side == "left" ? children : children.reverse()}
       </StyledStandardButton>
@@ -51,12 +57,14 @@ const StandardButton: React.FC<Props> = ({
 
     return (
       <StyledStandardButton
+        id={id}
         size={size}
         has_icon={true}
         onClick={on_click}
         icon_side={icon_side}
         margin={margin}
         disabled={disabled}
+        style_kind={style_kind}
       >
         {icon_side == "left" ? children : children.reverse()}
       </StyledStandardButton>
@@ -65,10 +73,12 @@ const StandardButton: React.FC<Props> = ({
 
   return (
     <StyledStandardButton
+      id={id}
       size={size}
       has_icon={false}
       onClick={on_click}
       disabled={disabled}
+      style_kind={style_kind}
     >
       {label}
     </StyledStandardButton>

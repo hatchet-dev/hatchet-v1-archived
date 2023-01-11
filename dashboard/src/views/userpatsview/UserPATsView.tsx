@@ -1,36 +1,51 @@
-import Breadcrumbs from "components/breadcrumbs";
 import {
   FlexCol,
-  FlexRow,
+  FlexColCenter,
   FlexRowRight,
-  Grid,
   H1,
-  H2,
   HorizontalSpacer,
   P,
-  Span,
+  StyledDeprecatedText,
 } from "components/globals";
-import { GridCard } from "components/gridcard";
-import Example from "components/heirarchygraph";
-import Paginator from "components/paginator";
-import RunsList from "components/runslist";
 import Table from "components/table";
-import TabList from "components/tablist";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
 import StandardButton from "components/buttons";
 import Spinner from "components/loaders";
-import SectionCard from "components/sectioncard";
-import ErrorBar from "components/errorbar";
-import OrgList from "components/orglist";
+import CreatePATForm from "./components/CreatePATForm";
+import { relativeDate } from "shared/utils";
+import Placeholder from "components/placeholder";
 
 const UserPATsView: React.FunctionComponent = () => {
-  const history = useHistory();
+  const [createPAT, setCreatePAT] = useState(false);
+  const [err, setErr] = useState("");
+
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["pats"],
+    queryFn: async () => {
+      const res = await api.listPersonalAccessTokens();
+      return res;
+    },
+    retry: false,
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (id: string) => {
+      return api.revokePersonalAccessToken(id);
+    },
+    onSuccess: (data) => {
+      setErr("");
+      refetch();
+    },
+    onError: (err: any) => {
+      if (!err.error.errors || err.error.errors.length == 0) {
+        setErr("An unexpected error occurred. Please try again.");
+      }
+
+      setErr(err.error.errors[0].description);
+    },
+  });
 
   const columns = [
     {
@@ -41,41 +56,101 @@ const UserPATsView: React.FunctionComponent = () => {
       Header: "Created",
       accessor: "created_at",
     },
+    {
+      Header: "",
+      accessor: "id",
+      Cell: ({ row }: any) => {
+        if (row.original.revoked) {
+          return (
+            <FlexRowRight height="30px">
+              <StyledDeprecatedText>Revoked</StyledDeprecatedText>
+            </FlexRowRight>
+          );
+        }
+        return (
+          <FlexRowRight height="30px">
+            <StandardButton
+              label="Revoke"
+              size="small"
+              style_kind="muted"
+              disabled={row.original.revoked}
+              on_click={async () => {
+                await revokeMutation.mutateAsync(row.original.id);
+
+                refetch();
+              }}
+            />
+          </FlexRowRight>
+        );
+      },
+    },
   ];
 
-  const data = [
-    {
-      id: "1111",
-      name: "cli-token-1",
-      created_at: "10 days ago",
-    },
-    {
-      id: "2222",
-      name: "cli-token-2",
-      created_at: "15 days ago",
-    },
-    {
-      id: "3333",
-      name: "cli-token-3",
-      created_at: "20 days ago",
-    },
-  ];
+  const tableData = data?.data?.rows.map((row) => {
+    return {
+      id: row.id,
+      name: row.display_name,
+      created_at: relativeDate(row.created_at),
+      revoked: row.revoked,
+    };
+  });
+
+  if (isLoading) {
+    return (
+      <Placeholder>
+        <Spinner />
+      </Placeholder>
+    );
+  }
+
+  const renderPATDataOrForm = () => {
+    if (createPAT) {
+      return (
+        <CreatePATForm
+          post_create={() => {
+            refetch();
+            setCreatePAT(false);
+          }}
+        />
+      );
+    }
+
+    return (
+      <>
+        <FlexRowRight>
+          <StandardButton
+            label="Create new PAT"
+            material_icon="add"
+            on_click={() => {
+              setCreatePAT(true);
+            }}
+          />
+        </FlexRowRight>
+        <HorizontalSpacer spacepixels={20} />
+        <Table
+          columns={columns}
+          data={tableData}
+          dataName="personal access tokens"
+        />
+        <HorizontalSpacer spacepixels={20} />
+      </>
+    );
+  };
 
   return (
-    <>
-      <H1>Personal Access Tokens</H1>
-      <HorizontalSpacer spacepixels={16} />
-      <FlexRowRight>
-        <StandardButton
-          label="Create new PAT"
-          material_icon="add"
-          on_click={() => history.push("/user/settings/pats/create")}
-        />
-      </FlexRowRight>
-      <HorizontalSpacer spacepixels={12} />
-      <Table columns={columns} data={data} onRowClick={() => {}} />
-      <HorizontalSpacer spacepixels={20} />
-    </>
+    <FlexColCenter>
+      <FlexCol width="100%" maxWidth="640px">
+        <H1>Personal Access Tokens</H1>
+        <HorizontalSpacer spacepixels={12} />
+        <P>
+          Personal access tokens can be used to authenticate with the Hatchet
+          API. Personal access tokens are automatically generated for new CLI
+          sessions.
+        </P>
+        <HorizontalSpacer spacepixels={16} />
+        {renderPATDataOrForm()}
+      </FlexCol>
+    </FlexColCenter>
   );
 };
 

@@ -35,6 +35,11 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !u.Config().AuthConfig.IsEmailAllowed(request.Email) {
+		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmailOrPassword, http.StatusUnauthorized, "email is not in restricted domain list"))
+		return
+	}
+
 	// determine if the user exists before attempting to write the user
 	existingUser, err := u.Repo().User().ReadUserByEmail(request.Email)
 
@@ -78,4 +83,10 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	u.WriteResult(w, r, user.ToAPIType())
+
+	// send a verification email after creation
+	if reqErr := sendVerifyEmail(u.Config(), user); reqErr != nil {
+		// we've already written a success message, so don't rewrite it
+		u.HandleAPIErrorNoWrite(w, r, reqErr)
+	}
 }

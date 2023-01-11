@@ -1,22 +1,14 @@
 import {
   FlexCol,
-  FlexRow,
   FlexRowRight,
   H2,
   HorizontalSpacer,
-  SmallSpan,
-  StyledSmallLink,
 } from "components/globals";
-import TextInput from "components/textinput";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import StandardButton from "components/buttons";
 import SectionArea from "components/sectionarea";
-import theme, { invertedTheme } from "shared/theme";
-import styled, { css, ThemeProvider } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
-import ErrorBar from "components/errorbar";
 import api from "shared/api";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
 import InviteMemberForm from "components/invitememberform";
@@ -26,8 +18,6 @@ import MemberList from "components/memberlist";
 import Spinner from "components/loaders";
 
 const InviteMembers: React.FunctionComponent = () => {
-  const [currEmail, setCurrEmail] = useState("");
-  const [currPolicy, setCurrPolicy] = useState("");
   const [currOrgId] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
   const history = useHistory();

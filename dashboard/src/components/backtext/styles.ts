@@ -1,5 +1,4 @@
 import { FlexRowLeft, altTextFontStack } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const BackArrow = styled(FlexRowLeft)<{ width?: string }>`

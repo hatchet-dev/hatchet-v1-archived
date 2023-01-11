@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import BackText from "components/backtext";
 import Spinner from "components/loaders";
 import Selector, { Selection } from "components/selector";
-import React, { useState } from "react";
+import React from "react";
 import { useLocation, useHistory } from "react-router-dom";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 
 import api from "shared/api";

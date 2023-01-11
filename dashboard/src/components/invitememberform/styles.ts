@@ -1,5 +1,4 @@
 import { FlexRow, tableHeaderFontStack } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const InviteContainer = styled(FlexRow)`

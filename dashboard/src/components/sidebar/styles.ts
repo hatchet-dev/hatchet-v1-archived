@@ -1,10 +1,4 @@
-import {
-  FlexCol,
-  FlexRow,
-  headerFontStack,
-  sidebarHeaderFontStack,
-  textFontStack,
-} from "components/globals";
+import { FlexCol, FlexRow, sidebarHeaderFontStack } from "components/globals";
 import theme from "shared/theme";
 import styled from "styled-components";
 

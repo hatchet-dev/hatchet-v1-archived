@@ -1,4 +1,3 @@
-import { FlexCol, MaterialIcon, SmallSpan } from "components/globals";
 import React from "react";
 import { LoadingSpinner } from "./styles";
 

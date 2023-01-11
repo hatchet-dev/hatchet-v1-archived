@@ -11,6 +11,9 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/logger"
+	"github.com/hatchet-dev/hatchet/internal/notifier"
+	"github.com/hatchet-dev/hatchet/internal/notifier/noop"
+	"github.com/hatchet-dev/hatchet/internal/notifier/sendgrid"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm"
 	"github.com/joeshaw/envdecode"
 )
@@ -134,7 +137,8 @@ func (e *EnvConfigLoader) LoadServerConfigFromEnv() (res *server.Config, err err
 
 func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, dbConfig *database.Config, sharedConfig *shared.Config) (res *server.Config, err error) {
 	authConfig := server.AuthConfig{
-		BasicAuthEnabled: sc.BasicAuthEnabled,
+		BasicAuthEnabled:       sc.BasicAuthEnabled,
+		RestrictedEmailDomains: sc.RestrictedEmailDomains,
 	}
 
 	serverRuntimeConfig := server.ServerRuntimeConfig{
@@ -167,6 +171,24 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		tokenOpts.Audience = []string{sc.ServerURL}
 	}
 
+	var notifier notifier.UserNotifier
+
+	if sc.SendgridAPIKey != "" && sc.SendgridSenderEmail != "" && sc.SendgridPWResetTemplateID != "" && sc.SendgridVerifyEmailTemplateID != "" {
+		notifier = sendgrid.NewUserNotifier(&sendgrid.UserNotifierOpts{
+			SharedOpts: &sendgrid.SharedOpts{
+				APIKey:                 sc.SendgridAPIKey,
+				SenderEmail:            sc.SendgridSenderEmail,
+				RestrictedEmailDomains: sc.RestrictedEmailDomains,
+			},
+			PWResetTemplateID:     sc.SendgridPWResetTemplateID,
+			VerifyEmailTemplateID: sc.SendgridVerifyEmailTemplateID,
+		})
+
+		authConfig.RequireEmailVerification = true
+	} else {
+		notifier = noop.NewNoOpUserNotifier()
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -174,5 +196,6 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		ServerRuntimeConfig: serverRuntimeConfig,
 		UserSessionStore:    userSessionStore,
 		TokenOpts:           tokenOpts,
+		UserNotifier:        notifier,
 	}, nil
 }

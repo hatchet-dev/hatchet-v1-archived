@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 import Spinner from "components/loaders";
 
@@ -37,8 +37,8 @@ const Populator: React.FunctionComponent<Props> = ({
       // set it to the first item in the array, or redirect to the creation screen if no orgs
       if (!isFetching) {
         if (currOrgId == "" || !matchedOrg) {
-          if (data.data.rows?.length > 0) {
-            setCurrOrgId(data.data.rows[0]?.id);
+          if (data?.data?.rows?.length > 0) {
+            setCurrOrgId(data?.data?.rows[0]?.id);
           } else {
             history.push("/organizations/create");
           }

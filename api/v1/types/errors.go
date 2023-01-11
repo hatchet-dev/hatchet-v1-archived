@@ -7,6 +7,7 @@ const (
 	ErrCodeForbidden           uint = 1403
 	ErrCodeNotFound            uint = 1404
 	ErrCodeUnavailable         uint = 1405
+	ErrCodeEmailNotVerified    uint = 6000
 	ErrCodeInternalServerError uint = 1500
 )
 

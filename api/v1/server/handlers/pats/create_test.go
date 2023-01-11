@@ -60,7 +60,7 @@ func TestCreatePATDuplicate(t *testing.T) {
 			Errors: []types.APIError{
 				{
 					Code:        types.ErrCodeBadRequest,
-					Description: fmt.Sprintf("Personal access token already exists with display_name %s for this user", testutils.PATModels[0].DisplayName),
+					Description: fmt.Sprintf("Personal access token already exists with name %s for this user", testutils.PATModels[0].DisplayName),
 				},
 			},
 		})

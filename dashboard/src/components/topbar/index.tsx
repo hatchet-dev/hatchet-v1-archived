@@ -1,11 +1,11 @@
-import { FlexRow, MaterialIcon } from "components/globals";
+import { FlexRow, FlexRowLeft } from "components/globals";
 import Selector, { Selection } from "components/selector";
 import React from "react";
-import github from "assets/github.png";
 import { TopBarProductName, TopBarWrapper } from "./styles";
 import api from "shared/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useHistory } from "react-router-dom";
+import Logo from "components/logo";
 
 const options = [
   {
@@ -20,7 +20,13 @@ const options = [
   },
 ];
 
-const TopBar: React.FunctionComponent = () => {
+type Props = {
+  is_authenticated?: boolean;
+};
+
+const TopBar: React.FunctionComponent<Props> = ({
+  is_authenticated = true,
+}) => {
   const history = useHistory();
 
   const { data, refetch } = useQuery({
@@ -46,22 +52,27 @@ const TopBar: React.FunctionComponent = () => {
     if (selection.value == "logout") {
       mutate({});
     } else if (selection.value == "settings") {
-      history.push("/user/settings");
+      history.push("/user/settings/profile");
     }
   };
 
   return (
-    <TopBarWrapper>
+    <TopBarWrapper is_authenticated={is_authenticated}>
       <FlexRow>
-        <TopBarProductName>Hatchet</TopBarProductName>
-        <Selector
-          placeholder={data?.data?.display_name}
-          placeholder_material_icon="person"
-          options={options}
-          select={onSelect}
-          option_alignment="right"
-          fill_selection={false}
-        />
+        <FlexRowLeft>
+          <Logo height="36px" width="36px" padding="6px" />
+          <TopBarProductName>Hatchet</TopBarProductName>
+        </FlexRowLeft>
+        {is_authenticated && (
+          <Selector
+            placeholder={data?.data?.display_name}
+            placeholder_material_icon="person"
+            options={options}
+            select={onSelect}
+            option_alignment="right"
+            fill_selection={false}
+          />
+        )}
       </FlexRow>
     </TopBarWrapper>
   );

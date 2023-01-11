@@ -30,21 +30,26 @@ func NewAuthNFactory(
 // NewAuthenticated creates a new instance of `AuthN` that implements the http.Handler
 // interface.
 func (f *AuthNFactory) NewAuthenticated(next http.Handler) http.Handler {
-	return &AuthN{next, f.config, false}
+	return &AuthN{next, f.config, true, false}
+}
+
+func (f *AuthNFactory) NewAuthenticatedWithoutEmailVerification(next http.Handler) http.Handler {
+	return &AuthN{next, f.config, false, false}
 }
 
 // NewAuthenticatedWithRedirect creates a new instance of `AuthN` that implements the http.Handler
 // interface. This handler redirects the user to login if the user is not attached, and stores a
 // redirect URI in the session, if the session exists.
-func (f *AuthNFactory) NewAuthenticatedWithRedirect(next http.Handler) http.Handler {
-	return &AuthN{next, f.config, true}
+func (f *AuthNFactory) NewAuthenticatedWithRedirect(requireEmailVerification bool, next http.Handler) http.Handler {
+	return &AuthN{next, f.config, requireEmailVerification, true}
 }
 
 // AuthN implements the authentication middleware
 type AuthN struct {
-	next     http.Handler
-	config   *server.Config
-	redirect bool
+	next                     http.Handler
+	config                   *server.Config
+	requireEmailVerification bool
+	redirect                 bool
 }
 
 // ServeHTTP attaches an authenticated subject to the request context,
@@ -135,6 +140,17 @@ func (authn *AuthN) sendForbiddenError(err error, w http.ResponseWriter, r *http
 	apierrors.HandleAPIError(authn.config.Logger, authn.config.ErrorAlerter, w, r, reqErr, true)
 }
 
+// sendEmailNotVerifiedError sends a 400 Bad Request error to the end user indicating that the email
+// has not been verified
+func (authn *AuthN) sendEmailNotVerifiedError(w http.ResponseWriter, r *http.Request) {
+	reqErr := apierrors.NewErrPassThroughToClient(types.APIError{
+		Description: "Email is not verified. Please verify your email and try again.",
+		Code:        types.ErrCodeEmailNotVerified,
+	}, http.StatusUnprocessableEntity)
+
+	apierrors.HandleAPIError(authn.config.Logger, authn.config.ErrorAlerter, w, r, reqErr, true)
+}
+
 var errInvalidToken = fmt.Errorf("authorization header exists, but token is not valid")
 var errInvalidAuthHeader = fmt.Errorf("invalid authorization header in request")
 
@@ -167,6 +183,16 @@ func (authn *AuthN) nextWithUserID(w http.ResponseWriter, r *http.Request, userI
 
 	if err != nil {
 		authn.sendForbiddenError(fmt.Errorf("user with id %s not found in database", userID), w, r)
+		return
+	}
+
+	if !authn.config.AuthConfig.IsEmailAllowed(user.Email) {
+		authn.sendForbiddenError(fmt.Errorf("email is not in restricted domain list"), w, r)
+		return
+	}
+
+	if authn.requireEmailVerification && !user.EmailVerified {
+		authn.sendEmailNotVerifiedError(w, r)
 		return
 	}
 

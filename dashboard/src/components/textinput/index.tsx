@@ -1,5 +1,5 @@
-import { FlexCol, Relative, Span } from "components/globals";
-import React, { useEffect, useRef, useState } from "react";
+import { FlexCol } from "components/globals";
+import React, { useEffect, useState } from "react";
 import usePrevious from "shared/hooks/useprevious";
 import { SmallSpan, StyledInput } from "./styles";
 

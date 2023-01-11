@@ -1,23 +1,8 @@
-import BackText from "components/backtext";
-import Breadcrumbs from "components/breadcrumbs";
 import StandardButton from "components/buttons";
-import {
-  FlexRowRight,
-  H1,
-  H2,
-  H3,
-  H4,
-  HorizontalSpacer,
-  P,
-  Span,
-} from "components/globals";
-import Paginator from "components/paginator";
+import { FlexRowRight, H4, HorizontalSpacer } from "components/globals";
 import SectionArea from "components/sectionarea";
-import SectionCard from "components/sectioncard";
 import Table from "components/table";
-import TabList from "components/tablist";
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import React from "react";
 
 const ExpandedModuleMonitors: React.FC = () => {
   const columns = [

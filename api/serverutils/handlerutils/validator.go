@@ -66,17 +66,19 @@ func (v *DefaultValidator) Validate(s interface{}) apierrors.RequestError {
 
 		// case on the hardcoded mappings for certain validators; otherwise, just add the safe
 		// external error
-		switch strings.ToLower(errObj.Field) + "-" + strings.ToLower(errObj.Condition) {
-		case "email-email", "inviteeemail-email":
-			errorStrs[i] = string(EmailErr)
-		case "password-password":
+		if strings.ToLower(errObj.Condition) == "password" {
 			errorStrs[i] = string(PasswordErr)
-		case "hatchet-name-hatchet-name":
-			errorStrs[i] = string(HatchetNameErr)
-		case "uuid-uuid":
-			errorStrs[i] = string(UUIDErr)
-		default:
-			errorStrs[i] = errObj.SafeExternalError()
+		} else {
+			switch strings.ToLower(errObj.Field) + "-" + strings.ToLower(errObj.Condition) {
+			case "email-email", "inviteeemail-email":
+				errorStrs[i] = string(EmailErr)
+			case "hatchet-name-hatchet-name":
+				errorStrs[i] = string(HatchetNameErr)
+			case "uuid-uuid":
+				errorStrs[i] = string(UUIDErr)
+			default:
+				errorStrs[i] = errObj.SafeExternalError()
+			}
 		}
 	}
 

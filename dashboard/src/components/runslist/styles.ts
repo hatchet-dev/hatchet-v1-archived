@@ -4,7 +4,6 @@ import {
   FlexRow,
   textFontStack,
 } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const RunListWrapper = styled(FlexCol)`

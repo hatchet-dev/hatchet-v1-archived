@@ -165,6 +165,350 @@ func GetUserRoutes(
 		})
 	}
 
+	// POST /api/v1/users/current/reset_password_manual -> users.NewResetPasswordManualHandler
+	// swagger:operation POST /api/v1/users/current/reset_password_manual resetPasswordManual
+	//
+	// ### Description
+	//
+	// Resets a password for a user using the old password as validation.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Reset password (manual)
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: ResetPasswordManualRequest
+	//     description: The old password and new password
+	//     schema:
+	//       $ref: '#/definitions/ResetPasswordManualRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully reset password
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	resetPasswordManualEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/reset_password_manual",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	resetPasswordManualHandler := users.NewResetPasswordManualHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: resetPasswordManualEndpoint,
+		Handler:  resetPasswordManualHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/reset_password_email -> users.NewResetPasswordEmailHandler
+	// swagger:operation POST /api/v1/users/reset_password_email resetPasswordEmail
+	//
+	// ### Description
+	//
+	// Resets a password for a user by sending them a verification email.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Reset password (email)
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: ResetPasswordEmailRequest
+	//     description: Request for resetting a password over email
+	//     schema:
+	//       $ref: '#/definitions/ResetPasswordEmailRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully triggered password reset
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	resetPasswordEmailEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/reset_password_email",
+			},
+			Scopes: []types.PermissionScope{
+				types.NoUserScope,
+			},
+		},
+	)
+
+	resetPasswordEmailHandler := users.NewResetPasswordEmailHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: resetPasswordEmailEndpoint,
+		Handler:  resetPasswordEmailHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/reset_password_email/verify -> users.NewResetPasswordEmailVerifyHandler
+	// swagger:operation POST /api/v1/users/reset_password_email/verify resetPasswordEmailVerify
+	//
+	// ### Description
+	//
+	// Verifies that the token id and token are valid for a given reset password request.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Verify password reset data
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: ResetPasswordEmailVerifyTokenRequest
+	//     description: Token verification data
+	//     schema:
+	//       $ref: '#/definitions/ResetPasswordEmailVerifyTokenRequest'
+	// responses:
+	//   '200':
+	//     description: Token is valid
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	resetPasswordEmailVerifyEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/reset_password_email/verify",
+			},
+			Scopes: []types.PermissionScope{
+				types.NoUserScope,
+			},
+		},
+	)
+
+	resetPasswordEmailVerifyHandler := users.NewResetPasswordEmailVerifyHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: resetPasswordEmailVerifyEndpoint,
+		Handler:  resetPasswordEmailVerifyHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/reset_password_email/finalize -> users.NewResetPasswordEmailFinalizeHandler
+	// swagger:operation POST /api/v1/users/reset_password_email/finalize resetPasswordEmailFinalize
+	//
+	// ### Description
+	//
+	// Resets a user's password given a token-based reset password mechanism.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Reset password
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: ResetPasswordEmailFinalizeRequest
+	//     description: Reset password data
+	//     schema:
+	//       $ref: '#/definitions/ResetPasswordEmailFinalizeRequest'
+	// responses:
+	//   '200':
+	//     description: Password reset successfully
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	resetPasswordEmailFinalizeEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/reset_password_email/finalize",
+			},
+			Scopes: []types.PermissionScope{
+				types.NoUserScope,
+			},
+		},
+	)
+
+	resetPasswordEmailFinalizeHandler := users.NewResetPasswordEmailFinalizeHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: resetPasswordEmailFinalizeEndpoint,
+		Handler:  resetPasswordEmailFinalizeHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/current/verify_email/resend -> users.NewResendVerifyEmailHandler
+	// swagger:operation POST /api/v1/users/current/verify_email/resend resendVerificationEmail
+	//
+	// ### Description
+	//
+	// Resends a verification email for the user.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Resend verification email.
+	// tags:
+	// - Users
+	// responses:
+	//   '200':
+	//     description: Verification email resent successfully.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	resendVerificationEmailEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/verify_email/resend",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+			AllowUnverifiedEmails: true,
+		},
+	)
+
+	resendVerificationEmailHandler := users.NewResendVerifyEmailHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: resendVerificationEmailEndpoint,
+		Handler:  resendVerificationEmailHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/users/current/verify_email/finalize -> users.NewVerifyEmailHandler
+	// swagger:operation POST /api/v1/users/current/verify_email/finalize verifyEmail
+	//
+	// ### Description
+	//
+	// Verifies a user's email via a token-based mechanism.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Verify email
+	// tags:
+	// - Users
+	// parameters:
+	//   - in: body
+	//     name: VerifyEmailRequest
+	//     description: Reset password data
+	//     schema:
+	//       $ref: '#/definitions/VerifyEmailRequest'
+	// responses:
+	//   '200':
+	//     description: Email verified successfully
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	verifyEmailEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/verify_email/finalize",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+			AllowUnverifiedEmails: true,
+		},
+	)
+
+	verifyEmailHandler := users.NewVerifyEmailHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: verifyEmailEndpoint,
+		Handler:  verifyEmailHandler,
+		Router:   r,
+	})
+
 	// POST /api/v1/users/logout -> users.NewUserLogoutHandler
 	// swagger:operation POST /api/v1/users/logout logoutUser
 	//
@@ -199,6 +543,7 @@ func GetUserRoutes(
 				Parent:       basePath,
 				RelativePath: "/users/logout",
 			},
+			AllowUnverifiedEmails: true,
 			Scopes: []types.PermissionScope{
 				types.UserScope,
 			},
@@ -247,6 +592,7 @@ func GetUserRoutes(
 				Parent:       basePath,
 				RelativePath: "/users/current",
 			},
+			AllowUnverifiedEmails: true,
 			Scopes: []types.PermissionScope{
 				types.UserScope,
 			},
@@ -349,6 +695,7 @@ func GetUserRoutes(
 				Parent:       basePath,
 				RelativePath: "/users/current",
 			},
+			AllowUnverifiedEmails: true,
 			Scopes: []types.PermissionScope{
 				types.UserScope,
 			},

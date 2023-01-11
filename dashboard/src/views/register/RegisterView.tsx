@@ -1,5 +1,6 @@
 import {
   FlexCol,
+  FlexColCenter,
   FlexRow,
   FlexRowRight,
   H2,
@@ -13,11 +14,11 @@ import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
 import StandardButton from "components/buttons";
-import SectionArea from "components/sectionarea";
-import theme, { invertedTheme } from "shared/theme";
-import styled, { css, ThemeProvider } from "styled-components";
+import theme from "shared/theme";
+import { css } from "styled-components";
 import { AppWrapper } from "components/appwrapper";
 import ErrorBar from "components/errorbar";
+import SectionAreaWithLogo from "components/sectionareawithlogo";
 
 const RegisterView: React.FunctionComponent = () => {
   const [displayName, setDisplayName] = useState("");
@@ -70,8 +71,11 @@ const RegisterView: React.FunctionComponent = () => {
     <AppWrapper>
       <FlexRow>
         <FlexCol>
-          <SectionArea width={400}>
-            <H2>Create an Account</H2>
+          <SectionAreaWithLogo width={400}>
+            <HorizontalSpacer spacepixels={18} />
+            <FlexColCenter>
+              <H2>Create a Hatchet Account</H2>
+            </FlexColCenter>
             <HorizontalSpacer
               spacepixels={10}
               overrides={css({
@@ -124,7 +128,7 @@ const RegisterView: React.FunctionComponent = () => {
                 is_loading={isLoading}
               />
             </FlexRowRight>
-          </SectionArea>
+          </SectionAreaWithLogo>
           <HorizontalSpacer spacepixels={20} />
           <FlexRowRight>
             <SmallSpan>

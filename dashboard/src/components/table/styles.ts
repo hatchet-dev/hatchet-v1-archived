@@ -1,5 +1,4 @@
 import { tableHeaderFontStack, textFontStack } from "components/globals";
-import theme from "shared/theme";
 import styled from "styled-components";
 
 export const StyledTable = styled.table`
@@ -36,14 +35,22 @@ export const StyledTHead = styled.thead`
   }
 `;
 
-export const StyledTBody = styled.tbody<{ rowHeight?: string }>`
+export const StyledTBody = styled.tbody<{
+  rowHeight?: string;
+  canClick: boolean;
+}>`
   > tr {
     background: ${(props) => props.theme.bg.shadeone};
     line-height: ${(props) => props.rowHeight || "2.5em"};
-    cursor: pointer;
+    cursor: ${(props) => (props.canClick ? "pointer" : "default")};
+
+    ${(props) =>
+      props.canClick &&
+      `
     :hover {
-      background: ${(props) => props.theme.bg.hover};
+      background: ${props.theme.bg.hover};
     }
+    `}
 
     > td {
       border-bottom: ${(props) => props.theme.line.default};
