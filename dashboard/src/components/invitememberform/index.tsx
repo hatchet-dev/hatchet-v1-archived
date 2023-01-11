@@ -39,6 +39,7 @@ const InviteMemberForm: React.FC<Props> = ({ submit, err }) => {
     if (submitted && !err) {
       setEmail("");
       setPolicy("");
+      setSubmitted(false);
       setReset(reset + 1);
     }
   }, [submitted, err]);
@@ -80,6 +81,7 @@ const InviteMemberForm: React.FC<Props> = ({ submit, err }) => {
           select={(option) => {
             setPolicy(option.value);
           }}
+          reset={reset}
         />
         <InviteAddButton
           disabled={email == "" || policy == ""}

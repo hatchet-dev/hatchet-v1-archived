@@ -3,6 +3,7 @@ import {
   FlexRowRight,
   H2,
   HorizontalSpacer,
+  SmallSpan,
 } from "components/globals";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -61,7 +62,12 @@ const InviteMembers: React.FunctionComponent = () => {
         {!isLoading && <MemberList members={data.data?.rows} />}
         <HorizontalSpacer spacepixels={24} />
         <H2>Add Members</H2>
-        <HorizontalSpacer spacepixels={24} />
+        <HorizontalSpacer spacepixels={20} />
+        <SmallSpan>
+          Add organization members by entering their email and assigning them a
+          role. You can also add members later from organization settings.
+        </SmallSpan>
+        <HorizontalSpacer spacepixels={20} />
         <InviteMemberForm
           submit={async (invite, cb) => {
             try {
