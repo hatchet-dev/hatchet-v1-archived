@@ -54,6 +54,7 @@ const FinalizeResetPasswordView: React.FunctionComponent = () => {
   });
 
   const resetMutation = useMutation(api.resetPasswordEmailFinalize, {
+    mutationKey: ["reset_password_email"],
     onSuccess: (data) => {
       setSuccess(true);
     },

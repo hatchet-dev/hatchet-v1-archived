@@ -41,6 +41,7 @@ const CreatePATForm: React.FunctionComponent<Props> = ({ post_create }) => {
   const [err, setErr] = useState("");
 
   const { mutate, isLoading } = useMutation(api.createPersonalAccessToken, {
+    mutationKey: ["create_pat"],
     onSuccess: (data) => {
       setCreatedToken(data?.data);
     },

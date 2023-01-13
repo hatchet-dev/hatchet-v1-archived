@@ -28,7 +28,7 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
   const location = useLocation();
   const history = useHistory();
   const isUserView = location.pathname.includes("/user");
-  const [currOrgId, setCurrOrgId] = useAtom(currOrgAtom);
+  const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
 
   const { data, isLoading } = useQuery({
     queryKey: ["current_user_organizations"],
@@ -41,9 +41,13 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
 
   const onSelectOrg = (option: Selection) => {
     if (option.value == "new_organization") {
-      history.push("/organizations/create");
+      history.push("/organization/create");
     } else {
-      setCurrOrgId(option.value);
+      for (let org of data?.data?.rows) {
+        if (option.value == org.id) {
+          setCurrOrg(org);
+        }
+      }
     }
   };
 
@@ -61,7 +65,7 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
     }
 
     if (isLoading) {
-      return <Spinner />;
+      return <div>Loading</div>;
     }
 
     const selectOptions = data.data.rows
@@ -83,7 +87,7 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
     return (
       <Selector
         placeholder={
-          selectOptions.filter((org) => org.value == currOrgId)[0]?.label
+          selectOptions.filter((org) => org.value == currOrg.id)[0]?.label
         }
         placeholder_material_icon="corporate_fare"
         options={selectOptions}

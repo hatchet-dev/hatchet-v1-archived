@@ -6,27 +6,24 @@ import TextInput from "components/textinput";
 import SectionArea from "components/sectionarea";
 import StandardButton from "components/buttons";
 import ErrorBar from "components/errorbar";
+import { currOrgAtom } from "shared/atoms/atoms";
+import { useAtom } from "jotai";
+import { UpdateOrganizationRequest } from "shared/api/generated/data-contracts";
 
-const UserMetaForm: React.FunctionComponent = () => {
+const OrganizationMetaForm: React.FunctionComponent = () => {
+  const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
   const [displayName, setDisplayName] = useState("");
   const [err, setErr] = useState("");
 
-  const query = useQuery({
-    queryKey: ["current_user"],
-    queryFn: async () => {
-      const res = await api.getCurrentUser();
-      return res;
+  const { mutate, isLoading } = useMutation({
+    mutationKey: ["update_organization", currOrg.id],
+    mutationFn: (orgUpdate: UpdateOrganizationRequest) => {
+      return api.updateOrganization(currOrg.id, orgUpdate);
     },
-    retry: false,
-  });
-
-  const isUserLoading = query.isLoading;
-  const data = query.data;
-
-  const { mutate, isLoading } = useMutation(api.updateCurrentUser, {
-    mutationKey: ["update_current_user"],
     onSuccess: (data) => {
-      query.refetch();
+      if (data?.data) {
+        setCurrOrg(data?.data);
+      }
     },
     onError: (err: any) => {
       if (!err.error.errors || err.error.errors.length == 0) {
@@ -38,7 +35,7 @@ const UserMetaForm: React.FunctionComponent = () => {
   });
 
   const submit = () => {
-    if (displayName != "" && displayName != data?.data?.display_name) {
+    if (displayName != "" && displayName != currOrg?.display_name) {
       mutate({
         display_name: displayName,
       });
@@ -46,25 +43,16 @@ const UserMetaForm: React.FunctionComponent = () => {
   };
 
   return (
-    <SectionArea width={600} loading={isUserLoading}>
+    <SectionArea>
       <TextInput
         placeholder="Hatchet User"
-        initial_value={data?.data?.display_name}
-        label="Your name"
+        initial_value={currOrg?.display_name}
+        label="Display name"
         type="text"
         width="400px"
         on_change={(val) => {
           setDisplayName(val);
         }}
-      />
-      <HorizontalSpacer spacepixels={20} />
-      <TextInput
-        placeholder="you@example.com"
-        initial_value={data?.data?.email}
-        label="Your email"
-        type="text"
-        width="400px"
-        disabled={true}
       />
       <HorizontalSpacer spacepixels={30} />
       {err && <ErrorBar text={err} />}
@@ -77,9 +65,7 @@ const UserMetaForm: React.FunctionComponent = () => {
           on_click={() => {
             submit();
           }}
-          disabled={
-            displayName == "" || displayName == data?.data?.display_name
-          }
+          disabled={displayName == "" || displayName == currOrg?.display_name}
           margin={"0"}
           is_loading={isLoading}
         />
@@ -88,4 +74,4 @@ const UserMetaForm: React.FunctionComponent = () => {
   );
 };
 
-export default UserMetaForm;
+export default OrganizationMetaForm;

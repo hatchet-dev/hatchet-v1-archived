@@ -28,6 +28,7 @@ const RegisterView: React.FunctionComponent = () => {
   const history = useHistory();
 
   const { mutate, isLoading } = useMutation(api.createUser, {
+    mutationKey: ["create_user"],
     onSuccess: (data) => {
       history.push("/");
     },

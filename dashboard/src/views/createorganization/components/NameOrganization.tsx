@@ -12,15 +12,16 @@ import { currOrgAtom } from "shared/atoms/atoms";
 
 const NameOrganization: React.FunctionComponent = () => {
   const [displayName, setDisplayName] = useState("");
-  const [, setCurrOrgId] = useAtom(currOrgAtom);
+  const [, setCurrOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
   const history = useHistory();
 
   const { mutate, isLoading } = useMutation(api.createOrganization, {
+    mutationKey: ["create_organization"],
     onSuccess: (data) => {
-      setCurrOrgId(data.data.id);
+      setCurrOrg(data.data);
 
-      history.push("/organizations/create/invite_members");
+      history.push("/organization/create/invite_members");
     },
     onError: (err: any) => {
       if (!err.error.errors || err.error.errors.length == 0) {

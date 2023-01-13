@@ -39,6 +39,7 @@ const TopBar: React.FunctionComponent<Props> = ({
   });
 
   const { mutate, isLoading } = useMutation(api.logoutUser, {
+    mutationKey: ["logout"],
     onSuccess: (data) => {
       refetch();
       history.push("/login");

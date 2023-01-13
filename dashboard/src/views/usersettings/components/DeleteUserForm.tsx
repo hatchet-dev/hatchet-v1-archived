@@ -13,7 +13,7 @@ import SectionArea from "components/sectionarea";
 import StandardButton from "components/buttons";
 import ErrorBar from "components/errorbar";
 
-const UserMetaForm: React.FunctionComponent = () => {
+const DeleteUserForm: React.FunctionComponent = () => {
   const [success, setSuccess] = useState(false);
   const [err, setErr] = useState("");
 
@@ -36,6 +36,7 @@ const UserMetaForm: React.FunctionComponent = () => {
   });
 
   const { mutate, isLoading } = useMutation(api.deleteCurrentUser, {
+    mutationKey: ["delete_current_user"],
     onSuccess: (data) => {
       setSuccess(true);
     },
@@ -111,4 +112,4 @@ const UserMetaForm: React.FunctionComponent = () => {
   );
 };
 
-export default UserMetaForm;
+export default DeleteUserForm;

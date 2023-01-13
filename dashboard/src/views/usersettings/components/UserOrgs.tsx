@@ -25,6 +25,7 @@ const UserOrgs: React.FunctionComponent = () => {
   });
 
   const leaveOrgMutation = useMutation({
+    mutationKey: ["leave_organization"],
     mutationFn: (orgId: string) => {
       return api.leaveOrg(orgId);
     },

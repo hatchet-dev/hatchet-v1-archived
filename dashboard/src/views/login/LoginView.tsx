@@ -27,8 +27,8 @@ const LoginView: React.FunctionComponent = () => {
   const history = useHistory();
 
   const { mutate, isLoading } = useMutation(api.loginUser, {
+    mutationKey: ["login_user"],
     onSuccess: (data) => {
-      console.log(data);
       history.push("/");
     },
     onError: (err: any) => {

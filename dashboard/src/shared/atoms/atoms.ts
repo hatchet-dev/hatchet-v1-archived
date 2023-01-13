@@ -1,13 +1,24 @@
 import { atom } from "jotai";
+import { Organization } from "shared/api/generated/data-contracts";
 
-const currOrgIdKey = "currOrgId";
+const getInitialValue = (key: string) => {
+  const item = localStorage.getItem(key);
 
-const currOrgAtomInit = atom(localStorage.getItem(currOrgIdKey) ?? "");
+  if (item !== null) {
+    return JSON.parse(item);
+  }
+
+  return null;
+};
+
+const currOrgKey = "currOrg";
+
+const currOrgAtomInit = atom(getInitialValue(currOrgKey));
 
 export const currOrgAtom = atom(
   (get) => get(currOrgAtomInit),
-  (get, set, newCurrOrgId: string) => {
-    set(currOrgAtomInit, newCurrOrgId);
-    localStorage.setItem(currOrgIdKey, newCurrOrgId);
+  (_get, set, newVal: Organization) => {
+    set(currOrgAtomInit, newVal);
+    localStorage.setItem(currOrgKey, JSON.stringify(newVal));
   }
 );

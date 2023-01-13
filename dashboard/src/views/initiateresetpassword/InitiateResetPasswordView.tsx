@@ -26,6 +26,7 @@ const InitiateResetPasswordView: React.FunctionComponent = () => {
   const history = useHistory();
 
   const { mutate, isLoading } = useMutation(api.resetPasswordEmail, {
+    mutationKey: ["reset_password_email"],
     onSuccess: (data) => {
       setSuccess(true);
     },

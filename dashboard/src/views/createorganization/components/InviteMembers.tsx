@@ -12,29 +12,35 @@ import StandardButton from "components/buttons";
 import SectionArea from "components/sectionarea";
 import api from "shared/api";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
-import InviteMemberForm from "components/invitememberform";
+import InviteMemberForm from "components/organization/invitememberform";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import MemberList from "components/memberlist";
+import MemberList from "components/organization/memberlist";
 import Spinner from "components/loaders";
+import Placeholder from "components/placeholder";
+import MemberManager from "components/organization/membermanager/MemberManager";
+
+const inviteMemberHelper =
+  "Add organization members by entering their email and assigning them a role. You can also add members later from organization settings.";
 
 const InviteMembers: React.FunctionComponent = () => {
-  const [currOrgId] = useAtom(currOrgAtom);
+  const [currOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
   const history = useHistory();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["current_organization_members"],
     queryFn: async () => {
-      const res = await api.listOrgMembers(currOrgId);
+      const res = await api.listOrgMembers(currOrg.id);
       return res;
     },
     retry: false,
   });
 
   const mutation = useMutation({
+    mutationKey: ["create_organization_invite", currOrg.id],
     mutationFn: (invite: CreateOrgMemberInviteRequest) => {
-      return api.createOrgMemberInvite(currOrgId, invite);
+      return api.createOrgMemberInvite(currOrg.id, invite);
     },
     onSuccess: (data) => {
       setErr("");
@@ -49,35 +55,14 @@ const InviteMembers: React.FunctionComponent = () => {
     },
   });
 
-  if (!currOrgId) {
+  if (!currOrg) {
     history.push("/");
   }
 
   return (
     <FlexCol>
       <SectionArea width={600}>
-        <H2>Current Members</H2>
-        <HorizontalSpacer spacepixels={24} />
-        {isLoading && <Spinner />}
-        {!isLoading && <MemberList members={data.data?.rows} />}
-        <HorizontalSpacer spacepixels={24} />
-        <H2>Add Members</H2>
-        <HorizontalSpacer spacepixels={20} />
-        <SmallSpan>
-          Add organization members by entering their email and assigning them a
-          role. You can also add members later from organization settings.
-        </SmallSpan>
-        <HorizontalSpacer spacepixels={20} />
-        <InviteMemberForm
-          submit={async (invite, cb) => {
-            try {
-              await mutation.mutateAsync(invite);
-            } catch (e) {}
-
-            cb();
-          }}
-          err={err}
-        />
+        <MemberManager add_member_helper={inviteMemberHelper} />
       </SectionArea>
       <HorizontalSpacer spacepixels={24} />
       <FlexRowRight>

@@ -216,6 +216,7 @@ export const FlexColCenter = styled(FlexCol)`
 
 export const FlexColScroll = styled(FlexCol)`
   overflow-x: auto;
+  padding-right: 12px;
 `;
 
 export const Grid = styled.div`

@@ -5,7 +5,7 @@ import {
   StyledClickableP,
 } from "components/globals";
 import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { useHistory } from "react-router-dom";
 import api from "shared/api";
@@ -13,6 +13,7 @@ import TextInput from "components/textinput";
 import SectionArea from "components/sectionarea";
 import StandardButton from "components/buttons";
 import ErrorBar from "components/errorbar";
+import { ResetPasswordEmailRequest } from "shared/api/generated/data-contracts";
 
 const UserMetaForm: React.FunctionComponent = () => {
   const [oldPassword, setOldPassword] = useState("");
@@ -20,7 +21,17 @@ const UserMetaForm: React.FunctionComponent = () => {
   const [successText, setSuccessText] = useState("");
   const [err, setErr] = useState("");
 
+  const currentUserQuery = useQuery({
+    queryKey: ["current_user"],
+    queryFn: async () => {
+      const res = await api.getCurrentUser();
+      return res;
+    },
+    retry: false,
+  });
+
   const resetPasswordMutation = useMutation(api.resetPasswordManual, {
+    mutationKey: ["reset_password_manual"],
     onSuccess: (data) => {
       setSuccessText("You successfully changed your password.");
     },
@@ -33,8 +44,13 @@ const UserMetaForm: React.FunctionComponent = () => {
     },
   });
 
-  const sendEmailMutation = useMutation(api.resendVerificationEmail, {
-    onSuccess: (data) => {
+  const sendEmailMutation = useMutation({
+    mutationFn: (resetReq: ResetPasswordEmailRequest) => {
+      return api.resetPasswordEmail(resetReq, {
+        credentials: "omit",
+      });
+    },
+    onSuccess: () => {
       setSuccessText(
         "Reset password email sent. Remember to check your spam folder."
       );
@@ -58,7 +74,13 @@ const UserMetaForm: React.FunctionComponent = () => {
   };
 
   const sendVerificationEmail = () => {
-    sendEmailMutation.mutate({});
+    const email = currentUserQuery.data?.data?.email;
+
+    if (email) {
+      sendEmailMutation.mutate({
+        email: email,
+      });
+    }
   };
 
   if (successText) {
@@ -95,7 +117,7 @@ const UserMetaForm: React.FunctionComponent = () => {
       <HorizontalSpacer spacepixels={30} />
       <FlexRow>
         <StyledClickableP onClick={() => sendVerificationEmail()}>
-          Send verification email instead.
+          Send reset password email instead.
         </StyledClickableP>
         <StandardButton
           label="Reset Password"

@@ -36,6 +36,7 @@ const VerifyEmailView: React.FunctionComponent = () => {
   }, [tokenId, token]);
 
   const verifyMutation = useMutation(api.verifyEmail, {
+    mutationKey: ["verify_email"],
     onSuccess: (data) => {
       setSuccess(true);
     },

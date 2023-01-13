@@ -22,6 +22,7 @@ const VerifyEmailPromptView: React.FunctionComponent = () => {
   const [err, setErr] = useState("");
 
   const resendMutation = useMutation(api.resendVerificationEmail, {
+    mutationKey: ["resend_verification_email"],
     onSuccess: (data) => {
       setSuccess(true);
     },

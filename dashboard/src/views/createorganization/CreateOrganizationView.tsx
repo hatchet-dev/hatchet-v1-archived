@@ -12,9 +12,9 @@ const CreateOrganizationView: React.FunctionComponent = () => {
 
   const renderForm = () => {
     switch (location.pathname) {
-      case "/organizations/create":
+      case "/organization/create":
         return <NameOrganization />;
-      case "/organizations/create/invite_members":
+      case "/organization/create/invite_members":
         return <InviteMembers />;
     }
   };

@@ -1,4 +1,9 @@
-import { MaterialIcon } from "components/globals";
+import StandardButton from "components/buttons";
+import {
+  FlexRowRight,
+  MaterialIcon,
+  StyledDeprecatedText,
+} from "components/globals";
 import React from "react";
 import { OrganizationMemberSanitized } from "shared/api/generated/data-contracts";
 import { capitalize } from "shared/utils";
@@ -11,9 +16,10 @@ import {
 
 export type Props = {
   members: OrganizationMemberSanitized[];
+  remove_member?: (member: OrganizationMemberSanitized) => void;
 };
 
-const MemberList: React.FC<Props> = ({ members }) => {
+const MemberList: React.FC<Props> = ({ members, remove_member }) => {
   return (
     <MemberListContainer>
       {members.map((member, i) => {
@@ -26,6 +32,14 @@ const MemberList: React.FC<Props> = ({ members }) => {
               <MaterialIcon className="material-icons">person</MaterialIcon>
               <div>{capitalize(member.organization_policies[0]?.name)}</div>
             </PolicyName>
+            {remove_member &&
+              member.organization_policies[0]?.name != "owner" && (
+                <StandardButton
+                  label="Remove"
+                  style_kind="muted"
+                  on_click={() => remove_member(member)}
+                />
+              )}
           </MemberContainer>
         );
       })}

@@ -26,6 +26,8 @@ import InitiateResetPasswordView from "views/initiateresetpassword/InitiateReset
 import FinalizeResetPasswordView from "views/finalizeresetpassword/FinalizeResetPasswordView";
 import VerifyEmailView from "views/verifyemail/VerifyEmail";
 import AcceptOrganizationInviteView from "views/acceptorganizationinvite/AcceptOrganizationInviteView";
+import OrganizationSettingsView from "views/organizationsettings/OrganizationSettingsView";
+import SettingsView from "views/settings/SettingsView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -151,7 +153,7 @@ const AppContents: React.FunctionComponent = () => {
             render={() => renderUserSettingsContents()}
           ></Route>
           <Route
-            path="/organizations/create"
+            path="/organization/create"
             render={() => renderOnboardingContents()}
           ></Route>
           <Route path="/" render={() => renderHomeContents()}></Route>
@@ -191,7 +193,7 @@ const AppContents: React.FunctionComponent = () => {
           <>
             <Switch>
               <Route
-                path="/organizations/create"
+                path="/organization/create"
                 render={() => <CreateOrganizationView />}
               ></Route>
             </Switch>
@@ -210,6 +212,22 @@ const AppContents: React.FunctionComponent = () => {
           <ViewWrapper>
             <>
               <Switch>
+                <Route
+                  path="/settings/organization"
+                  render={() => (
+                    <SettingsView defaultOption="Organization Settings" />
+                  )}
+                ></Route>
+                <Route
+                  path="/settings/team"
+                  render={() => <SettingsView defaultOption="Team Settings" />}
+                ></Route>
+                <Route
+                  path="/settings"
+                  render={() => (
+                    <SettingsView defaultOption="Organization Settings" />
+                  )}
+                ></Route>
                 <Route
                   path="/monitoring"
                   render={() => <MonitoringView />}

@@ -31,6 +31,7 @@ const UserPATsView: React.FunctionComponent = () => {
   });
 
   const revokeMutation = useMutation({
+    mutationKey: ["revoke_pat"],
     mutationFn: (id: string) => {
       return api.revokePersonalAccessToken(id);
     },

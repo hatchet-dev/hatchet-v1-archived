@@ -39,6 +39,7 @@ const AcceptOrganizationInviteView: React.FunctionComponent = () => {
   }, [tokenId, token, orgName, inviterAddress]);
 
   const acceptMutation = useMutation({
+    mutationKey: ["accept_invite"],
     mutationFn: () => {
       return api.acceptOrgMemberInvite(tokenId, token);
     },
