@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import BackText from "components/backtext";
-import Spinner from "components/loaders";
-import Selector, { Selection } from "components/selector";
+import { BackText, Selector, Selection } from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { useAtom } from "jotai";

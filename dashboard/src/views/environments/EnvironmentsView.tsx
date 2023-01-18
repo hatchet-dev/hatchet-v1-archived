@@ -1,11 +1,13 @@
-import { Grid, H1, HorizontalSpacer, P } from "components/globals";
-import { GridCard } from "components/gridcard";
+import {
+  Grid,
+  H1,
+  HorizontalSpacer,
+  P,
+  GridCard,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
-import { useHistory } from "react-router-dom";
 
 const EnvironmentsView: React.FunctionComponent = () => {
-  let history = useHistory();
-
   return (
     <>
       <H1>Environments</H1>

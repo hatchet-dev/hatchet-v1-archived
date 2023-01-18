@@ -1,9 +1,12 @@
-import { FlexCol, FlexRow, H1, HorizontalSpacer } from "components/globals";
+import {
+  FlexCol,
+  FlexRow,
+  H1,
+  HorizontalSpacer,
+  AppWrapper,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
-import { useHistory, useParams, useLocation } from "react-router-dom";
-import github from "assets/github.png";
-import branch from "assets/branch.png";
-import { AppWrapper } from "components/appwrapper";
+import { useLocation } from "react-router-dom";
 import NameOrganization from "./components/NameOrganization";
 import InviteMembers from "./components/InviteMembers";
 

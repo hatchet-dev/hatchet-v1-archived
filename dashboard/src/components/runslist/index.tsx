@@ -1,4 +1,4 @@
-import { MaterialIcon } from "components/globals";
+import { MaterialIcon } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import ExpandedRun from "../../views/expandedmodule/components/expandedrun";
 import {

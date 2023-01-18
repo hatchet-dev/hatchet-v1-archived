@@ -7,19 +7,19 @@ import {
   HorizontalSpacer,
   P,
   StyledLink,
-} from "components/globals";
-import TextInput from "components/textinput";
+  TextInput,
+  StandardButton,
+  AppWrapper,
+  ErrorBar,
+  SectionAreaWithLogo,
+} from "@hatchet-dev/hatchet-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
 import theme from "shared/theme";
 import { css } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
-import ErrorBar from "components/errorbar";
 import useQueryParam from "shared/hooks/usequeryparam";
-import SectionAreaWithLogo from "components/sectionareawithlogo";
 
 const FinalizeResetPasswordView: React.FunctionComponent = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -150,7 +150,7 @@ const FinalizeResetPasswordView: React.FunctionComponent = () => {
   const renderContents = () => {
     if (isError) {
       return (
-        <SectionAreaWithLogo width={400} loading={isLoading}>
+        <SectionAreaWithLogo width="400px" loading={isLoading}>
           <HorizontalSpacer spacepixels={18} />
           <P>
             This password reset link is no longer valid.{" "}
@@ -163,7 +163,7 @@ const FinalizeResetPasswordView: React.FunctionComponent = () => {
     }
 
     return (
-      <SectionAreaWithLogo width={400} loading={isLoading}>
+      <SectionAreaWithLogo width="400px" loading={isLoading}>
         <HorizontalSpacer spacepixels={18} />
         <FlexColCenter>
           <H2>Reset your Password</H2>

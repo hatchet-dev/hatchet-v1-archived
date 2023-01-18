@@ -1,12 +1,15 @@
-import { AppWrapper } from "components/appwrapper";
+import {
+  AppWrapper,
+  ViewWrapper,
+  TopBar,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import theme, { GlobalStyle } from "shared/theme";
 import TemplatesView from "views/templates/TemplatesView";
 import ModulesView from "views/modules/ModulesView";
-import TopBar from "components/topbar";
+import TopBarWithProfile from "components/topbarwithprofile";
 import SideBar, { SidebarLink } from "components/sidebar";
-import { ViewWrapper } from "components/viewwrapper";
 import EnvironmentsView from "views/environments/EnvironmentsView";
 import HomeView from "views/home/HomeView";
 import MonitoringView from "views/monitoring/MonitoringView";
@@ -99,7 +102,7 @@ const AppContents: React.FunctionComponent = () => {
             path="/login"
             render={() => (
               <AuthChecker check_authenticated={false}>
-                <TopBar is_authenticated={false} />
+                <TopBar />
                 <LoginView />
               </AuthChecker>
             )}
@@ -165,7 +168,7 @@ const AppContents: React.FunctionComponent = () => {
   const renderUserSettingsContents = () => {
     return (
       <AuthChecker check_authenticated={true}>
-        <TopBar />
+        <TopBarWithProfile />
         <SideBar links={UserSidebarLinks} />
         <ViewWrapper>
           <>
@@ -188,7 +191,7 @@ const AppContents: React.FunctionComponent = () => {
   const renderOnboardingContents = () => {
     return (
       <AuthChecker check_authenticated={true}>
-        <TopBar />
+        <TopBarWithProfile />
         <ViewWrapper>
           <>
             <Switch>
@@ -206,7 +209,7 @@ const AppContents: React.FunctionComponent = () => {
   const renderHomeContents = () => {
     return (
       <AuthChecker check_authenticated={true}>
-        <TopBar />
+        <TopBarWithProfile />
         <Populator organization>
           <SideBar links={DashboardSidebarLinks} />
           <ViewWrapper>

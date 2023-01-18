@@ -25,7 +25,7 @@ export const theme = {
     selected: "1px solid #ffffffaa",
   },
   text: {
-    default: "#ffffffcc",
+    default: "#ffffffdd",
     link: "#ae85ff",
     codehighlight: "#6b84ff",
     alt: "white",
@@ -35,8 +35,8 @@ export const theme = {
 
 export const invertedTheme = {
   bg: {
-    default: "#180B5F",
-    highlight: "#180B5F",
+    default: "#462dcf",
+    highlight: "#462dcf",
     reverse: "#16171A",
     wash: "#FAFAFA",
     divider: "white",

@@ -1,4 +1,4 @@
-import { FlexColScroll, FlexRow } from "components/globals";
+import { FlexColScroll, FlexRow } from "@hatchet-dev/hatchet-components";
 import styled from "styled-components";
 
 export const OrgListContainer = styled(FlexColScroll)`

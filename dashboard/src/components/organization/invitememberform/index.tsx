@@ -1,7 +1,11 @@
-import ErrorBar from "components/errorbar";
-import { FlexCol, HorizontalSpacer, MaterialIcon } from "components/globals";
-import Selector from "components/selector";
-import TextInput from "components/textinput";
+import {
+  FlexCol,
+  HorizontalSpacer,
+  MaterialIcon,
+  ErrorBar,
+  Selector,
+  TextInput,
+} from "@hatchet-dev/hatchet-components";
 import React, { useEffect, useState } from "react";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
 import { InviteAddButton, InviteContainer } from "./styles";

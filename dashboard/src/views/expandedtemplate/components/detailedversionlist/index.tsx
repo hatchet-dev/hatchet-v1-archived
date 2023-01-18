@@ -1,5 +1,8 @@
-import StandardButton from "components/buttons";
-import { MaterialIcon, FlexRow } from "components/globals";
+import {
+  MaterialIcon,
+  FlexRow,
+  StandardButton,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import {
   DeployedInfo,

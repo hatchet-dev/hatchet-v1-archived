@@ -1,9 +1,4 @@
-import StandardButton from "components/buttons";
-import {
-  FlexRowRight,
-  MaterialIcon,
-  StyledDeprecatedText,
-} from "components/globals";
+import { MaterialIcon, StandardButton } from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { OrganizationMemberSanitized } from "shared/api/generated/data-contracts";
 import { capitalize } from "shared/utils";

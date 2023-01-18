@@ -1,11 +1,14 @@
-import { FlexRowRight, HorizontalSpacer } from "components/globals";
+import {
+  FlexRowRight,
+  HorizontalSpacer,
+  TextInput,
+  SectionArea,
+  StandardButton,
+  ErrorBar,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import ErrorBar from "components/errorbar";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
 import { UpdateOrganizationRequest } from "shared/api/generated/data-contracts";

@@ -6,19 +6,19 @@ import {
   H2,
   HorizontalSpacer,
   P,
-} from "components/globals";
+  StandardButton,
+  AppWrapper,
+  ErrorBar,
+  SectionAreaWithLogo,
+  Spinner,
+} from "@hatchet-dev/hatchet-components";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
 import theme from "shared/theme";
 import { css } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
-import ErrorBar from "components/errorbar";
-import SectionAreaWithLogo from "components/sectionareawithlogo";
 import useQueryParam from "shared/hooks/usequeryparam";
-import Spinner from "components/loaders";
 import { stringify } from "qs";
 
 const AcceptOrganizationInviteView: React.FunctionComponent = () => {
@@ -64,7 +64,7 @@ const AcceptOrganizationInviteView: React.FunctionComponent = () => {
 
   const renderContents = () => {
     return (
-      <SectionAreaWithLogo width={400}>
+      <SectionAreaWithLogo width="400px">
         <HorizontalSpacer spacepixels={18} />
         <FlexColCenter>
           <H2>Accept Invite?</H2>

@@ -1,8 +1,13 @@
-import { H2, HorizontalSpacer, P } from "components/globals";
-import Selector, { Selection } from "components/selector";
+import {
+  H2,
+  HorizontalSpacer,
+  P,
+  TextInput,
+  Selector,
+  Selection,
+  SectionArea,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
 import { css } from "styled-components";
 import theme from "shared/theme";
 

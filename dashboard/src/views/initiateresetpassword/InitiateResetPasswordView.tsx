@@ -6,18 +6,18 @@ import {
   H2,
   HorizontalSpacer,
   P,
-} from "components/globals";
-import TextInput from "components/textinput";
+  TextInput,
+  StandardButton,
+  AppWrapper,
+  ErrorBar,
+  SectionAreaWithLogo,
+} from "@hatchet-dev/hatchet-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
 import theme from "shared/theme";
 import { css } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
-import ErrorBar from "components/errorbar";
-import SectionAreaWithLogo from "components/sectionareawithlogo";
 
 const InitiateResetPasswordView: React.FunctionComponent = () => {
   const [email, setEmail] = useState("");
@@ -121,7 +121,7 @@ const InitiateResetPasswordView: React.FunctionComponent = () => {
 
   const renderContents = () => {
     return (
-      <SectionAreaWithLogo width={400}>
+      <SectionAreaWithLogo width="400px">
         <HorizontalSpacer spacepixels={18} />
         <FlexColCenter>
           <H2>Reset your Password</H2>

@@ -1,6 +1,9 @@
-import BackText from "components/backtext";
-import { H4, HorizontalSpacer } from "components/globals";
-import SectionCard from "components/sectioncard";
+import {
+  H4,
+  HorizontalSpacer,
+  BackText,
+  SectionCard,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 
 type Props = {

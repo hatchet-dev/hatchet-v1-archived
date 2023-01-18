@@ -1,7 +1,11 @@
-import StandardButton from "components/buttons";
-import { FlexRowRight, H4, HorizontalSpacer } from "components/globals";
-import SectionArea from "components/sectionarea";
-import Table from "components/table";
+import {
+  FlexRowRight,
+  H4,
+  HorizontalSpacer,
+  StandardButton,
+  SectionArea,
+  Table,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 
 const ExpandedModuleMonitors: React.FC = () => {

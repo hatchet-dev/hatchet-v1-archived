@@ -1,5 +1,8 @@
-import { FlexCol, FlexRow, sidebarHeaderFontStack } from "components/globals";
-import theme from "shared/theme";
+import {
+  FlexCol,
+  FlexRow,
+  sidebarHeaderFontStack,
+} from "@hatchet-dev/hatchet-components";
 import styled from "styled-components";
 
 export const SidebarWrapper = styled.section`
@@ -31,7 +34,8 @@ export const SidebarLink = styled.a<{ current: boolean }>`
   margin: 4px 0;
   padding: 10px;
   text-decoration: none;
-  color: ${(props) => (props.current ? theme.text.alt : theme.text.default)};
+  color: ${(props) =>
+    props.current ? props.theme.text.alt : props.theme.text.default};
   border-radius: 6px;
 
   :hover {

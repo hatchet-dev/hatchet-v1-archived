@@ -1,11 +1,8 @@
-import { FlexRow, FlexRowLeft } from "components/globals";
-import Selector, { Selection } from "components/selector";
 import React from "react";
-import { TopBarProductName, TopBarWrapper } from "./styles";
 import api from "shared/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useHistory } from "react-router-dom";
-import Logo from "components/logo";
+import { TopBar, Selector, Selection } from "@hatchet-dev/hatchet-components";
 
 const options = [
   {
@@ -21,12 +18,10 @@ const options = [
 ];
 
 type Props = {
-  is_authenticated?: boolean;
+  children?: React.ReactNode;
 };
 
-const TopBar: React.FunctionComponent<Props> = ({
-  is_authenticated = true,
-}) => {
+const TopBarWithProfile: React.FunctionComponent<Props> = ({ children }) => {
   const history = useHistory();
 
   const { data, refetch } = useQuery({
@@ -58,25 +53,18 @@ const TopBar: React.FunctionComponent<Props> = ({
   };
 
   return (
-    <TopBarWrapper is_authenticated={is_authenticated}>
-      <FlexRow>
-        <FlexRowLeft>
-          <Logo height="36px" width="36px" padding="6px" />
-          <TopBarProductName>Hatchet</TopBarProductName>
-        </FlexRowLeft>
-        {is_authenticated && (
-          <Selector
-            placeholder={data?.data?.display_name}
-            placeholder_material_icon="person"
-            options={options}
-            select={onSelect}
-            option_alignment="right"
-            fill_selection={false}
-          />
-        )}
-      </FlexRow>
-    </TopBarWrapper>
+    <TopBar>
+      <Selector
+        placeholder={data?.data?.display_name}
+        placeholder_material_icon="person"
+        options={options}
+        select={onSelect}
+        option_alignment="right"
+        fill_selection={false}
+      />
+      {children}
+    </TopBar>
   );
 };
 
-export default TopBar;
+export default TopBarWithProfile;

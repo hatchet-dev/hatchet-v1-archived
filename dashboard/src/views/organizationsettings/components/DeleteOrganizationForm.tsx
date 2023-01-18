@@ -1,20 +1,19 @@
 import {
   FlexRowRight,
   HorizontalSpacer,
-  P,
   SmallSpan,
-} from "components/globals";
+  SectionArea,
+  StandardButton,
+  ErrorBar,
+  Confirmation,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import ErrorBar from "components/errorbar";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import Confirmation from "components/confirmation/Confirmation";
 
 const DeleteOrganizationForm: React.FunctionComponent = () => {
   const history = useHistory();

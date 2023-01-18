@@ -1,33 +1,24 @@
 import {
-  FlexColCenter,
-  H1,
   H2,
   HorizontalSpacer,
   P,
-  SmallSpan,
   FlexColScroll,
   FlexCol,
-} from "components/globals";
-import React, { useEffect, useState } from "react";
+} from "@hatchet-dev/hatchet-components";
+import React, { useState } from "react";
 import { css } from "styled-components";
 import theme from "shared/theme";
 import OrganizationMetaForm from "./components/OrganizationMetaForm";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import MemberList from "components/organization/memberlist";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import InviteMemberForm from "components/organization/invitememberform";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
-import InviteMembers from "views/createorganization/components/InviteMembers";
 import MemberManager from "components/organization/membermanager/MemberManager";
 import DeleteOrganizationForm from "./components/DeleteOrganizationForm";
-import TabList from "components/tablist";
-import usePrevious from "shared/hooks/useprevious";
 import { useHistory } from "react-router-dom";
 
 const OrganizationSettingsView: React.FunctionComponent = () => {
-  const history = useHistory();
   const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
 

@@ -1,12 +1,16 @@
-import { FlexRowRight, H2, HorizontalSpacer } from "components/globals";
-import TextInput from "components/textinput";
+import {
+  FlexRowRight,
+  H2,
+  HorizontalSpacer,
+  TextInput,
+  StandardButton,
+  SectionArea,
+  ErrorBar,
+} from "@hatchet-dev/hatchet-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
-import SectionArea from "components/sectionarea";
-import ErrorBar from "components/errorbar";
 import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 
@@ -58,7 +62,7 @@ const NameOrganization: React.FunctionComponent = () => {
   };
 
   return (
-    <SectionArea width={600}>
+    <SectionArea width="600px">
       <HorizontalSpacer spacepixels={24} />
       <H2>Name your Organization</H2>
       <HorizontalSpacer spacepixels={24} />

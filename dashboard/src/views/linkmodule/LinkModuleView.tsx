@@ -1,8 +1,12 @@
-import Breadcrumbs from "components/breadcrumbs";
-import { FlexRowRight, H1, HorizontalSpacer } from "components/globals";
+import {
+  FlexRowRight,
+  H1,
+  HorizontalSpacer,
+  Breadcrumbs,
+  StandardButton,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useHistory, useParams } from "react-router-dom";
-import StandardButton from "components/buttons";
 import ChooseGitSource from "./components/ChooseGitSource";
 import LinkVariables from "./components/LinkVariables";
 

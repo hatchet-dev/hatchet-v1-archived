@@ -1,4 +1,8 @@
-import { altTextFontStack, FlexColScroll, FlexRow } from "components/globals";
+import {
+  altTextFontStack,
+  FlexColScroll,
+  FlexRow,
+} from "@hatchet-dev/hatchet-components";
 import styled from "styled-components";
 
 export const MemberListContainer = styled(FlexColScroll)`

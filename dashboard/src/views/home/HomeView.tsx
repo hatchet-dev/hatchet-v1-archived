@@ -1,9 +1,13 @@
-import { Grid, H1, H2, HorizontalSpacer, P } from "components/globals";
-import { GridCard } from "components/gridcard";
+import {
+  Grid,
+  H1,
+  H2,
+  HorizontalSpacer,
+  P,
+  GridCard,
+} from "@hatchet-dev/hatchet-components";
 import RunsList from "components/runslist";
 import React from "react";
-
-const TabOptions = ["Runs", "Resource Explorer", "Configuration", "Settings"];
 
 const HomeView: React.FunctionComponent = () => {
   return (

@@ -8,6 +8,7 @@ type Props = {
   check_authenticated?: boolean;
   require_unverified_email?: boolean;
   allow_unverified_email?: boolean;
+  children?: React.ReactNode;
 };
 
 const AuthChecker: React.FunctionComponent<Props> = ({

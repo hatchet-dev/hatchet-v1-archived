@@ -1,8 +1,13 @@
-import StandardButton from "components/buttons";
-import Filter from "components/filter";
-import { FlexRowRight, H1, HorizontalSpacer, P } from "components/globals";
-import Paginator from "components/paginator";
-import Table from "components/table";
+import {
+  FlexRowRight,
+  H1,
+  HorizontalSpacer,
+  P,
+  StandardButton,
+  Filter,
+  Paginator,
+  Table,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useHistory } from "react-router-dom";
 

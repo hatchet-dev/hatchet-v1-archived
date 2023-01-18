@@ -51,6 +51,19 @@ module.exports = () => {
     module: {
       rules: [
         {
+          include: /node_modules\/@hatchet-dev/,
+          use: [
+            {
+              loader: require.resolve("babel-loader"),
+              options: {
+                plugins: [
+                  isDevelopment && require.resolve("react-refresh/babel"),
+                ].filter(Boolean),
+              },
+            },
+          ],
+        },
+        {
           test: /\.(ts|tsx|mjs|js|jsx)$/,
           exclude: /node_modules/,
           use: [

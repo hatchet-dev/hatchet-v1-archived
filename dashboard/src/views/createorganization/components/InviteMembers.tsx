@@ -1,23 +1,17 @@
 import {
   FlexCol,
   FlexRowRight,
-  H2,
   HorizontalSpacer,
-  SmallSpan,
-} from "components/globals";
+  StandardButton,
+  SectionArea,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import StandardButton from "components/buttons";
-import SectionArea from "components/sectionarea";
 import api from "shared/api";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
-import InviteMemberForm from "components/organization/invitememberform";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import MemberList from "components/organization/memberlist";
-import Spinner from "components/loaders";
-import Placeholder from "components/placeholder";
 import MemberManager from "components/organization/membermanager/MemberManager";
 
 const inviteMemberHelper =
@@ -61,7 +55,7 @@ const InviteMembers: React.FunctionComponent = () => {
 
   return (
     <FlexCol>
-      <SectionArea width={600}>
+      <SectionArea width="600px">
         <MemberManager add_member_helper={inviteMemberHelper} />
       </SectionArea>
       <HorizontalSpacer spacepixels={24} />

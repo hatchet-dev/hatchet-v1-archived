@@ -1,4 +1,3 @@
-import Breadcrumbs from "components/breadcrumbs";
 import {
   FlexCol,
   FlexRowRight,
@@ -9,27 +8,18 @@ import {
   P,
   SmallSpan,
   Span,
-} from "components/globals";
-import { GridCard } from "components/gridcard";
-import Example from "components/heirarchygraph";
-import Paginator from "components/paginator";
-import RunsList from "components/runslist";
-import Table from "components/table";
-import TabList from "components/tablist";
+  Breadcrumbs,
+  GridCard,
+  TextInput,
+  SectionArea,
+  StandardButton,
+  ErrorBar,
+  CopyCodeline,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import Spinner from "components/loaders";
-import SectionCard from "components/sectioncard";
-import ErrorBar from "components/errorbar";
-import OrgList from "components/orglist";
 import { CreatePATResponse } from "shared/api/generated/data-contracts";
-import CopyCodeLine from "components/copycodeline";
 
 type Props = {
   post_create: () => void;
@@ -71,7 +61,7 @@ const CreatePATForm: React.FunctionComponent<Props> = ({ post_create }) => {
           shown once, so make sure you store it somewhere safe.
         </SmallSpan>
         <HorizontalSpacer spacepixels={20} />
-        <CopyCodeLine code_line={createdToken.token} />
+        <CopyCodeline code_line={createdToken.token} />
         <HorizontalSpacer spacepixels={30} />
         <FlexRowRight>
           <StandardButton

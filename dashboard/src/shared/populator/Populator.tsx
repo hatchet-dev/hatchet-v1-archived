@@ -4,10 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
-import Spinner from "components/loaders";
+import { Spinner } from "@hatchet-dev/hatchet-components";
 
 type Props = {
   organization?: boolean;
+  children?: React.ReactNode;
 };
 
 const Populator: React.FunctionComponent<Props> = ({

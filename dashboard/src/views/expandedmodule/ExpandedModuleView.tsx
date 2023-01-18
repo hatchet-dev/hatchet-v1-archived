@@ -1,9 +1,13 @@
-import Breadcrumbs from "components/breadcrumbs";
-import { H1, HorizontalSpacer, P, Span } from "components/globals";
-import Example from "components/heirarchygraph";
-import TabList from "components/tablist";
+import {
+  H1,
+  HorizontalSpacer,
+  P,
+  Span,
+  Breadcrumbs,
+  HeirarchyGraph,
+  TabList,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
 import RunsList from "../../components/runslist";
 import ExpandedModuleMonitors from "./components/monitors";
 
@@ -32,7 +36,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
           />
         );
       case "Resource Explorer":
-        return <Example width={100} height={100} />;
+        return <HeirarchyGraph width={100} height={100} />;
       case "Monitors":
         return <ExpandedModuleMonitors />;
       default:

@@ -1,14 +1,18 @@
-import { H2, HorizontalSpacer, P } from "components/globals";
-import Selector from "components/selector";
+import {
+  H2,
+  HorizontalSpacer,
+  P,
+  Selector,
+  TextInput,
+  SectionArea,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import gitRepository from "assets/git_repository.png";
 import github from "assets/github.png";
 import branch from "assets/branch.png";
-import TextInput from "components/textinput";
 import { css } from "styled-components";
 import theme from "shared/theme";
-import SectionArea from "components/sectionarea";
 
 const options = [
   {

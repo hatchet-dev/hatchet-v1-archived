@@ -6,16 +6,16 @@ import {
   H2,
   HorizontalSpacer,
   P,
-} from "components/globals";
+  StandardButton,
+  AppWrapper,
+  ErrorBar,
+  SectionAreaWithLogo,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
 import theme from "shared/theme";
 import { css } from "styled-components";
-import { AppWrapper } from "components/appwrapper";
-import ErrorBar from "components/errorbar";
-import SectionAreaWithLogo from "components/sectionareawithlogo";
 
 const VerifyEmailPromptView: React.FunctionComponent = () => {
   const [success, setSuccess] = useState(false);
@@ -37,7 +37,7 @@ const VerifyEmailPromptView: React.FunctionComponent = () => {
 
   const renderContents = () => {
     return (
-      <SectionAreaWithLogo width={400}>
+      <SectionAreaWithLogo width="400px">
         <HorizontalSpacer spacepixels={18} />
         <FlexColCenter>
           <H2>Verify your Email</H2>

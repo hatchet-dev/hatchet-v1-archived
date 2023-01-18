@@ -6,16 +6,16 @@ import {
   HorizontalSpacer,
   P,
   StyledDeprecatedText,
-} from "components/globals";
-import Table from "components/table";
+  Table,
+  StandardButton,
+  Spinner,
+  Placeholder,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import StandardButton from "components/buttons";
-import Spinner from "components/loaders";
 import CreatePATForm from "./components/CreatePATForm";
 import { relativeDate } from "shared/utils";
-import Placeholder from "components/placeholder";
 
 const UserPATsView: React.FunctionComponent = () => {
   const [createPAT, setCreatePAT] = useState(false);

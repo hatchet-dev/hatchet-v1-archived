@@ -3,15 +3,15 @@ import {
   HorizontalSpacer,
   P,
   SmallSpan,
-} from "components/globals";
+  SectionArea,
+  StandardButton,
+  ErrorBar,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import ErrorBar from "components/errorbar";
 
 const DeleteUserForm: React.FunctionComponent = () => {
   const [success, setSuccess] = useState(false);
@@ -54,12 +54,12 @@ const DeleteUserForm: React.FunctionComponent = () => {
   };
 
   if (orgQuery.isLoading || currentUserQuery.isLoading) {
-    return <SectionArea width={600} loading={true} />;
+    return <SectionArea width="600px" loading={true} />;
   }
 
   if (success) {
     return (
-      <SectionArea width={600}>
+      <SectionArea width="600px">
         <P>
           You successfully deleted your user. You will be automatically logged
           out within 10 seconds.
@@ -90,7 +90,7 @@ const DeleteUserForm: React.FunctionComponent = () => {
   };
 
   return (
-    <SectionArea width={600}>
+    <SectionArea width="600px">
       {renderMessage()}
       {err && <HorizontalSpacer spacepixels={12} />}
       {err && <ErrorBar text={err} />}

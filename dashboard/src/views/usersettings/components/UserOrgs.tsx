@@ -1,19 +1,11 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import SectionArea from "components/sectionarea";
-import OrgList from "components/orglist";
-
-const TabOptions = ["Runs", "Resource Explorer", "Configuration", "Settings"];
+import { SectionArea } from "@hatchet-dev/hatchet-components";
+import OrgList from "components/organization/orglist";
 
 const UserOrgs: React.FunctionComponent = () => {
-  const [selectedTab, setSelectedTab] = useState(TabOptions[0]);
-  const [displayName, setDisplayName] = useState("");
   const [err, setErr] = useState("");
-
-  let history = useHistory();
 
   const orgQuery = useQuery({
     queryKey: ["current_user_organizations"],
@@ -42,7 +34,7 @@ const UserOrgs: React.FunctionComponent = () => {
   });
 
   return (
-    <SectionArea width={600} loading={orgQuery.isLoading}>
+    <SectionArea width="600px" loading={orgQuery.isLoading}>
       <OrgList
         orgs={orgQuery?.data?.data.rows}
         leave_org={(org) => leaveOrgMutation.mutate(org.id)}

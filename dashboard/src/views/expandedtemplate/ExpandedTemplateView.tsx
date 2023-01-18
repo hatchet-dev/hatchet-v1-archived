@@ -1,14 +1,14 @@
-import Breadcrumbs from "components/breadcrumbs";
 import {
   FlexRowRight,
   H1,
   HorizontalSpacer,
   P,
   Span,
-} from "components/globals";
-import Paginator from "components/paginator";
-import Table from "components/table";
-import TabList from "components/tablist";
+  Breadcrumbs,
+  Paginator,
+  Table,
+  TabList,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import DetailedVersionList from "./components/detailedversionlist";

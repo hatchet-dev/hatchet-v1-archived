@@ -3,16 +3,14 @@ import {
   HorizontalSpacer,
   P,
   StyledClickableP,
-} from "components/globals";
+  TextInput,
+  SectionArea,
+  StandardButton,
+  ErrorBar,
+} from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { useHistory } from "react-router-dom";
 import api from "shared/api";
-import TextInput from "components/textinput";
-import SectionArea from "components/sectionarea";
-import StandardButton from "components/buttons";
-import ErrorBar from "components/errorbar";
 import { ResetPasswordEmailRequest } from "shared/api/generated/data-contracts";
 
 const UserMetaForm: React.FunctionComponent = () => {
@@ -85,14 +83,14 @@ const UserMetaForm: React.FunctionComponent = () => {
 
   if (successText) {
     return (
-      <SectionArea width={600}>
+      <SectionArea width="600px">
         <P>{successText}</P>
       </SectionArea>
     );
   }
 
   return (
-    <SectionArea width={600}>
+    <SectionArea width="600px">
       <TextInput
         placeholder="Old Password"
         label="Your old password"
