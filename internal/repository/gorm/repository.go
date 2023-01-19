@@ -17,6 +17,7 @@ type GormRepository struct {
 	prt         repository.PasswordResetTokenRepository
 	vet         repository.VerifyEmailTokenRepository
 	org         repository.OrgRepository
+	team        repository.TeamRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -43,6 +44,10 @@ func (t *GormRepository) Org() repository.OrgRepository {
 	return t.org
 }
 
+func (t *GormRepository) Team() repository.TeamRepository {
+	return t.team
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -53,6 +58,7 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		prt:         NewPasswordResetTokenRepository(db),
 		vet:         NewVerifyEmailTokenRepository(db),
 		org:         NewOrgRepository(db),
+		team:        NewTeamRepository(db),
 	}
 }
 

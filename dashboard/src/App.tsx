@@ -210,7 +210,7 @@ const AppContents: React.FunctionComponent = () => {
     return (
       <AuthChecker check_authenticated={true}>
         <TopBarWithProfile />
-        <Populator organization>
+        <Populator organization team>
           <SideBar links={DashboardSidebarLinks} />
           <ViewWrapper>
             <>

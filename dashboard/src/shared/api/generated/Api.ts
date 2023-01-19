@@ -10,6 +10,7 @@
  */
 
 import {
+  AddTeamMemberRequest,
   APIErrorBadRequestExample,
   APIErrorForbiddenExample,
   APIErrorNotSupportedExample,
@@ -20,6 +21,8 @@ import {
   CreateOrgMemberInviteResponse,
   CreatePATResponse,
   CreatePersonalAccessTokenRequest,
+  CreateTeamRequest,
+  CreateTeamResponse,
   CreateUserRequest,
   CreateUserResponse,
   DeleteOrganizationResponse,
@@ -31,6 +34,8 @@ import {
   GetUserResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
+  ListTeamMembersResponse,
+  ListTeamsResponse,
   ListUserOrgsResponse,
   LoginUserRequest,
   LoginUserResponse,
@@ -39,6 +44,7 @@ import {
   ResetPasswordEmailVerifyRequest,
   ResetPasswordManualRequest,
   RevokePATResponseExample,
+  TeamAddMemberResponse,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
@@ -292,6 +298,78 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/organizations/${orgId}/members/${orgMemberId}/update_policies`,
       method: "POST",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists teams for an organization.
+   *
+   * @tags Teams
+   * @name ListTeams
+   * @summary List teams.
+   * @request GET:/api/v1/organizations/{org_id}/teams
+   * @secure
+   */
+  listTeams = (orgId: string, params: RequestParams = {}) =>
+    this.request<ListTeamsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/organizations/${orgId}/teams`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a new team, with the authenticated user set as a team admin.
+   *
+   * @tags Teams
+   * @name CreateTeam
+   * @summary Create a new team.
+   * @request POST:/api/v1/organizations/{org_id}/teams
+   * @secure
+   */
+  createTeam = (orgId: string, data?: CreateTeamRequest, params: RequestParams = {}) =>
+    this.request<CreateTeamResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/organizations/${orgId}/teams`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists team members for a team.
+   *
+   * @tags Teams
+   * @name ListTeamMembers
+   * @summary List team members
+   * @request GET:/api/v1/teams/{team_id}/members
+   * @secure
+   */
+  listTeamMembers = (teamId: string, params: RequestParams = {}) =>
+    this.request<ListTeamMembersResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/members`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Add a team member from the organization members to the team.
+   *
+   * @tags Teams
+   * @name AddTeamMember
+   * @summary Add team member
+   * @request POST:/api/v1/teams/{team_id}/members
+   * @secure
+   */
+  addTeamMember = (teamId: string, data?: AddTeamMemberRequest, params: RequestParams = {}) =>
+    this.request<TeamAddMemberResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/members`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });

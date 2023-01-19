@@ -9,6 +9,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import NameOrganization from "./components/NameOrganization";
 import InviteMembers from "./components/InviteMembers";
+import CreateTeams from "./components/CreateTeams";
 
 const CreateOrganizationView: React.FunctionComponent = () => {
   const location = useLocation();
@@ -19,6 +20,8 @@ const CreateOrganizationView: React.FunctionComponent = () => {
         return <NameOrganization />;
       case "/organization/create/invite_members":
         return <InviteMembers />;
+      case "/organization/create/create_teams":
+        return <CreateTeams />;
     }
   };
 

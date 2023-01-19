@@ -39,14 +39,17 @@ const (
 type PermissionScope string
 
 const (
-	NoUserScope    PermissionScope = "no_user_scope"
-	UserScope      PermissionScope = "user_scope"
-	OrgScope       PermissionScope = "org_scope"
-	OrgMemberScope PermissionScope = "org_member_scope"
-	OrgOwnerScope  PermissionScope = "org_owner_scope"
+	NoUserScope     PermissionScope = "no_user_scope"
+	UserScope       PermissionScope = "user_scope"
+	OrgScope        PermissionScope = "org_scope"
+	OrgMemberScope  PermissionScope = "org_member_scope"
+	OrgOwnerScope   PermissionScope = "org_owner_scope"
+	TeamScope       PermissionScope = "team_scope"
+	TeamMemberScope PermissionScope = "team_member_scope"
 )
 
 const OrgMemberLookupKey string = "org_member"
+const TeamMemberLookupKey string = "team_member"
 
 // swagger:model
 type APIResourceMeta struct {

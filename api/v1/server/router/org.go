@@ -11,7 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization leaveOrg
+// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization leaveOrg createTeam listTeams
 type orgPathParams struct {
 	// The org id
 	// in: path

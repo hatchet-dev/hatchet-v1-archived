@@ -3,7 +3,7 @@ import { BackText, Selector, Selection } from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { useAtom } from "jotai";
-import { currOrgAtom } from "shared/atoms/atoms";
+import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
 
 import api from "shared/api";
 import {
@@ -27,6 +27,7 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
   const history = useHistory();
   const isUserView = location.pathname.includes("/user");
   const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
+  const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
 
   const { data, isLoading } = useQuery({
     queryKey: ["current_user_organizations"],
@@ -35,6 +36,16 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
       return res;
     },
     retry: false,
+  });
+
+  const orgTeamsQuery = useQuery({
+    queryKey: ["organization_teams", currOrg.id],
+    queryFn: async () => {
+      const res = await api.listTeams(currOrg.id);
+      return res;
+    },
+    retry: false,
+    enabled: !!currOrg,
   });
 
   const onSelectOrg = (option: Selection) => {
@@ -47,6 +58,57 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
         }
       }
     }
+  };
+
+  const onSelectTeam = (option: Selection) => {
+    if (option.value == "new_team") {
+      history.push("/team/create");
+    } else {
+      for (let team of orgTeamsQuery.data?.data?.rows) {
+        if (option.value == team.id) {
+          setCurrTeam(team);
+        }
+      }
+    }
+  };
+
+  const renderTeamsUtil = () => {
+    if (isUserView) {
+      return;
+    }
+
+    if (orgTeamsQuery.isLoading) {
+      return <div>Loading</div>;
+    }
+
+    const selectOptions = orgTeamsQuery.data.data.rows
+      .map((row) => {
+        return {
+          material_icon: "group",
+          label: row.display_name,
+          value: row.id,
+        };
+      })
+      .concat([
+        {
+          material_icon: "add_circle",
+          label: "New Team",
+          value: "new_team",
+        },
+      ]);
+
+    return (
+      <Selector
+        placeholder={
+          selectOptions.filter((team) => team.value == currTeam?.id)[0]?.label
+        }
+        placeholder_material_icon="group"
+        options={selectOptions}
+        select={onSelectTeam}
+        orientation="horizontal"
+        fill_selection={true}
+      />
+    );
   };
 
   const renderUtil = () => {
@@ -100,6 +162,7 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
   return (
     <SidebarWrapper>
       <LinkWrapper>
+        {renderTeamsUtil()}
         {links.map((val, i) => {
           return (
             <SidebarLink

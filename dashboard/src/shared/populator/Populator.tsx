@@ -3,22 +3,26 @@ import { useHistory } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { useAtom } from "jotai";
-import { currOrgAtom } from "shared/atoms/atoms";
+import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
 import { Spinner } from "@hatchet-dev/hatchet-components";
 
 type Props = {
   organization?: boolean;
+  team?: boolean;
   children?: React.ReactNode;
 };
 
 const Populator: React.FunctionComponent<Props> = ({
   organization,
+  team,
   children,
 }) => {
   const history = useHistory();
 
   const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
+  const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const orgEnabled = !!organization;
+  const teamEnabled = !!team;
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["current_user_organizations"],
@@ -30,7 +34,22 @@ const Populator: React.FunctionComponent<Props> = ({
     enabled: orgEnabled,
   });
 
-  const matchedOrg = data?.data?.rows?.filter((org) => currOrg.id == org.id)[0];
+  const currTeamsQuery = useQuery({
+    queryKey: ["organization_teams", currOrg.id],
+    queryFn: async () => {
+      const res = await api.listTeams(currOrg.id);
+      return res;
+    },
+    retry: false,
+    enabled: !!currOrg,
+  });
+
+  const matchedOrg = data?.data?.rows?.filter(
+    (org) => currOrg?.id == org.id
+  )[0];
+  const matchedTeam = currTeamsQuery.data?.data?.rows?.filter(
+    (team) => currTeam?.id == team.id
+  )[0];
 
   useEffect(() => {
     if (orgEnabled) {
@@ -47,6 +66,22 @@ const Populator: React.FunctionComponent<Props> = ({
       }
     }
   }, [currOrg, data, isFetching, orgEnabled]);
+
+  useEffect(() => {
+    if (teamEnabled) {
+      // if curr org id is not set, or it is set but is not found in the current list,
+      // set it to the first item in the array, or redirect to the creation screen if no orgs
+      if (!currTeamsQuery.isFetching) {
+        if (!currTeam || !matchedTeam) {
+          if (currTeamsQuery.data?.data?.rows?.length > 0) {
+            setCurrTeam(currTeamsQuery.data?.data?.rows[0]);
+          } else {
+            history.push("/teams/create");
+          }
+        }
+      }
+    }
+  }, [currTeam, currTeamsQuery.data, currTeamsQuery.isFetching, teamEnabled]);
 
   if (isLoading || !currOrg || !matchedOrg) {
     return <div>Loading</div>;

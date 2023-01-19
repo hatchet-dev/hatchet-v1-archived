@@ -36,6 +36,9 @@ type Organization struct {
 
 	// The list of policies for this organization
 	OrgPolicies []OrganizationPolicy
+
+	// The list of teams for this organization
+	Teams []Team
 }
 
 func (o *Organization) ToAPIType() *types.Organization {

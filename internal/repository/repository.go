@@ -11,6 +11,7 @@ type Repository interface {
 	VerifyEmailToken() VerifyEmailTokenRepository
 	PersonalAccessToken() PersonalAccessTokenRepository
 	Org() OrgRepository
+	Team() TeamRepository
 }
 
 var (

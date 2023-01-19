@@ -18,6 +18,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	baseRegisterer := NewBaseRegisterer()
 	userRegisterer := NewUserRouteRegisterer()
 	orgRegisterer := NewOrgRouteRegisterer()
+	teamRegisterer := NewTeamRouteRegisterer()
 
 	baseRoutePath := "/api/v1"
 
@@ -52,13 +53,23 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 				RelativePath: "",
 			},
 			endpointFactory,
-			userRegisterer.Children...,
+		)
+
+		teamRoutes := teamRegisterer.GetRoutes(
+			r,
+			config,
+			&endpoint.Path{
+				Parent:       baseRoutePath,
+				RelativePath: "",
+			},
+			endpointFactory,
 		)
 
 		routes := [][]*router.Route{
 			baseRoutes,
 			userRoutes,
 			orgRoutes,
+			teamRoutes,
 		}
 
 		var allRoutes []*router.Route
@@ -82,6 +93,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	orgFactory := authz.NewOrgScopedFactory(config)
 	orgMemberFactory := authz.NewOrgMemberScopedFactory(config)
 
+	teamFactory := authz.NewTeamScopedFactory(config)
+
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
 
@@ -103,6 +116,11 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(orgFactory.Middleware)
 			case types.OrgMemberScope:
 				atomicGroup.Use(orgMemberFactory.Middleware)
+			case types.TeamScope:
+				endpointMetaFactory := endpoint.NewEndpointMiddleware(config, route.Endpoint.Metadata)
+				atomicGroup.Use(endpointMetaFactory.Middleware)
+
+				atomicGroup.Use(teamFactory.Middleware)
 			}
 		}
 

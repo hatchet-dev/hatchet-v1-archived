@@ -136,7 +136,7 @@ export type CreateOrgMemberInviteResponse = OrganizationMember;
 /** @example {"display_name":"Organization 1"} */
 export interface CreateOrganizationRequest {
   /**
-   * the display name for this user
+   * the display name for the organization
    * @example "Organization 1"
    */
   display_name: string;
@@ -161,6 +161,17 @@ export interface CreatePATResponse {
    */
   token?: string;
 }
+
+/** @example {"display_name":"Team 1"} */
+export interface CreateTeamRequest {
+  /**
+   * the display name for the team
+   * @example "Team 1"
+   */
+  display_name: string;
+}
+
+export type CreateTeamResponse = Team;
 
 /** @example {"password":"Securepassword123","display_name":"User 1","email":"user1@gmail.com"} */
 export interface CreateUserRequest {
@@ -209,6 +220,18 @@ export interface ListPATsResponse {
   rows?: PersonalAccessToken[];
 }
 
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"team_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"updated_at":"2022-12-13T20:06:48.888Z","org_member":{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},"created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"team_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"updated_at":"2022-12-13T20:06:48.888Z","org_member":{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},"created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}]} */
+export interface ListTeamMembersResponse {
+  pagination?: PaginationResponse;
+  rows?: TeamMember[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Team 1"},{"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Team 1"}]} */
+export interface ListTeamsResponse {
+  pagination?: PaginationResponse;
+  rows?: Team[];
+}
+
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"},{"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"}]} */
 export interface ListUserOrgsResponse {
   pagination?: PaginationResponse;
@@ -240,7 +263,7 @@ export interface Organization {
    */
   created_at?: string;
   /**
-   * the display name for the personal access token
+   * the display name for the team
    * @example "Organization 1"
    */
   display_name?: string;
@@ -564,6 +587,95 @@ export interface RevokePATResponseExample {
   updated_at?: string;
 }
 
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Team 1"} */
+export interface Team {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the display name for the team
+   * @example "Team 1"
+   */
+  display_name?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+export interface TeamAddMemberRequest {
+  /** the organization member id of the new team member */
+  org_member_id?: string;
+  /** the set of policies for this user */
+  policies: TeamPolicyReference[];
+}
+
+export type TeamAddMemberResponse = TeamMember;
+
+/** @example {"team_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"updated_at":"2022-12-13T20:06:48.888Z","org_member":{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},"created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+export interface TeamMember {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /**
+   * OrganizationMemberSanitized represents an organization member without a sensitive invite
+   * link exposed.
+   */
+  org_member?: OrganizationMemberSanitized;
+  team_policies?: TeamPolicyMeta[];
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+export interface TeamPolicyMeta {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+export interface TeamPolicyReference {
+  id?: string;
+  name?: string;
+}
+
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
   policies: OrganizationPolicyReference[];
@@ -674,7 +786,7 @@ export interface VerifyEmailRequest {
 
 export interface CreateOrganizationRequest {
   /**
-   * the display name for this user
+   * the display name for the organization
    * @example "Organization 1"
    */
   display_name: string;
@@ -696,6 +808,21 @@ export interface CreateOrgMemberInviteRequest {
   invitee_email: string;
   /** the set of policies for this user */
   invitee_policies: OrganizationPolicyReference[];
+}
+
+export interface CreateTeamRequest {
+  /**
+   * the display name for the team
+   * @example "Team 1"
+   */
+  display_name: string;
+}
+
+export interface AddTeamMemberRequest {
+  /** the organization member id of the new team member */
+  org_member_id?: string;
+  /** the set of policies for this user */
+  policies: TeamPolicyReference[];
 }
 
 export interface CreateUserRequest {

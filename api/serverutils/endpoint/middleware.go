@@ -79,6 +79,8 @@ func getRequestActionForEndpoint(
 			resourceID = "owner"
 		case types.OrgMemberScope:
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamOrgMemberID)
+		case types.TeamScope:
+			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamTeamID)
 		}
 
 		if reqErr != nil {

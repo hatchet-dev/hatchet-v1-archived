@@ -7,38 +7,28 @@ import {
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";
-import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
+import { CreateTeamRequest } from "shared/api/generated/data-contracts";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import MemberManager from "components/organization/membermanager/MemberManager";
+import TeamManager from "components/team/teammanager";
 
-const inviteMemberHelper =
-  "Add organization members by entering their email and assigning them a role. You can also add members later from organization settings.";
+const teamHelper =
+  "Add teams by entering the team name and assigning team members to each team. You can also add teams later from organization settings.";
 
-const InviteMembers: React.FunctionComponent = () => {
+const CreateTeams: React.FunctionComponent = () => {
   const [currOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
   const history = useHistory();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["current_organization_members"],
-    queryFn: async () => {
-      const res = await api.listOrgMembers(currOrg.id);
-      return res;
-    },
-    retry: false,
-  });
-
   const mutation = useMutation({
-    mutationKey: ["create_organization_invite", currOrg.id],
-    mutationFn: (invite: CreateOrgMemberInviteRequest) => {
-      return api.createOrgMemberInvite(currOrg.id, invite);
+    mutationKey: ["create_team", currOrg.id],
+    mutationFn: (team: CreateTeamRequest) => {
+      return api.createTeam(currOrg.id, team);
     },
     onSuccess: (data) => {
       setErr("");
-      refetch();
     },
     onError: (err: any) => {
       if (!err.error.errors || err.error.errors.length == 0) {
@@ -56,7 +46,7 @@ const InviteMembers: React.FunctionComponent = () => {
   return (
     <FlexCol>
       <SectionArea width="600px">
-        <MemberManager add_member_helper={inviteMemberHelper} />
+        <TeamManager add_team_helper={teamHelper} />
       </SectionArea>
       <HorizontalSpacer spacepixels={24} />
       <FlexRowRight>
@@ -65,7 +55,7 @@ const InviteMembers: React.FunctionComponent = () => {
           material_icon="chevron_right"
           icon_side="right"
           on_click={() => {
-            history.push("/organization/create/create_teams");
+            history.push("/");
           }}
           margin={"0"}
           is_loading={mutation.isLoading}
@@ -75,4 +65,4 @@ const InviteMembers: React.FunctionComponent = () => {
   );
 };
 
-export default InviteMembers;
+export default CreateTeams;

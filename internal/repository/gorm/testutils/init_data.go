@@ -58,6 +58,14 @@ var declaredOrgModels = []*models.Organization{
 
 var OrgModels []*models.Organization = declaredOrgModels
 
+var declaredTeamModels = []*models.Team{
+	{
+		DisplayName: "Team 1",
+	},
+}
+
+var TeamModels []*models.Team = declaredTeamModels
+
 var declaredOrgAdditionalMembers = []*models.OrganizationMember{
 	{
 		User: models.User{
@@ -85,6 +93,7 @@ func InitAll() {
 	OrgModels = copyVals(declaredOrgModels)
 	OrgAdditionalMembers = copyVals(declaredOrgAdditionalMembers)
 	OrgInviteLinks = copyVals(declaredOrgInviteLinks)
+	TeamModels = copyVals(declaredTeamModels)
 }
 
 func copyVals[
@@ -93,7 +102,8 @@ func copyVals[
 		models.UserSession |
 		models.Organization |
 		models.OrganizationMember |
-		models.OrganizationInviteLink](oldArr []*V) []*V {
+		models.OrganizationInviteLink |
+		models.Team](oldArr []*V) []*V {
 	c := make([]*V, len(oldArr))
 
 	for i, p := range oldArr {
@@ -300,6 +310,40 @@ func InitOrgAdditionalMemberAdmin(t *testing.T, conf *database.Config) error {
 		}
 
 		OrgAdditionalMembers[i] = orgMember
+	}
+
+	return nil
+}
+
+// Note that the declared teams are assigned to the orgs in a round-robin fashion
+func InitTeams(t *testing.T, conf *database.Config) error {
+	for i, declaredTeam := range TeamModels {
+		teamCp := declaredTeam
+
+		parentOrg := OrgModels[i%len(OrgModels)]
+
+		teamCp.OrganizationID = parentOrg.ID
+
+		orgMemberOwner, err := conf.Repository.Org().ReadOrgMemberByUserID(parentOrg.ID, parentOrg.OwnerID)
+
+		if err != nil {
+			return err
+		}
+
+		teamCp.TeamMembers = []models.TeamMember{
+			{
+				OrgMemberID: orgMemberOwner.ID,
+			},
+		}
+
+		// call population method
+		team, err := conf.Repository.Team().CreateTeam(teamCp)
+
+		if err != nil {
+			return err
+		}
+
+		TeamModels[i] = team
 	}
 
 	return nil

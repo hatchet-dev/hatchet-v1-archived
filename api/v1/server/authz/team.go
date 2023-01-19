@@ -16,37 +16,37 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
-type OrgScopedFactory struct {
+type TeamScopedFactory struct {
 	config *server.Config
 }
 
-func NewOrgScopedFactory(
+func NewTeamScopedFactory(
 	config *server.Config,
-) *OrgScopedFactory {
-	return &OrgScopedFactory{config}
+) *TeamScopedFactory {
+	return &TeamScopedFactory{config}
 }
 
-func (p *OrgScopedFactory) Middleware(next http.Handler) http.Handler {
-	return &OrgScopedMiddleware{next, p.config}
+func (p *TeamScopedFactory) Middleware(next http.Handler) http.Handler {
+	return &TeamScopedMiddleware{next, p.config}
 }
 
-type OrgScopedMiddleware struct {
+type TeamScopedMiddleware struct {
 	next   http.Handler
 	config *server.Config
 }
 
-func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (p *TeamScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(types.UserScope).(*models.User)
 
 	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
-	orgID := reqScopes[types.OrgScope].ResourceID
+	teamID := reqScopes[types.TeamScope].ResourceID
 
-	org, err := p.config.DB.Repository.Org().ReadOrgByID(orgID)
+	team, err := p.config.DB.Repository.Team().ReadTeamByID(teamID)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
 			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
-				fmt.Errorf("org with id %s not found ", orgID),
+				fmt.Errorf("team with id %s not found ", teamID),
 			), true)
 		} else {
 			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrInternal(err), true)
@@ -55,13 +55,27 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// read the org members to verify that the user has access to this resource
-	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(orgID, user.ID)
+	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(team.OrganizationID, user.ID)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
 			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
-				fmt.Errorf("org member with org id %s and user id %s not found ", orgID, user.ID),
+				fmt.Errorf("org member with org id %s and user id %s not found ", team.OrganizationID, user.ID),
+			), true)
+		} else {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrInternal(err), true)
+		}
+
+		return
+	}
+
+	// read the team members to verify that the user has access to this resource
+	teamMember, err := p.config.DB.Repository.Team().ReadTeamMemberByOrgMemberID(teamID, orgMember.ID)
+
+	if err != nil {
+		if errors.Is(err, repository.RepositoryErrorNotFound) {
+			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrForbidden(
+				fmt.Errorf("team member with team id %s and user id %s not found ", teamID, user.ID),
 			), true)
 		} else {
 			apierrors.HandleAPIError(p.config.Logger, p.config.ErrorAlerter, w, r, apierrors.NewErrInternal(err), true)
@@ -74,25 +88,18 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	isValid := false
 	policyInput := policies.GetInputFromRequest(r)
 
-	for _, policy := range orgMember.OrgPolicies {
+	for _, policy := range teamMember.TeamPolicies {
 		if !policy.IsCustom {
 			switch policy.PolicyName {
-			case string(models.PresetPolicyNameOwner):
-				allow, err := opa.RunAllowQuery(policies.PresetOrgPolicies.OrgOwnerPolicy.Query, policyInput)
+			case string(models.PresetTeamPolicyNameAdmin):
+				allow, err := opa.RunAllowQuery(policies.PresetTeamPolicies.TeamAdminPolicy.Query, policyInput)
 
 				if err == nil && allow {
 					isValid = true
 					break
 				}
-			case string(models.PresetPolicyNameAdmin):
-				allow, err := opa.RunAllowQuery(policies.PresetOrgPolicies.OrgAdminPolicy.Query, policyInput)
-
-				if err == nil && allow {
-					isValid = true
-					break
-				}
-			case string(models.PresetPolicyNameMember):
-				allow, err := opa.RunAllowQuery(policies.PresetOrgPolicies.OrgMemberPolicy.Query, policyInput)
+			case string(models.PresetTeamPolicyNameMember):
+				allow, err := opa.RunAllowQuery(policies.PresetTeamPolicies.TeamMemberPolicy.Query, policyInput)
 
 				if err == nil && allow {
 					isValid = true
@@ -112,14 +119,14 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx := NewOrganizationContext(r.Context(), org, orgMember)
+	ctx := NewTeamContext(r.Context(), team, teamMember)
 	r = r.Clone(ctx)
 	p.next.ServeHTTP(w, r)
 }
 
-func NewOrganizationContext(ctx context.Context, org *models.Organization, orgMember *models.OrganizationMember) context.Context {
-	ctx = context.WithValue(ctx, types.OrgScope, org)
-	ctx = context.WithValue(ctx, types.OrgMemberLookupKey, orgMember)
+func NewTeamContext(ctx context.Context, team *models.Team, teamMember *models.TeamMember) context.Context {
+	ctx = context.WithValue(ctx, types.TeamScope, team)
+	ctx = context.WithValue(ctx, types.TeamMemberLookupKey, teamMember)
 
 	return ctx
 }

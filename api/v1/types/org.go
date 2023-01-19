@@ -13,7 +13,7 @@ const (
 type Organization struct {
 	*APIResourceMeta
 
-	// the display name for the personal access token
+	// the display name for the team
 	// example: Organization 1
 	DisplayName string `json:"display_name"`
 
@@ -75,7 +75,7 @@ type OrganizationInvite struct {
 
 // swagger:model
 type CreateOrganizationRequest struct {
-	// the display name for this user
+	// the display name for the organization
 	//
 	// required: true
 	// example: Organization 1
