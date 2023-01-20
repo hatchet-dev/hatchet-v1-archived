@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { useAtom } from "jotai";
@@ -18,6 +18,8 @@ const Populator: React.FunctionComponent<Props> = ({
   children,
 }) => {
   const history = useHistory();
+  const params: any = useParams();
+  const location = useLocation();
 
   const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
@@ -35,9 +37,11 @@ const Populator: React.FunctionComponent<Props> = ({
   });
 
   const currTeamsQuery = useQuery({
-    queryKey: ["organization_teams", currOrg.id],
+    queryKey: ["current_user_teams", currOrg.id],
     queryFn: async () => {
-      const res = await api.listTeams(currOrg.id);
+      const res = await api.listUserTeams({
+        organization_id: currOrg.id,
+      });
       return res;
     },
     retry: false,
@@ -47,8 +51,13 @@ const Populator: React.FunctionComponent<Props> = ({
   const matchedOrg = data?.data?.rows?.filter(
     (org) => currOrg?.id == org.id
   )[0];
+
   const matchedTeam = currTeamsQuery.data?.data?.rows?.filter(
     (team) => currTeam?.id == team.id
+  )[0];
+
+  const matchedParamTeam = currTeamsQuery.data?.data?.rows?.filter(
+    (team) => params?.team == team.id
   )[0];
 
   useEffect(() => {
@@ -69,9 +78,12 @@ const Populator: React.FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (teamEnabled) {
-      // if curr org id is not set, or it is set but is not found in the current list,
-      // set it to the first item in the array, or redirect to the creation screen if no orgs
-      if (!currTeamsQuery.isFetching) {
+      if (matchedParamTeam && matchedParamTeam.id != currTeam.id) {
+        setCurrTeam(matchedParamTeam);
+      } else if (!currTeamsQuery.isFetching) {
+        // if curr team id is not set, or it is set but is not found in the current list,
+        // set it to the first item in the array, or redirect to the creation screen if no teams
+
         if (!currTeam || !matchedTeam) {
           if (currTeamsQuery.data?.data?.rows?.length > 0) {
             setCurrTeam(currTeamsQuery.data?.data?.rows[0]);
@@ -81,7 +93,13 @@ const Populator: React.FunctionComponent<Props> = ({
         }
       }
     }
-  }, [currTeam, currTeamsQuery.data, currTeamsQuery.isFetching, teamEnabled]);
+  }, [
+    currTeam,
+    currTeamsQuery.data,
+    currTeamsQuery.isFetching,
+    teamEnabled,
+    matchedParamTeam,
+  ]);
 
   if (isLoading || !currOrg || !matchedOrg) {
     return <div>Loading</div>;

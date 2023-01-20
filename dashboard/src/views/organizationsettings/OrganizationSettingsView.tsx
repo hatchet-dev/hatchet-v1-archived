@@ -3,6 +3,7 @@ import {
   HorizontalSpacer,
   P,
   FlexColScroll,
+  FlexColCenter,
   FlexCol,
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
@@ -50,42 +51,44 @@ const OrganizationSettingsView: React.FunctionComponent = () => {
   });
 
   return (
-    <FlexColScroll width="100%" height={"100%"}>
-      <H2>{currOrg.display_name} Settings</H2>
-      <HorizontalSpacer spacepixels={14} />
-      <P>Manage settings for the {currOrg.display_name} organization.</P>
-      <HorizontalSpacer
-        spacepixels={80}
-        overrides={css({
-          borderBottom: theme.line.thick,
-        }).toString()}
-      />
-      <H2>Organization Name</H2>
-      <HorizontalSpacer spacepixels={14} />
-      <OrganizationMetaForm />
-      <HorizontalSpacer
-        spacepixels={80}
-        overrides={css({
-          borderBottom: theme.line.thick,
-        }).toString()}
-      />
-      <FlexCol height="600px">
-        <H2>Manage Organization Members</H2>
+    <FlexColCenter height={"100%"}>
+      <FlexColScroll width="100%" maxWidth="840px" height={"100%"}>
+        <H2>{currOrg.display_name} Settings</H2>
         <HorizontalSpacer spacepixels={14} />
-        <MemberManager can_remove={true} header_level="H3" />
-      </FlexCol>
-      <HorizontalSpacer spacepixels={14} />
-      {/* <UserOrgs /> */}
-      <HorizontalSpacer
-        spacepixels={80}
-        overrides={css({
-          borderBottom: theme.line.thick,
-        }).toString()}
-      />
-      <H2>Delete Organization</H2>
-      <HorizontalSpacer spacepixels={16} />
-      <DeleteOrganizationForm />
-    </FlexColScroll>
+        <P>Manage settings for the {currOrg.display_name} organization.</P>
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
+        <H2>Organization Name</H2>
+        <HorizontalSpacer spacepixels={14} />
+        <OrganizationMetaForm />
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
+        <FlexCol height="600px">
+          <H2>Manage Organization Members</H2>
+          <HorizontalSpacer spacepixels={14} />
+          <MemberManager can_remove={true} header_level="H3" />
+        </FlexCol>
+        <HorizontalSpacer spacepixels={14} />
+        {/* <UserOrgs /> */}
+        <HorizontalSpacer
+          spacepixels={80}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
+        <H2>Delete Organization</H2>
+        <HorizontalSpacer spacepixels={16} />
+        <DeleteOrganizationForm />
+      </FlexColScroll>
+    </FlexColCenter>
   );
 };
 

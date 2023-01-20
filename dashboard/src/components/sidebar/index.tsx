@@ -1,5 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { BackText, Selector, Selection } from "@hatchet-dev/hatchet-components";
+import {
+  BackText,
+  Selector,
+  Selection,
+  FlexCol,
+  H3,
+  MaterialIcon,
+  FlexRow,
+  SmallSpan,
+  HorizontalSpacer,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { useAtom } from "jotai";
@@ -8,13 +18,20 @@ import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
 import api from "shared/api";
 import {
   LinkWrapper,
-  SidebarLink,
   SidebarWrapper,
+  TeamName,
+  TeamExpandIcon,
   UtilWrapper,
+  TeamNameHeader,
 } from "./styles";
+import theme from "shared/theme";
+import { css } from "styled-components";
+import StyledSidebarLink from "./components/sidebarlink";
+import ExpandableTeam from "./components/expandableteam";
 
 type Props = {
   links: SidebarLink[];
+  team_links?: SidebarLink[];
 };
 
 export type SidebarLink = {
@@ -22,7 +39,10 @@ export type SidebarLink = {
   href: string;
 };
 
-const SideBar: React.FunctionComponent<Props> = ({ links }) => {
+const SideBar: React.FunctionComponent<Props> = ({
+  links,
+  team_links = [],
+}) => {
   const location = useLocation();
   const history = useHistory();
   const isUserView = location.pathname.includes("/user");
@@ -38,10 +58,12 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
     retry: false,
   });
 
-  const orgTeamsQuery = useQuery({
-    queryKey: ["organization_teams", currOrg.id],
+  const userTeamsQuery = useQuery({
+    queryKey: ["current_user_teams", currOrg.id],
     queryFn: async () => {
-      const res = await api.listTeams(currOrg.id);
+      const res = await api.listUserTeams({
+        organization_id: currOrg.id,
+      });
       return res;
     },
     retry: false,
@@ -64,51 +86,12 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
     if (option.value == "new_team") {
       history.push("/team/create");
     } else {
-      for (let team of orgTeamsQuery.data?.data?.rows) {
+      for (let team of userTeamsQuery.data?.data?.rows) {
         if (option.value == team.id) {
           setCurrTeam(team);
         }
       }
     }
-  };
-
-  const renderTeamsUtil = () => {
-    if (isUserView) {
-      return;
-    }
-
-    if (orgTeamsQuery.isLoading) {
-      return <div>Loading</div>;
-    }
-
-    const selectOptions = orgTeamsQuery.data.data.rows
-      .map((row) => {
-        return {
-          material_icon: "group",
-          label: row.display_name,
-          value: row.id,
-        };
-      })
-      .concat([
-        {
-          material_icon: "add_circle",
-          label: "New Team",
-          value: "new_team",
-        },
-      ]);
-
-    return (
-      <Selector
-        placeholder={
-          selectOptions.filter((team) => team.value == currTeam?.id)[0]?.label
-        }
-        placeholder_material_icon="group"
-        options={selectOptions}
-        select={onSelectTeam}
-        orientation="horizontal"
-        fill_selection={true}
-      />
-    );
   };
 
   const renderUtil = () => {
@@ -159,22 +142,66 @@ const SideBar: React.FunctionComponent<Props> = ({ links }) => {
     );
   };
 
-  return (
-    <SidebarWrapper>
+  const renderSidebarLinks = () => {
+    if (isUserView) {
+      return (
+        <LinkWrapper>
+          {links.map((val, i) => {
+            return (
+              <StyledSidebarLink
+                key={val.name}
+                to={val.href}
+                current={location?.pathname.includes(val.href)}
+              >
+                {val.name}
+              </StyledSidebarLink>
+            );
+          })}
+        </LinkWrapper>
+      );
+    }
+
+    const userTeams = userTeamsQuery?.data?.data?.rows;
+
+    return (
       <LinkWrapper>
-        {renderTeamsUtil()}
         {links.map((val, i) => {
           return (
-            <SidebarLink
+            <StyledSidebarLink
               key={val.name}
-              href={val.href}
+              to={val.href}
               current={location?.pathname.includes(val.href)}
             >
               {val.name}
-            </SidebarLink>
+            </StyledSidebarLink>
+          );
+        })}
+        <HorizontalSpacer spacepixels={10} />
+        <TeamNameHeader>Your teams</TeamNameHeader>
+        <HorizontalSpacer
+          spacepixels={6}
+          overrides={css({
+            borderBottom: theme.line.thick,
+          }).toString()}
+        />
+        <HorizontalSpacer spacepixels={3} />
+        {userTeams?.map((row, i) => {
+          return (
+            <>
+              <ExpandableTeam team={row} links={team_links} expanded={false} />
+              {userTeams.length != i + 1 && (
+                <HorizontalSpacer spacepixels={10} />
+              )}
+            </>
           );
         })}
       </LinkWrapper>
+    );
+  };
+
+  return (
+    <SidebarWrapper>
+      {renderSidebarLinks()}
       <UtilWrapper>{renderUtil()}</UtilWrapper>
     </SidebarWrapper>
   );

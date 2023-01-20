@@ -30,7 +30,7 @@ import FinalizeResetPasswordView from "views/finalizeresetpassword/FinalizeReset
 import VerifyEmailView from "views/verifyemail/VerifyEmail";
 import AcceptOrganizationInviteView from "views/acceptorganizationinvite/AcceptOrganizationInviteView";
 import OrganizationSettingsView from "views/organizationsettings/OrganizationSettingsView";
-import SettingsView from "views/settings/SettingsView";
+import TeamSettingsView from "views/teamsettings/TeamSettingsView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -57,6 +57,25 @@ const DashboardSidebarLinks: SidebarLink[] = [
     href: "/home",
   },
   {
+    name: "Notifications",
+    href: "/notifications",
+  },
+  {
+    name: "Teams",
+    href: "/teams",
+  },
+  {
+    name: "Organization Settings",
+    href: "/organization/settings",
+  },
+];
+
+const DashboardTeamSidebarLinks: SidebarLink[] = [
+  {
+    name: "Overview",
+    href: "/overview",
+  },
+  {
     name: "Modules",
     href: "/modules",
   },
@@ -73,7 +92,7 @@ const DashboardSidebarLinks: SidebarLink[] = [
     href: "/integrations",
   },
   {
-    name: "Settings",
+    name: "Team Settings",
     href: "/settings",
   },
 ];
@@ -210,61 +229,112 @@ const AppContents: React.FunctionComponent = () => {
     return (
       <AuthChecker check_authenticated={true}>
         <TopBarWithProfile />
-        <Populator organization team>
-          <SideBar links={DashboardSidebarLinks} />
-          <ViewWrapper>
-            <>
-              <Switch>
-                <Route
-                  path="/settings/organization"
-                  render={() => (
-                    <SettingsView defaultOption="Organization Settings" />
-                  )}
-                ></Route>
-                <Route
-                  path="/settings/team"
-                  render={() => <SettingsView defaultOption="Team Settings" />}
-                ></Route>
-                <Route
-                  path="/settings"
-                  render={() => (
-                    <SettingsView defaultOption="Organization Settings" />
-                  )}
-                ></Route>
-                <Route
-                  path="/monitoring"
-                  render={() => <MonitoringView />}
-                ></Route>
-                <Route
-                  path="/modules/link/:step"
-                  render={() => <LinkModuleView />}
-                ></Route>
-                <Route
-                  path="/modules/:module"
-                  render={() => <ExpandedModuleView />}
-                ></Route>
-                <Route path="/modules" render={() => <ModulesView />}></Route>
-                <Route
-                  path="/templates/:template"
-                  render={() => <ExpandedTemplateView />}
-                ></Route>
-                <Route
-                  path="/templates"
-                  render={() => <TemplatesView />}
-                ></Route>
-                <Route
-                  path="/environments"
-                  render={() => <EnvironmentsView />}
-                ></Route>
-                <Route path="/home" render={() => <HomeView />}></Route>
-                <Route path="/" render={() => <HomeView />}></Route>
-              </Switch>
-            </>
-          </ViewWrapper>
-        </Populator>
+        <Switch>
+          <Route
+            path="/organization/settings"
+            render={() => (
+              <WrappedTeamContents>
+                <OrganizationSettingsView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/settings"
+            render={() => (
+              <WrappedTeamContents>
+                <TeamSettingsView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/monitoring"
+            render={() => (
+              <WrappedTeamContents>
+                <MonitoringView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/modules/link/:step"
+            render={() => (
+              <WrappedTeamContents>
+                <LinkModuleView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/modules/:module"
+            render={() => (
+              <WrappedTeamContents>
+                <ExpandedModuleView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/modules"
+            render={() => (
+              <WrappedTeamContents>
+                <ModulesView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/templates/:template"
+            render={() => (
+              <WrappedTeamContents>
+                <ExpandedTemplateView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/templates"
+            render={() => (
+              <WrappedTeamContents>
+                <TemplatesView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/environments"
+            render={() => (
+              <WrappedTeamContents>
+                <EnvironmentsView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team"
+            render={() => (
+              <WrappedTeamContents>
+                <HomeView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route path="/" render={() => <WrappedTeamContents />}></Route>
+        </Switch>
       </AuthChecker>
     );
   };
 
   return renderAppContents();
+};
+
+type WrapperContentsProps = {
+  children?: React.ReactNode;
+};
+
+const WrappedTeamContents: React.FunctionComponent<WrapperContentsProps> = ({
+  children,
+}) => {
+  return (
+    <>
+      <Populator organization team>
+        <SideBar
+          links={DashboardSidebarLinks}
+          team_links={DashboardTeamSidebarLinks}
+        />
+        <ViewWrapper>{children}</ViewWrapper>
+      </Populator>
+    </>
+  );
 };

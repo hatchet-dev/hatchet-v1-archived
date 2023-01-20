@@ -9,23 +9,23 @@ import {
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import { currOrgAtom } from "shared/atoms/atoms";
+import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import { UpdateOrganizationRequest } from "shared/api/generated/data-contracts";
+import { TeamUpdateRequest } from "shared/api/generated/data-contracts";
 
-const OrganizationMetaForm: React.FunctionComponent = () => {
-  const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
+const TeamMetaForm: React.FunctionComponent = () => {
+  const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const [displayName, setDisplayName] = useState("");
   const [err, setErr] = useState("");
 
   const { mutate, isLoading } = useMutation({
-    mutationKey: ["update_organization", currOrg.id],
-    mutationFn: (orgUpdate: UpdateOrganizationRequest) => {
-      return api.updateOrganization(currOrg.id, orgUpdate);
+    mutationKey: ["update_team", currTeam.id],
+    mutationFn: (teamUpdate: TeamUpdateRequest) => {
+      return api.updateTeam(currTeam.id, teamUpdate);
     },
     onSuccess: (data) => {
       if (data?.data) {
-        setCurrOrg(data?.data);
+        setCurrTeam(data?.data);
       }
     },
     onError: (err: any) => {
@@ -38,7 +38,7 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
   });
 
   const submit = () => {
-    if (displayName != "" && displayName != currOrg?.display_name) {
+    if (displayName != "" && displayName != currTeam?.display_name) {
       mutate({
         display_name: displayName,
       });
@@ -48,8 +48,8 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
   return (
     <SectionArea>
       <TextInput
-        placeholder="My Organization"
-        initial_value={currOrg?.display_name}
+        placeholder="ex. Team 1"
+        initial_value={currTeam?.display_name}
         label="Display name"
         type="text"
         width="400px"
@@ -68,7 +68,7 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
           on_click={() => {
             submit();
           }}
-          disabled={displayName == "" || displayName == currOrg?.display_name}
+          disabled={displayName == "" || displayName == currTeam?.display_name}
           margin={"0"}
           is_loading={isLoading}
         />
@@ -77,4 +77,4 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
   );
 };
 
-export default OrganizationMetaForm;
+export default TeamMetaForm;

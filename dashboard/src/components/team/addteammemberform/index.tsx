@@ -5,6 +5,7 @@ import {
   ErrorBar,
   Selector,
   TextInput,
+  SmallSpan,
 } from "@hatchet-dev/hatchet-components";
 import React, { useEffect, useState } from "react";
 import {
@@ -13,6 +14,7 @@ import {
   OrganizationMemberSanitized,
   TeamMember,
 } from "shared/api/generated/data-contracts";
+import { css } from "styled-components";
 import { InviteAddButton, InviteContainer } from "./styles";
 
 export type Props = {
@@ -73,6 +75,16 @@ const AddTeamMemberForm: React.FC<Props> = ({
     }
   };
 
+  const getTeamMemberLabel = (member: OrganizationMemberSanitized) => {
+    if (member.user?.display_name) {
+      return `${member.user?.display_name} | ${
+        member.user?.email || member.invite?.invitee_email
+      }`;
+    }
+
+    return member.user?.email || member.invite?.invitee_email;
+  };
+
   const getTeamMemberOptions = () => {
     let current_member_ids = current_team_members.map(
       (team_member) => team_member.org_member.id
@@ -81,8 +93,9 @@ const AddTeamMemberForm: React.FC<Props> = ({
     return org_members
       .map((org_member) => {
         return {
-          label: org_member.user?.email || org_member.invite?.invitee_email,
+          label: getTeamMemberLabel(org_member),
           value: org_member.id,
+          material_icon: "person",
         };
       })
       .filter((org_member) => !current_member_ids.includes(org_member.value));
@@ -90,6 +103,9 @@ const AddTeamMemberForm: React.FC<Props> = ({
 
   return (
     <FlexCol>
+      <HorizontalSpacer spacepixels={20} />
+      <SmallSpan>Add a new team member</SmallSpan>
+      <HorizontalSpacer spacepixels={6} />
       <InviteContainer>
         <Selector
           placeholder={"Org Member"}
@@ -99,6 +115,12 @@ const AddTeamMemberForm: React.FC<Props> = ({
             setOrgMemberID(option.value);
           }}
           reset={reset}
+          selector_overrides={css({
+            width: "100%",
+          }).toString()}
+          selector_wrapper_overrides={css({
+            width: "100%",
+          }).toString()}
         />
         <Selector
           placeholder={"Role"}

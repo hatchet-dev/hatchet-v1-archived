@@ -15,6 +15,9 @@ type TeamRepository interface {
 	// ListTeamsByOrgID lists all teams for an organization
 	ListTeamsByOrgID(orgID string, opts ...QueryOption) ([]*models.Team, *PaginatedResult, RepositoryError)
 
+	// ListTeamsByUserID lists all teams that a user is a part of
+	ListTeamsByUserID(userID string, orgID string, opts ...QueryOption) ([]*models.Team, *PaginatedResult, RepositoryError)
+
 	// UpdateTeam updates any modified values for a team
 	UpdateTeam(team *models.Team) (*models.Team, RepositoryError)
 

@@ -1,18 +1,23 @@
 import {
   FlexCol,
+  FlexColScroll,
   FlexRow,
   sidebarHeaderFontStack,
+  Span,
+  MaterialIcon,
+  tableHeaderFontStack,
+  headerFontStack,
+  SmallSpan,
 } from "@hatchet-dev/hatchet-components";
 import styled from "styled-components";
 
-export const SidebarWrapper = styled.section`
+export const SidebarWrapper = styled.section<{ padding?: string }>`
   border-right: ${(props) => props.theme.line.default};
   background-color: ${(props) => props.theme.bg.default};
   height: 100%;
   width: 230px;
   opacity: 1;
-  padding: 8px;
-  padding-top: 60px;
+  padding: ${(props) => props.padding || "60px 2px 8px 2px"};
   position: fixed;
   left: 0;
   z-index: 1;
@@ -22,27 +27,29 @@ export const SidebarWrapper = styled.section`
   align-items: stretch;
 `;
 
-export const LinkWrapper = styled(FlexCol)`
-  padding: 4px 3px;
+export const LinkWrapper = styled(FlexColScroll)<{ padding?: string }>`
+  padding: ${(props) => props.padding || "4px 3px"};
   margin: 20px 4px;
-`;
-
-export const SidebarLink = styled.a<{ current: boolean }>`
-  ${sidebarHeaderFontStack}
-  cursor: pointer;
-  font-size: 13px;
-  margin: 4px 0;
-  padding: 10px;
-  text-decoration: none;
-  color: ${(props) =>
-    props.current ? props.theme.text.alt : props.theme.text.default};
-  border-radius: 6px;
-
-  :hover {
-    background-color: ${(props) => props.theme.bg.hover};
-  }
+  max-height: calc(100% - 100px);
 `;
 
 export const UtilWrapper = styled(FlexRow)`
   height: fit-content;
+`;
+
+export const TeamName = styled(Span)`
+  ${headerFontStack}
+  font-weight: bold;
+`;
+
+export const TeamExpandIcon = styled(MaterialIcon)`
+  color: ${(props) => props.theme.text.default};
+  cursor: pointer;
+`;
+
+export const TeamNameHeader = styled(SmallSpan)`
+  ${tableHeaderFontStack}
+  font-weight: bold;
+  padding-left: 10px;
+  color: ${(props) => props.theme.text.inactive};
 `;

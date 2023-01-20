@@ -94,6 +94,7 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	orgMemberFactory := authz.NewOrgMemberScopedFactory(config)
 
 	teamFactory := authz.NewTeamScopedFactory(config)
+	teamMemberFactory := authz.NewTeamMemberScopedFactory(config)
 
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
@@ -121,6 +122,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(endpointMetaFactory.Middleware)
 
 				atomicGroup.Use(teamFactory.Middleware)
+			case types.TeamMemberScope:
+				atomicGroup.Use(teamMemberFactory.Middleware)
 			}
 		}
 

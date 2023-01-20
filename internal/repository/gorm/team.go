@@ -122,6 +122,53 @@ func (repo *TeamRepository) ListTeamMembersByTeamID(teamID string, opts ...repos
 	return members, paginatedResult, nil
 }
 
+func (repo *TeamRepository) ListTeamsByUserID(userID string, orgID string, opts ...repository.QueryOption) ([]*models.Team, *repository.PaginatedResult, repository.RepositoryError) {
+	// get a list of all org members that this user is a part of
+	orgMembers := make([]*models.OrganizationMember, 0)
+
+	if err := repo.db.Where("organization_members.user_id = ?", userID).Find(&orgMembers).Error; err != nil {
+		return nil, nil, toRepoError(repo.db, err)
+	}
+
+	orgMemberIDs := make([]string, 0)
+
+	for _, orgMember := range orgMembers {
+		orgMemberIDs = append(orgMemberIDs, orgMember.ID)
+	}
+
+	// get all team members corresponding to this org member
+	teamMembers := make([]*models.TeamMember, 0)
+
+	if err := repo.db.Where("team_members.org_member_id IN (?)", orgMemberIDs).Find(&teamMembers).Error; err != nil {
+		return nil, nil, toRepoError(repo.db, err)
+	}
+
+	teamIDs := make([]string, 0)
+
+	for _, teamMember := range teamMembers {
+		teamIDs = append(teamIDs, teamMember.TeamID)
+	}
+
+	// get all team ids corresponding to the team members
+	teams := make([]*models.Team, 0)
+
+	db := repo.db.Model(&models.Team{}).Where("id IN (?)", teamIDs)
+
+	if orgID != "" {
+		db = db.Where("organization_id = ?", orgID)
+	}
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
+
+	if err := db.Find(&teams).Error; err != nil {
+		return nil, nil, toRepoError(repo.db, err)
+	}
+
+	return teams, paginatedResult, nil
+}
+
 func (repo *TeamRepository) UpdateTeamMember(teamMember *models.TeamMember) (*models.TeamMember, repository.RepositoryError) {
 	if err := repo.db.Save(teamMember).Error; err != nil {
 		return nil, toRepoError(repo.db, err)

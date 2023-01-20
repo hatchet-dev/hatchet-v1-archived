@@ -29,6 +29,7 @@ import { TeamHeader, ExpandIcon, TeamNameWithIcon } from "./styles";
 export type Props = {
   team: Team;
   remove_team?: (team: Team) => void;
+  collapsible?: boolean;
 };
 
 export const lookupOrgMember = (
@@ -41,11 +42,16 @@ export const lookupOrgMember = (
   );
 };
 
-const TeamWithMembers: React.FC<Props> = ({ team, remove_team }) => {
+const TeamWithMembers: React.FC<Props> = ({
+  team,
+  remove_team,
+  collapsible = true,
+}) => {
   const [currOrg] = useAtom(currOrgAtom);
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!collapsible);
   const [addMember, setAddMember] = useState(false);
+  const [err, setErr] = useState("");
   const [addMemberErr, setAddMemberErr] = useState("");
 
   const { data, isLoading, refetch } = useQuery({
@@ -84,6 +90,24 @@ const TeamWithMembers: React.FC<Props> = ({ team, remove_team }) => {
     },
   });
 
+  const deleteTeamMemberMutation = useMutation({
+    mutationKey: ["delete_team_member", team.id],
+    mutationFn: (member_id: string) => {
+      return api.deleteTeamMember(team.id, member_id);
+    },
+    onSuccess: (data) => {
+      setErr("");
+      refetch();
+    },
+    onError: (err: any) => {
+      if (!err.error.errors || err.error.errors.length == 0) {
+        setErr("An unexpected error occurred. Please try again.");
+      }
+
+      setErr(err.error.errors[0].description);
+    },
+  });
+
   const renderTeamMembers = () => {
     if (isLoading || currentOrgMembersQuery.isLoading) {
       return (
@@ -98,6 +122,7 @@ const TeamWithMembers: React.FC<Props> = ({ team, remove_team }) => {
         <TeamMemberList
           members={data.data.rows}
           org_members={currentOrgMembersQuery.data.data.rows}
+          remove_member={(member) => deleteTeamMemberMutation.mutate(member.id)}
         />
         {addMember && (
           <AddTeamMemberForm
@@ -108,6 +133,7 @@ const TeamWithMembers: React.FC<Props> = ({ team, remove_team }) => {
             }}
             current_team_members={data.data.rows}
             org_members={currentOrgMembersQuery.data.data.rows}
+            err={addMemberErr}
           />
         )}
       </>
@@ -130,12 +156,14 @@ const TeamWithMembers: React.FC<Props> = ({ team, remove_team }) => {
               setAddMember(true);
             }}
           />
-          <ExpandIcon
-            className="material-icons"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? "expand_more" : "expand_less"}
-          </ExpandIcon>
+          {collapsible && (
+            <ExpandIcon
+              className="material-icons"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? "expand_more" : "expand_less"}
+            </ExpandIcon>
+          )}
         </TeamNameWithIcon>
       </TeamHeader>
       <HorizontalSpacer

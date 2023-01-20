@@ -1062,5 +1062,60 @@ func GetUserRoutes(
 		Router:   r,
 	})
 
+	// GET /api/v1/users/current/teams -> users.NewUserTeamListHandler
+	// swagger:operation GET /api/v1/users/current/teams listUserTeams
+	//
+	// ### Description
+	//
+	// Lists teams for a user, optionally filtered by organization id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List user teams
+	// tags:
+	// - Users
+	// parameters:
+	//   - name: page
+	//   - name: organization_id
+	// responses:
+	//   '200':
+	//     description: Successfully listed teams
+	//     schema:
+	//       $ref: '#/definitions/ListUserTeamsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listTeamsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbList,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/teams",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	listUserTeamsHandler := users.NewUserTeamListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listTeamsEndpoint,
+		Handler:  listUserTeamsHandler,
+		Router:   r,
+	})
+
 	return routes
 }

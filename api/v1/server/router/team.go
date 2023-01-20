@@ -11,13 +11,22 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters listTeamMembers
+// swagger:parameters listTeamMembers addTeamMember updateTeam deleteTeam
 type teamPathParams struct {
 	// The team id
 	// in: path
 	// required: true
 	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
 	Team string `json:"team_id"`
+}
+
+// swagger:parameters deleteTeamMember
+type teamMemberPathParams struct {
+	// The team member id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	TeamMember string `json:"team_member_id"`
 }
 
 func NewTeamRouteRegisterer(children ...*router.Registerer) *router.Registerer {
@@ -263,6 +272,177 @@ func GetTeamRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: addTeamMembersEndpoint,
 		Handler:  addTeamMembersHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/teams/{team_id} -> teams.NewTeamUpdateHandler
+	// swagger:operation POST /api/v1/teams/{team_id} updateTeam
+	//
+	// ### Description
+	//
+	// Updates a team.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Update team
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: team_id
+	//   - in: body
+	//     name: TeamUpdateRequest
+	//     description: The team parameters to update
+	//     schema:
+	//       $ref: '#/definitions/TeamUpdateRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully updated the team
+	//     schema:
+	//       $ref: '#/definitions/TeamUpdateResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	updateTeamEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/teams/{%s}", string(types.URLParamTeamID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+			},
+		},
+	)
+
+	updateTeamHandler := teams.NewTeamUpdateHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: updateTeamEndpoint,
+		Handler:  updateTeamHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/teams/{team_id} -> teams.NewTeamDeleteHandler
+	// swagger:operation DELETE /api/v1/teams/{team_id} deleteTeam
+	//
+	// ### Description
+	//
+	// Delete a team. This operation cannot be undone.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Delete team.
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: team_id
+	// responses:
+	//   '200':
+	//     description: Successfully triggered team deletion.
+	//     schema:
+	//       $ref: '#/definitions/DeleteTeamResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	deleteTeamEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbDelete,
+			Method: types.HTTPVerbDelete,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/teams/{%s}", string(types.URLParamTeamID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+			},
+		},
+	)
+
+	deleteTeamHandler := teams.NewTeamDeleteHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: deleteTeamEndpoint,
+		Handler:  deleteTeamHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/teams/{team_id}/members/{team_member_id} -> teams.NewTeamRemoveMemberHandler
+	// swagger:operation DELETE /api/v1/teams/{team_id}/members/{team_member_id} deleteTeamMember
+	//
+	// ### Description
+	//
+	// Delete a team member.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Delete team member
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: team_id
+	// responses:
+	//   '201':
+	//     description: Successfully triggered team member deletion.
+	//     schema:
+	//       $ref: '#/definitions/EmptyResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	deleteTeamMemberEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbDelete,
+			Method: types.HTTPVerbDelete,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/teams/{%s}/members/{%s}", string(types.URLParamTeamID), string(types.URLParamTeamMemberID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.TeamMemberScope,
+			},
+		},
+	)
+
+	deleteTeamMemberHandler := teams.NewTeamRemoveMemberHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: deleteTeamMemberEndpoint,
+		Handler:  deleteTeamMemberHandler,
 		Router:   r,
 	})
 

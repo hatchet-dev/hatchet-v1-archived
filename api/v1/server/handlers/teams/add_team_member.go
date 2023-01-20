@@ -40,6 +40,18 @@ func (t *TeamAddMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	orgMember, err := t.Repo().Org().ReadOrgMemberByID(team.OrganizationID, req.OrgMemberID)
 
 	if err != nil {
+		if errors.Is(err, repository.RepositoryErrorNotFound) {
+			t.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+				types.APIError{
+					Code:        types.ErrCodeNotFound,
+					Description: "Team member not found.",
+				},
+				http.StatusNotFound,
+			))
+
+			return
+		}
+
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}

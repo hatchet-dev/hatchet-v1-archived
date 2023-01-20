@@ -27,6 +27,7 @@ import {
   CreateUserResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
+  DeleteTeamResponse,
   EmptyResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
@@ -37,6 +38,7 @@ import {
   ListTeamMembersResponse,
   ListTeamsResponse,
   ListUserOrgsResponse,
+  ListUserTeamsResponse,
   LoginUserRequest,
   LoginUserResponse,
   ResetPasswordEmailFinalizeRequest,
@@ -45,6 +47,7 @@ import {
   ResetPasswordManualRequest,
   RevokePATResponseExample,
   TeamAddMemberResponse,
+  TeamUpdateResponse,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
@@ -338,6 +341,42 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Delete a team. This operation cannot be undone.
+   *
+   * @tags Teams
+   * @name DeleteTeam
+   * @summary Delete team.
+   * @request DELETE:/api/v1/teams/{team_id}
+   * @secure
+   */
+  deleteTeam = (teamId: string, params: RequestParams = {}) =>
+    this.request<DeleteTeamResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}`,
+      method: "DELETE",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Updates a team.
+   *
+   * @tags Teams
+   * @name UpdateTeam
+   * @summary Update team
+   * @request POST:/api/v1/teams/{team_id}
+   * @secure
+   */
+  updateTeam = (teamId: string, data?: CreateTeamRequest, params: RequestParams = {}) =>
+    this.request<TeamUpdateResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Lists team members for a team.
    *
    * @tags Teams
@@ -370,6 +409,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       body: data,
       secure: true,
       type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Delete a team member.
+   *
+   * @tags Teams
+   * @name DeleteTeamMember
+   * @summary Delete team member
+   * @request DELETE:/api/v1/teams/{team_id}/members/{team_member_id}
+   * @secure
+   */
+  deleteTeamMember = (teamId: string, teamMemberId: string, params: RequestParams = {}) =>
+    this.request<EmptyResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/members/${teamMemberId}`,
+      method: "DELETE",
+      secure: true,
       format: "json",
       ...params,
     });
@@ -594,6 +650,35 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     >({
       path: `/api/v1/users/current/settings/pats/${patId}/revoke`,
       method: "POST",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists teams for a user, optionally filtered by organization id.
+   *
+   * @tags Users
+   * @name ListUserTeams
+   * @summary List user teams
+   * @request GET:/api/v1/users/current/teams
+   * @secure
+   */
+  listUserTeams = (
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+      /** the id of the organization to filter by (optional) */
+      organization_id?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListUserTeamsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/users/current/teams`,
+      method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,

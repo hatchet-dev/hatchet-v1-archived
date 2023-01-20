@@ -34,7 +34,7 @@ const TeamMemberList: React.FC<Props> = ({
         return (
           <MemberContainer key={member.id}>
             <MemberNameOrEmail>
-              {orgMember.user?.email || orgMember.invite?.invitee_email}
+              {orgMember?.user?.email || orgMember?.invite?.invitee_email}
             </MemberNameOrEmail>
             <PolicyName>
               <MaterialIcon className="material-icons">person</MaterialIcon>

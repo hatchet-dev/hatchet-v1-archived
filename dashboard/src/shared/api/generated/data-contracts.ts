@@ -198,6 +198,8 @@ export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
 
+export type DeleteTeamResponse = Team;
+
 export type EmptyResponse = object;
 
 export type GetOrgMemberResponse = OrganizationMember;
@@ -236,6 +238,12 @@ export interface ListTeamsResponse {
 export interface ListUserOrgsResponse {
   pagination?: PaginationResponse;
   rows?: Organization[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Team 1"},{"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Team 1"}]} */
+export interface ListUserTeamsResponse {
+  pagination?: PaginationResponse;
+  rows?: Team[];
 }
 
 /** @example {"password":"Securepassword123","email":"user1@gmail.com"} */
@@ -675,6 +683,16 @@ export interface TeamPolicyReference {
   id?: string;
   name?: string;
 }
+
+export interface TeamUpdateRequest {
+  /**
+   * the display name for the team
+   * @example "Team 1"
+   */
+  display_name: string;
+}
+
+export type TeamUpdateResponse = Team;
 
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
