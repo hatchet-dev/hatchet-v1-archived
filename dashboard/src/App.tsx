@@ -31,6 +31,8 @@ import VerifyEmailView from "views/verifyemail/VerifyEmail";
 import AcceptOrganizationInviteView from "views/acceptorganizationinvite/AcceptOrganizationInviteView";
 import OrganizationSettingsView from "views/organizationsettings/OrganizationSettingsView";
 import TeamSettingsView from "views/teamsettings/TeamSettingsView";
+import TeamsList from "views/teamslist/TeamsList";
+import CreateTeam from "views/createteam/CreateTeam";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -62,7 +64,7 @@ const DashboardSidebarLinks: SidebarLink[] = [
   },
   {
     name: "Teams",
-    href: "/teams",
+    href: "/organization/teams",
   },
   {
     name: "Organization Settings",
@@ -235,6 +237,22 @@ const AppContents: React.FunctionComponent = () => {
             render={() => (
               <WrappedTeamContents>
                 <OrganizationSettingsView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/organization/teams/create"
+            render={() => (
+              <WrappedTeamContents>
+                <CreateTeam />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/organization/teams"
+            render={() => (
+              <WrappedTeamContents>
+                <TeamsList />
               </WrappedTeamContents>
             )}
           ></Route>

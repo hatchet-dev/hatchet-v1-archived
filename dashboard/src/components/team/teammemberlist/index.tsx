@@ -1,4 +1,9 @@
-import { MaterialIcon, StandardButton } from "@hatchet-dev/hatchet-components";
+import {
+  ErrorBar,
+  HorizontalSpacer,
+  MaterialIcon,
+  StandardButton,
+} from "@hatchet-dev/hatchet-components";
 import React from "react";
 import {
   OrganizationMemberSanitized,
@@ -18,6 +23,7 @@ export type Props = {
   org_members: OrganizationMemberSanitized[];
   add_member?: boolean;
   remove_member?: (member: TeamMember) => void;
+  err?: string;
 };
 
 const TeamMemberList: React.FC<Props> = ({
@@ -25,6 +31,7 @@ const TeamMemberList: React.FC<Props> = ({
   org_members,
   remove_member,
   add_member = false,
+  err,
 }) => {
   return (
     <MemberListContainer>
@@ -50,7 +57,8 @@ const TeamMemberList: React.FC<Props> = ({
           </MemberContainer>
         );
       })}
-      {/* {add_member && } */}
+      {err && <HorizontalSpacer spacepixels={20} />}
+      {err && <ErrorBar text={err} />}
     </MemberListContainer>
   );
 };

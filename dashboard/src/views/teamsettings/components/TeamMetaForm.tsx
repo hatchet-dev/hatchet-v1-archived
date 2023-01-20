@@ -6,17 +6,28 @@ import {
   StandardButton,
   ErrorBar,
 } from "@hatchet-dev/hatchet-components";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
-import { TeamUpdateRequest } from "shared/api/generated/data-contracts";
+import { Team, TeamUpdateRequest } from "shared/api/generated/data-contracts";
+import usePrevious from "shared/hooks/useprevious";
 
 const TeamMetaForm: React.FunctionComponent = () => {
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const [displayName, setDisplayName] = useState("");
+  const [reset, setReset] = useState(0);
   const [err, setErr] = useState("");
+
+  const prevTeam: any = usePrevious(currTeam);
+
+  useEffect(() => {
+    if (prevTeam && prevTeam?.id != currTeam.id) {
+      setReset(reset + 1);
+      setDisplayName(currTeam?.display_name);
+    }
+  }, [currTeam, prevTeam]);
 
   const { mutate, isLoading } = useMutation({
     mutationKey: ["update_team", currTeam.id],
@@ -56,6 +67,7 @@ const TeamMetaForm: React.FunctionComponent = () => {
         on_change={(val) => {
           setDisplayName(val);
         }}
+        reset={reset}
       />
       <HorizontalSpacer spacepixels={30} />
       {err && <ErrorBar text={err} />}

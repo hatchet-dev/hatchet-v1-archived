@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.tsx",
   "dependencies": {
-    "@hatchet-dev/hatchet-components": "^0.27.0",
+    "@hatchet-dev/hatchet-components": "^0.28.0",
     "@tanstack/react-query": "^4.20.4",
     "@visx/visx": "^2.12.2",
     "axios": "^0.27.2",

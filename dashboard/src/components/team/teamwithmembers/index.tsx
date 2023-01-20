@@ -123,6 +123,7 @@ const TeamWithMembers: React.FC<Props> = ({
           members={data.data.rows}
           org_members={currentOrgMembersQuery.data.data.rows}
           remove_member={(member) => deleteTeamMemberMutation.mutate(member.id)}
+          err={err}
         />
         {addMember && (
           <AddTeamMemberForm

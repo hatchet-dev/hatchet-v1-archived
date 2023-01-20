@@ -27,6 +27,19 @@ func NewTeamRemoveMemberHandler(
 
 func (t *TeamRemoveMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	teamMember, _ := r.Context().Value(types.TeamMemberScope).(*models.TeamMember)
+	authTeamMember, _ := r.Context().Value(types.TeamMemberLookupKey).(*models.TeamMember)
+
+	if teamMember.ID == authTeamMember.ID {
+		t.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+			types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: "You cannot remove yourself as a team member. Please request another admin to remove your team member.",
+			},
+			http.StatusBadRequest,
+		))
+
+		return
+	}
 
 	teamMember, err := t.Repo().Team().DeleteTeamMember(teamMember)
 

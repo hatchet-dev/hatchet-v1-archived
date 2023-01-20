@@ -41,4 +41,28 @@ func (o *OrgDeleteMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+
+	// ensure that org member is removed from all dependent teams
+	// note that the authz methods shouldn't allow this user to authorize for a specific
+	// team without an orgMember entry, but removing them manually makes this cleaner
+	teams, _, err := o.Repo().Team().ListTeamsByUserID(orgMember.UserID, orgMember.OrganizationID)
+
+	if err != nil {
+		o.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	for _, team := range teams {
+		teamMember, err := o.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID)
+
+		if err != nil {
+			o.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		}
+
+		teamMember, err = o.Repo().Team().DeleteTeamMember(teamMember)
+
+		if err != nil {
+			o.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		}
+	}
 }
