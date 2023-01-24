@@ -1,7 +1,7 @@
 import { Api } from "./generated/Api";
 
 const api = new Api({
-  baseUrl: "http://localhost:8081",
+  baseUrl: "",
 });
 
 export default api;

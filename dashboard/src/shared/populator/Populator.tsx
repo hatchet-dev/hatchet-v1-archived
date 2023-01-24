@@ -37,7 +37,7 @@ const Populator: React.FunctionComponent<Props> = ({
   });
 
   const currTeamsQuery = useQuery({
-    queryKey: ["current_user_teams", currOrg.id],
+    queryKey: ["current_user_teams", currOrg?.id],
     queryFn: async () => {
       const res = await api.listUserTeams({
         organization_id: currOrg.id,
@@ -88,7 +88,7 @@ const Populator: React.FunctionComponent<Props> = ({
           if (currTeamsQuery.data?.data?.rows?.length > 0) {
             setCurrTeam(currTeamsQuery.data?.data?.rows[0]);
           } else {
-            history.push("/teams/create");
+            history.push("/organization/teams/create");
           }
         }
       }

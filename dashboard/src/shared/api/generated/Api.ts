@@ -33,6 +33,7 @@ import {
   GetOrgMemberResponse,
   GetPATResponse,
   GetUserResponse,
+  ListGithubAppInstallationsResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
   ListTeamMembersResponse,
@@ -57,6 +58,22 @@ import {
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
 export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
+  /**
+   * @description Redirects the user to Github to install the Github App.
+   *
+   * @tags Github Apps
+   * @name InstallGithubApp
+   * @summary Install Github App
+   * @request GET:/api/v1/github_app/install
+   * @secure
+   */
+  installGithubApp = (params: RequestParams = {}) =>
+    this.request<any, void | APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
+      path: `/api/v1/github_app/install`,
+      method: "GET",
+      secure: true,
+      ...params,
+    });
   /**
    * @description Accept an invite for an organization.
    *
@@ -89,6 +106,38 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: "GET",
       secure: true,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Starts the OAuth flow to authenticate with a Github App.
+   *
+   * @tags Github Apps
+   * @name StartGithubAppOAuth
+   * @summary Start Github App OAuth
+   * @request GET:/api/v1/oauth/github_app
+   * @secure
+   */
+  startGithubAppOAuth = (params: RequestParams = {}) =>
+    this.request<any, void | APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
+      path: `/api/v1/oauth/github_app`,
+      method: "GET",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description Finishes the OAuth flow to authenticate with a Github App.
+   *
+   * @tags Github Apps
+   * @name FinishGithubAppOAuth
+   * @summary Start Github App OAuth
+   * @request GET:/api/v1/oauth/github_app/callback
+   * @secure
+   */
+  finishGithubAppOAuth = (params: RequestParams = {}) =>
+    this.request<any, void | APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
+      path: `/api/v1/oauth/github_app/callback`,
+      method: "GET",
+      secure: true,
       ...params,
     });
   /**
@@ -505,6 +554,36 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Lists the github app installations for the currently authenticated user.
+   *
+   * @tags Users
+   * @name ListGithubAppInstallations
+   * @summary List Github App installations
+   * @request GET:/api/v1/users/current/github_app/installations
+   * @secure
+   */
+  listGithubAppInstallations = (
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      Page?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      ListGithubAppInstallationsResponse,
+      APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample
+    >({
+      path: `/api/v1/users/current/github_app/installations`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Lists organizations for a user.
    *
    * @tags Users
@@ -812,6 +891,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       secure: true,
       type: ContentType.Json,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Implements a Github App webhook.
+   *
+   * @tags Github Apps
+   * @name GithubAppWebhook
+   * @summary Github App Webhook
+   * @request POST:/api/v1/webhooks/github_app
+   * @secure
+   */
+  githubAppWebhook = (params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample | APIErrorNotSupportedExample>({
+      path: `/api/v1/webhooks/github_app`,
+      method: "POST",
+      secure: true,
       ...params,
     });
 }

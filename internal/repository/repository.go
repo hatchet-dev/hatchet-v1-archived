@@ -12,6 +12,8 @@ type Repository interface {
 	PersonalAccessToken() PersonalAccessTokenRepository
 	Org() OrgRepository
 	Team() TeamRepository
+	GithubAppOAuth() GithubAppOAuthRepository
+	GithubAppInstallation() GithubAppInstallationRepository
 }
 
 var (

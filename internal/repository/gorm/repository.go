@@ -18,6 +18,8 @@ type GormRepository struct {
 	vet         repository.VerifyEmailTokenRepository
 	org         repository.OrgRepository
 	team        repository.TeamRepository
+	gao         repository.GithubAppOAuthRepository
+	gai         repository.GithubAppInstallationRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -48,6 +50,14 @@ func (t *GormRepository) Team() repository.TeamRepository {
 	return t.team
 }
 
+func (t *GormRepository) GithubAppOAuth() repository.GithubAppOAuthRepository {
+	return t.gao
+}
+
+func (t *GormRepository) GithubAppInstallation() repository.GithubAppInstallationRepository {
+	return t.gai
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -59,6 +69,8 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		vet:         NewVerifyEmailTokenRepository(db),
 		org:         NewOrgRepository(db),
 		team:        NewTeamRepository(db),
+		gao:         NewGithubAppOAuthRepository(db, key),
+		gai:         NewGithubAppInstallationRepository(db),
 	}
 }
 

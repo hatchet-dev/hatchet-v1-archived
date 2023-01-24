@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/github_app"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/pats"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/users"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
@@ -1114,6 +1115,62 @@ func GetUserRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: listTeamsEndpoint,
 		Handler:  listUserTeamsHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/users/current/github_app/installations -> github_app.NewListGithubAppInstallationsHandler
+	// swagger:operation GET /api/v1/users/current/github_app/installations listGithubAppInstallations
+	//
+	// ### Description
+	//
+	// Lists the github app installations for the currently authenticated user.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List Github App installations
+	// tags:
+	// - Users
+	// responses:
+	//   '200':
+	//     description: Successfully got Github app installations
+	//     schema:
+	//       $ref: '#/definitions/ListGithubAppInstallationsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '405':
+	//     description: This endpoint is not supported on this Hatchet instance.
+	//     schema:
+	//       $ref: '#/definitions/APIErrorNotSupportedExample'
+	listGithubAppInstallationsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/users/current/github_app/installations",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+			},
+		},
+	)
+
+	listGithubAppInstallationsHandler := github_app.NewListGithubAppInstallationsHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listGithubAppInstallationsEndpoint,
+		Handler:  listGithubAppInstallationsHandler,
 		Router:   r,
 	})
 

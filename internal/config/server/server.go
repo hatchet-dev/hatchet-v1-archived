@@ -8,6 +8,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 )
 
@@ -54,6 +55,14 @@ type ConfigFile struct {
 	SendgridVerifyEmailTemplateID string `env:"SENDGRID_VERIFY_EMAIL_TEMPLATE_ID"`
 	SendgridInviteLinkTemplateID  string `env:"SENDGRID_INVITE_LINK_TEMPLATE_ID"`
 	SendgridSenderEmail           string `env:"SENDGRID_SENDER_EMAIL"`
+
+	// Github App options
+	GithubAppClientID      string `env:"GITHUB_APP_CLIENT_ID"`
+	GithubAppClientSecret  string `env:"GITHUB_APP_CLIENT_SECRET"`
+	GithubAppName          string `env:"GITHUB_APP_NAME"`
+	GithubAppWebhookSecret string `env:"GITHUB_APP_WEBHOOK_SECRET"`
+	GithubAppID            string `env:"GITHUB_APP_ID"`
+	GithubAppSecretPath    string `env:"GITHUB_APP_SECRET_PATH"`
 }
 
 type AuthConfig struct {
@@ -80,8 +89,9 @@ func (a *AuthConfig) IsEmailAllowed(email string) bool {
 }
 
 type ServerRuntimeConfig struct {
-	ServerURL string
-	Port      int
+	ServerURL  string
+	Port       int
+	CookieName string
 }
 
 type Config struct {
@@ -98,6 +108,8 @@ type Config struct {
 	TokenOpts *token.TokenOpts
 
 	UserNotifier notifier.UserNotifier
+
+	GithubApp *github.GithubAppConf
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

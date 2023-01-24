@@ -26,5 +26,7 @@ func AutoMigrate(db *gorm.DB, debug bool) error {
 		&models.Team{},
 		&models.TeamMember{},
 		&models.TeamPolicy{},
+		&models.GithubAppOAuth{},
+		&models.GithubAppInstallation{},
 	)
 }

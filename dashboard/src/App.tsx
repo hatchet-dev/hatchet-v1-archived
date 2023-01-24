@@ -33,6 +33,7 @@ import OrganizationSettingsView from "views/organizationsettings/OrganizationSet
 import TeamSettingsView from "views/teamsettings/TeamSettingsView";
 import TeamsList from "views/teamslist/TeamsList";
 import CreateTeam from "views/createteam/CreateTeam";
+import UserAccountsView from "views/useraccounts/UserAccountsView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -197,6 +198,10 @@ const AppContents: React.FunctionComponent = () => {
               <Route
                 path="/user/settings/pats"
                 render={() => <UserPATsView />}
+              ></Route>
+              <Route
+                path="/user/settings/accounts"
+                render={() => <UserAccountsView />}
               ></Route>
               <Route
                 path="/user/settings/profile"

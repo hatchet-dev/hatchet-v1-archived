@@ -10,6 +10,8 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
+	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/logger"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/notifier/noop"
@@ -142,8 +144,9 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 	}
 
 	serverRuntimeConfig := server.ServerRuntimeConfig{
-		Port:      sc.Port,
-		ServerURL: sc.ServerURL,
+		Port:       sc.Port,
+		ServerURL:  sc.ServerURL,
+		CookieName: sc.CookieName,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
@@ -191,6 +194,23 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		notifier = noop.NewNoOpUserNotifier()
 	}
 
+	var githubAppConf *github.GithubAppConf
+
+	if e.hasGithubAppVars(sc) {
+		var err error
+
+		githubAppConf, err = github.NewGithubAppConf(&oauth.Config{
+			ClientID:     sc.GithubAppClientID,
+			ClientSecret: sc.GithubAppClientSecret,
+			Scopes:       []string{"read:user"},
+			BaseURL:      sc.ServerURL,
+		}, sc.GithubAppName, sc.GithubAppSecretPath, sc.GithubAppWebhookSecret, sc.GithubAppID)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -199,5 +219,15 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		UserSessionStore:    userSessionStore,
 		TokenOpts:           tokenOpts,
 		UserNotifier:        notifier,
+		GithubApp:           githubAppConf,
 	}, nil
+}
+
+func (e *EnvConfigLoader) hasGithubAppVars(sc *server.ConfigFile) bool {
+	return sc.GithubAppClientID != "" &&
+		sc.GithubAppClientSecret != "" &&
+		sc.GithubAppName != "" &&
+		sc.GithubAppWebhookSecret != "" &&
+		sc.GithubAppSecretPath != "" &&
+		sc.GithubAppID != ""
 }

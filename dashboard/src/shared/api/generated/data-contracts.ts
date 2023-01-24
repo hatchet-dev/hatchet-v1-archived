@@ -210,6 +210,38 @@ export type GetPATResponse = PersonalAccessToken;
 
 export type GetUserResponse = User;
 
+/** @example {"installation_settings_url":"installation_settings_url","updated_at":"2022-12-13T20:06:48.888Z","account_name":"account_name","created_at":"2022-12-13T20:06:48.888Z","installation_id":0,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","account_avatar_url":"account_avatar_url"} */
+export interface GithubAppInstallation {
+  account_avatar_url?: string;
+  account_name?: string;
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** @format int64 */
+  installation_id?: number;
+  installation_settings_url?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"installation_settings_url":"installation_settings_url","updated_at":"2022-12-13T20:06:48.888Z","account_name":"account_name","created_at":"2022-12-13T20:06:48.888Z","installation_id":0,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","account_avatar_url":"account_avatar_url"},{"installation_settings_url":"installation_settings_url","updated_at":"2022-12-13T20:06:48.888Z","account_name":"account_name","created_at":"2022-12-13T20:06:48.888Z","installation_id":0,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","account_avatar_url":"account_avatar_url"}]} */
+export interface ListGithubAppInstallationsResponse {
+  pagination?: PaginationResponse;
+  rows?: GithubAppInstallation[];
+}
+
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
 export interface ListOrgMembersResponse {
   pagination?: PaginationResponse;

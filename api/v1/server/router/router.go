@@ -17,6 +17,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 
 	baseRegisterer := NewBaseRegisterer()
 	userRegisterer := NewUserRouteRegisterer()
+	githubAppRegisterer := NewGithubAppRouteRegisterer()
 	orgRegisterer := NewOrgRouteRegisterer()
 	teamRegisterer := NewTeamRouteRegisterer()
 
@@ -45,6 +46,17 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 			userRegisterer.Children...,
 		)
 
+		githubAppRoutes := githubAppRegisterer.GetRoutes(
+			r,
+			config,
+			&endpoint.Path{
+				Parent:       baseRoutePath,
+				RelativePath: "",
+			},
+			endpointFactory,
+			githubAppRegisterer.Children...,
+		)
+
 		orgRoutes := orgRegisterer.GetRoutes(
 			r,
 			config,
@@ -68,6 +80,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 		routes := [][]*router.Route{
 			baseRoutes,
 			userRoutes,
+			githubAppRoutes,
 			orgRoutes,
 			teamRoutes,
 		}
