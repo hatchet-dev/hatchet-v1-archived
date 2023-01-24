@@ -83,6 +83,8 @@ func getRequestActionForEndpoint(
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamTeamID)
 		case types.TeamMemberScope:
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamTeamMemberID)
+		case types.GithubAppInstallationScope:
+			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamGithubAppInstallationID)
 		}
 
 		if reqErr != nil {

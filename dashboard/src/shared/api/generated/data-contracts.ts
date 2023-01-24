@@ -120,6 +120,43 @@ export interface APIServerMetadataAuth {
   require_email_verification?: boolean;
 }
 
+/** @example {"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name"} */
+export interface CreateModuleRequest {
+  github?: CreateModuleRequestGithub;
+  name?: string;
+}
+
+/** @example {"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"} */
+export interface CreateModuleRequestGithub {
+  /**
+   * this refers to the Hatchet app installation id, **not** the installation id stored on Github
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  github_app_installation_id: string;
+  /**
+   * the repository branch on Github
+   * @example "main"
+   */
+  github_repository_branch: string;
+  /**
+   * the repository name on Github
+   * @example "infra"
+   */
+  github_repository_name: string;
+  /**
+   * the repository owner on Github
+   * @example "hatchet-dev"
+   */
+  github_repository_owner: string;
+  /**
+   * path to the module in the github repository
+   * @example "./staging/eks"
+   */
+  path: string;
+}
+
+export type CreateModuleResponse = Module;
+
 /** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
   /**
@@ -236,10 +273,32 @@ export interface GithubAppInstallation {
   updated_at?: string;
 }
 
+/** @example {"branch_name":"branch_name","is_default":true} */
+export interface GithubBranch {
+  branch_name?: string;
+  is_default?: boolean;
+}
+
+/** @example {"repo_name":"repo_name","repo_owner":"repo_owner"} */
+export interface GithubRepo {
+  repo_name?: string;
+  repo_owner?: string;
+}
+
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"installation_settings_url":"installation_settings_url","updated_at":"2022-12-13T20:06:48.888Z","account_name":"account_name","created_at":"2022-12-13T20:06:48.888Z","installation_id":0,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","account_avatar_url":"account_avatar_url"},{"installation_settings_url":"installation_settings_url","updated_at":"2022-12-13T20:06:48.888Z","account_name":"account_name","created_at":"2022-12-13T20:06:48.888Z","installation_id":0,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","account_avatar_url":"account_avatar_url"}]} */
 export interface ListGithubAppInstallationsResponse {
   pagination?: PaginationResponse;
   rows?: GithubAppInstallation[];
+}
+
+export type ListGithubRepoBranchesResponse = GithubBranch[];
+
+export type ListGithubReposResponse = GithubRepo[];
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}},{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}}]} */
+export interface ListModulesResponse {
+  pagination?: PaginationResponse;
+  rows?: Module[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
@@ -293,6 +352,42 @@ export interface LoginUserRequest {
 }
 
 export type LoginUserResponse = User;
+
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}} */
+export interface Module {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  deployment?: ModuleDeploymentConfig;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /**
+   * the name for the module
+   * @example "eks"
+   */
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"} */
+export interface ModuleDeploymentConfig {
+  github_app_installation_id?: string;
+  github_repo_branch?: string;
+  github_repo_name?: string;
+  github_repo_owner?: string;
+  path?: string;
+}
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {
@@ -873,6 +968,11 @@ export interface AddTeamMemberRequest {
   org_member_id?: string;
   /** the set of policies for this user */
   policies: TeamPolicyReference[];
+}
+
+export interface CreateModuleRequest {
+  github?: CreateModuleRequestGithub;
+  name?: string;
 }
 
 export interface CreateUserRequest {

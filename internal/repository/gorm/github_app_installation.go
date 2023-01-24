@@ -26,10 +26,20 @@ func (repo *GithubAppInstallationRepository) CreateGithubAppInstallation(gai *mo
 	return gai, nil
 }
 
+func (repo *GithubAppInstallationRepository) ReadGithubAppInstallationByID(gaiID string) (*models.GithubAppInstallation, repository.RepositoryError) {
+	gai := &models.GithubAppInstallation{}
+
+	if err := repo.db.Preload("GithubAppOAuth").Where("id = ?", gaiID).First(&gai).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return gai, nil
+}
+
 func (repo *GithubAppInstallationRepository) ReadGithubAppInstallationByInstallationAndAccountID(installationID, accountID int64) (*models.GithubAppInstallation, repository.RepositoryError) {
 	gai := &models.GithubAppInstallation{}
 
-	if err := repo.db.Where("installation_id = ? AND account_id = ?", installationID, accountID).First(&gai).Error; err != nil {
+	if err := repo.db.Preload("GithubAppOAuth").Where("installation_id = ? AND account_id = ?", installationID, accountID).First(&gai).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

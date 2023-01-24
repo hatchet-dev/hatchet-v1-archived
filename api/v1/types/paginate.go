@@ -4,7 +4,7 @@ type PaginationRequest struct {
 	// The page to query for
 	// in: query
 	// example: 2
-	Page int64 `schema:"page"`
+	Page int64 `schema:"page" json:"page"`
 }
 
 // swagger:model

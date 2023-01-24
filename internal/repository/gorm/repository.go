@@ -20,6 +20,7 @@ type GormRepository struct {
 	team        repository.TeamRepository
 	gao         repository.GithubAppOAuthRepository
 	gai         repository.GithubAppInstallationRepository
+	mod         repository.ModuleRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -58,6 +59,10 @@ func (t *GormRepository) GithubAppInstallation() repository.GithubAppInstallatio
 	return t.gai
 }
 
+func (t *GormRepository) Module() repository.ModuleRepository {
+	return t.mod
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -71,6 +76,7 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		team:        NewTeamRepository(db),
 		gao:         NewGithubAppOAuthRepository(db, key),
 		gai:         NewGithubAppInstallationRepository(db),
+		mod:         NewModuleRepository(db),
 	}
 }
 

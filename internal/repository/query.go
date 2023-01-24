@@ -41,7 +41,7 @@ func WithPage(paginationRequest *types.PaginationRequest) QueryOption {
 	var page int
 
 	if paginationRequest == nil {
-		page = 0
+		page = 1
 	} else {
 		page = int(paginationRequest.Page)
 	}
@@ -53,7 +53,7 @@ type withPage int
 
 func (w withPage) Apply(q *Query) {
 	q.Limit = 50
-	q.Offset = 50 * int(w)
+	q.Offset = 50 * int(w-1)
 }
 
 func WithLimit(limit uint) QueryOption {

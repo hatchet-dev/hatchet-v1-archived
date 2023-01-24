@@ -7,25 +7,68 @@ import {
   Filter,
   Paginator,
   Table,
+  Spinner,
+  Placeholder,
 } from "@hatchet-dev/hatchet-components";
+import { useQuery } from "@tanstack/react-query";
+import GithubAvatarAndName from "components/githubavatarandname";
+import { useAtom } from "jotai";
 import React from "react";
 import { useHistory } from "react-router-dom";
+import api from "shared/api";
+import { currTeamAtom } from "shared/atoms/atoms";
+import { relativeDate } from "shared/utils";
+import github from "assets/github.png";
+import usePagination from "shared/hooks/usepagination";
 
 const ModulesView: React.FunctionComponent = () => {
   let history = useHistory();
+  const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
+
+  const {
+    currentPage,
+    maxPage,
+    cursor_forward,
+    cursor_backward,
+    set_data,
+  } = usePagination();
+
+  const listModulesQuery = useQuery({
+    queryKey: ["modules", currTeam?.id, currentPage],
+    queryFn: async () => {
+      const res = await api.listModules(currTeam?.id, {
+        page: currentPage,
+      });
+
+      return res;
+    },
+    retry: false,
+    onSuccess: (data) => {
+      set_data(data?.data?.pagination);
+    },
+  });
 
   const columns = [
     {
       Header: "Repo Name",
-      accessor: "name",
-    },
-    {
-      Header: "Environment",
-      accessor: "environment",
+      accessor: "repo_name",
+      Cell: ({ row }: any) => {
+        return (
+          <GithubAvatarAndName
+            account_avatar_url={github}
+            account_name={row.original.repo_name}
+            avatar_size="small"
+          />
+        );
+      },
     },
     {
       Header: "Last Deployed",
       accessor: "last_deployed",
+    },
+    {
+      Header: "Branch",
+      accessor: "repo_branch",
     },
     {
       Header: "Source",
@@ -35,48 +78,44 @@ const ModulesView: React.FunctionComponent = () => {
       Header: "Module Path",
       accessor: "path",
     },
-    {
-      Header: "Latest Commit",
-      accessor: "latest_commit",
-    },
-  ];
-
-  const data = [
-    {
-      id: "1111",
-      environment: "Staging",
-      name: "my-company/team-1",
-      last_deployed: "10 days ago",
-      source: "Github",
-      path: "./infra/gke",
-      latest_commit: "7e6f221",
-    },
-    {
-      id: "2222",
-      environment: "Production",
-      name: "my-company/team-2",
-      last_deployed: "15 days ago",
-      source: "Github",
-      path: "./infra/gke",
-      latest_commit: "7e6f221",
-    },
-    {
-      id: "3333",
-      environment: "Production",
-      name: "my-company/team-3",
-      last_deployed: "23 days ago",
-      source: "Github",
-      path: "./infra/gke",
-      latest_commit: "7e6f221",
-    },
   ];
 
   const handleResourceClick = (row: any) => {
-    history.push(`/modules/${row.original.id}`);
+    history.push(`/team/${currTeam.id}/modules/${row.original.id}`);
   };
 
-  const handleLinkModuleClick = () => {
-    history.push(`/modules/link/step_1`);
+  const handleCreateModuleClick = () => {
+    history.push(`/team/${currTeam.id}/modules/create/step_1`);
+  };
+
+  const moduleData = listModulesQuery.data?.data.rows.map((module) => {
+    return {
+      id: module.id,
+      name: module.name,
+      repo_name: `${module.deployment.github_repo_owner}/${module.deployment.github_repo_name}`,
+      repo_branch: module.deployment.github_repo_branch,
+      last_deployed: relativeDate(module.updated_at),
+      source: "Github",
+      path: module.deployment.path,
+    };
+  });
+
+  const renderModules = () => {
+    if (listModulesQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
+    return (
+      <Table
+        columns={columns}
+        data={moduleData}
+        onRowClick={handleResourceClick}
+      />
+    );
   };
 
   return (
@@ -87,15 +126,20 @@ const ModulesView: React.FunctionComponent = () => {
       <FlexRowRight>
         <Filter />
         <StandardButton
-          label="Link module"
+          label="Create module"
           material_icon="add"
-          on_click={handleLinkModuleClick}
+          on_click={handleCreateModuleClick}
         />
       </FlexRowRight>
       <HorizontalSpacer spacepixels={12} />
-      <Table columns={columns} data={data} onRowClick={handleResourceClick} />
+      {renderModules()}
       <FlexRowRight>
-        <Paginator />
+        <Paginator
+          curr_page={currentPage}
+          last_page={maxPage}
+          cursor_backward={cursor_backward}
+          cursor_forward={cursor_forward}
+        />
       </FlexRowRight>
     </>
   );

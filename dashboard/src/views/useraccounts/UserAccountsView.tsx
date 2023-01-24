@@ -19,7 +19,7 @@ import api from "shared/api";
 import { relativeDate } from "shared/utils";
 import { css } from "styled-components";
 import theme from "shared/theme";
-import GithubAvatarAndName from "./components/GithubAvatarAndName";
+import GithubAvatarAndName from "components/githubavatarandname";
 
 const UserAccountsView: React.FunctionComponent = () => {
   const [err, setErr] = useState("");

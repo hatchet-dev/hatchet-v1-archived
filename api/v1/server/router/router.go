@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
@@ -20,6 +22,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	githubAppRegisterer := NewGithubAppRouteRegisterer()
 	orgRegisterer := NewOrgRouteRegisterer()
 	teamRegisterer := NewTeamRouteRegisterer()
+	moduleRegisterer := NewModuleRouteRegisterer()
 
 	baseRoutePath := "/api/v1"
 
@@ -85,6 +88,21 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 			teamRoutes,
 		}
 
+		r.Route(fmt.Sprintf("/teams/{%s}", types.URLParamTeamID), func(r chi.Router) {
+			routes = append(
+				routes,
+				moduleRegisterer.GetRoutes(
+					r,
+					config,
+					&endpoint.Path{
+						Parent:       baseRoutePath,
+						RelativePath: fmt.Sprintf("/teams/{%s}", types.URLParamTeamID),
+					},
+					endpointFactory,
+				),
+			)
+		})
+
 		var allRoutes []*router.Route
 
 		for _, r := range routes {
@@ -109,6 +127,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	teamFactory := authz.NewTeamScopedFactory(config)
 	teamMemberFactory := authz.NewTeamMemberScopedFactory(config)
 
+	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
+
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
 
@@ -123,6 +143,11 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				}
 			case types.NoUserScope:
 				atomicGroup.Use(noAuthNFactory.NewNotAuthenticated)
+			case types.GithubAppInstallationScope:
+				endpointMetaFactory := endpoint.NewEndpointMiddleware(config, route.Endpoint.Metadata)
+				atomicGroup.Use(endpointMetaFactory.Middleware)
+
+				atomicGroup.Use(gaiFactory.Middleware)
 			case types.OrgScope:
 				endpointMetaFactory := endpoint.NewEndpointMiddleware(config, route.Endpoint.Metadata)
 				atomicGroup.Use(endpointMetaFactory.Middleware)

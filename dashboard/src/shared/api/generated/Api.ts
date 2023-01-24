@@ -15,6 +15,8 @@ import {
   APIErrorForbiddenExample,
   APIErrorNotSupportedExample,
   APIServerMetadata,
+  CreateModuleRequest,
+  CreateModuleResponse,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   CreateOrgMemberInviteRequest,
@@ -34,6 +36,9 @@ import {
   GetPATResponse,
   GetUserResponse,
   ListGithubAppInstallationsResponse,
+  ListGithubRepoBranchesResponse,
+  ListGithubReposResponse,
+  ListModulesResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
   ListTeamMembersResponse,
@@ -58,6 +63,45 @@ import {
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
 export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
+  /**
+   * @description Lists the Github repos that the github app installation has access to.
+   *
+   * @tags Github Apps
+   * @name ListGithubRepos
+   * @summary List Github Repos
+   * @request GET:/api/v1/github_app/{github_app_installation_id}/repos
+   * @secure
+   */
+  listGithubRepos = (githubAppInstallationId: string, params: RequestParams = {}) =>
+    this.request<ListGithubReposResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/github_app/${githubAppInstallationId}/repos`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists the Github repo branches.
+   *
+   * @tags Github Apps
+   * @name ListGithubRepoBranches
+   * @summary List Github Branches
+   * @request GET:/api/v1/github_app/{github_app_installation_id}/repos/{github_repo_owner}/{github_repo_name}/branches
+   * @secure
+   */
+  listGithubRepoBranches = (
+    githubAppInstallationId: string,
+    githubRepoOwner: string,
+    githubRepoName: string,
+    params: RequestParams = {},
+  ) =>
+    this.request<ListGithubRepoBranchesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/github_app/${githubAppInstallationId}/repos/${githubRepoOwner}/${githubRepoName}/branches`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
   /**
    * @description Redirects the user to Github to install the Github App.
    *
@@ -362,10 +406,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/organizations/{org_id}/teams
    * @secure
    */
-  listTeams = (orgId: string, params: RequestParams = {}) =>
+  listTeams = (
+    orgId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      org_id?: number;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<ListTeamsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/teams`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -434,10 +489,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/teams/{team_id}/members
    * @secure
    */
-  listTeamMembers = (teamId: string, params: RequestParams = {}) =>
+  listTeamMembers = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      team_id?: number;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<ListTeamMembersResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/members`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -475,6 +541,53 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/teams/${teamId}/members/${teamMemberId}`,
       method: "DELETE",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists modules for a given team.
+   *
+   * @tags Modules
+   * @name ListModules
+   * @summary List Modules
+   * @request GET:/api/v1/teams/{team_id}/modules
+   * @secure
+   */
+  listModules = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListModulesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a new module.
+   *
+   * @tags Modules
+   * @name CreateModule
+   * @summary Create Module
+   * @request POST:/api/v1/teams/{team_id}/modules
+   * @secure
+   */
+  createModule = (teamId: string, data?: CreateModuleRequest, params: RequestParams = {}) =>
+    this.request<CreateModuleResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });
@@ -568,7 +681,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
        * The page to query for
        * @format int64
        */
-      Page?: number;
+      page?: number;
     },
     params: RequestParams = {},
   ) =>

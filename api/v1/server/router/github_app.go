@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
@@ -8,6 +10,15 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
+
+// swagger:parameters listGithubRepos
+type githubAppInstallationPathParams struct {
+	// The github app installation id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	GithubAppInstallation string `json:"github_app_installation_id"`
+}
 
 func NewGithubAppRouteRegisterer(children ...*router.Registerer) *router.Registerer {
 	return &router.Registerer{
@@ -236,6 +247,112 @@ func GetGithubAppRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: webhookEndpoint,
 		Handler:  webhookHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/github_app/{github_app_installation_id}/repos -> github_app.NewListGithubReposHandler
+	// swagger:operation GET /api/v1/github_app/{github_app_installation_id}/repos listGithubRepos
+	//
+	// ### Description
+	//
+	// Lists the Github repos that the github app installation has access to.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List Github Repos
+	// tags:
+	// - Github Apps
+	// responses:
+	//   '200':
+	//     description: Successfully listed Github repositories
+	//     schema:
+	//       $ref: '#/definitions/ListGithubReposResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listReposEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/github_app/{%s}/repos", types.URLParamGithubAppInstallationID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.GithubAppInstallationScope,
+			},
+		},
+	)
+
+	listReposHandler := github_app.NewListGithubReposHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listReposEndpoint,
+		Handler:  listReposHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/github_app/{github_app_installation_id}/repos/{github_repo_owner}/{github_repo_name}/branches -> github_app.NewListGithubRepoBranchesHandler
+	// swagger:operation GET /api/v1/github_app/{github_app_installation_id}/repos/{github_repo_owner}/{github_repo_name}/branches listGithubRepoBranches
+	//
+	// ### Description
+	//
+	// Lists the Github repo branches.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List Github Branches
+	// tags:
+	// - Github Apps
+	// responses:
+	//   '200':
+	//     description: Successfully listed Github repo branches
+	//     schema:
+	//       $ref: '#/definitions/ListGithubRepoBranchesResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listBranchesEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/github_app/{%s}/repos/{%s}/{%s}/branches", types.URLParamGithubAppInstallationID, types.URLParamGithubRepoOwner, types.URLParamGithubRepoName),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.GithubAppInstallationScope,
+			},
+		},
+	)
+
+	listBranchesHandler := github_app.NewListGithubRepoBranchesHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listBranchesEndpoint,
+		Handler:  listBranchesHandler,
 		Router:   r,
 	})
 

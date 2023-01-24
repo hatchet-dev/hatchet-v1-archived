@@ -13,7 +13,7 @@ import SideBar, { SidebarLink } from "components/sidebar";
 import EnvironmentsView from "views/environments/EnvironmentsView";
 import HomeView from "views/home/HomeView";
 import MonitoringView from "views/monitoring/MonitoringView";
-import LinkModuleView from "views/linkmodule/LinkModuleView";
+import CreateModuleView from "views/createmodule/CreateModuleView";
 import ExpandedModuleView from "views/expandedmodule/ExpandedModuleView";
 import ExpandedTemplateView from "views/expandedtemplate/ExpandedTemplateView";
 import LoginView from "views/login/LoginView";
@@ -278,10 +278,10 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/modules/link/:step"
+            path="/team/:team/modules/create/:step"
             render={() => (
               <WrappedTeamContents>
-                <LinkModuleView />
+                <CreateModuleView />
               </WrappedTeamContents>
             )}
           ></Route>

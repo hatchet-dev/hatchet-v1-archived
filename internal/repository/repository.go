@@ -14,6 +14,7 @@ type Repository interface {
 	Team() TeamRepository
 	GithubAppOAuth() GithubAppOAuthRepository
 	GithubAppInstallation() GithubAppInstallationRepository
+	Module() ModuleRepository
 }
 
 var (
