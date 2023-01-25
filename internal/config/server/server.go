@@ -8,6 +8,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 )
@@ -63,6 +64,13 @@ type ConfigFile struct {
 	GithubAppWebhookSecret string `env:"GITHUB_APP_WEBHOOK_SECRET"`
 	GithubAppID            string `env:"GITHUB_APP_ID"`
 	GithubAppSecretPath    string `env:"GITHUB_APP_SECRET_PATH"`
+
+	// S3 file storage options
+	S3StateAWSAccessKeyID string `env:"S3_STATE_AWS_ACCESS_KEY_ID"`
+	S3StateAWSSecretKey   string `env:"S3_STATE_AWS_SECRET_KEY"`
+	S3StateAWSRegion      string `env:"S3_STATE_AWS_REGION"`
+	S3StateBucketName     string `env:"S3_STATE_BUCKET_NAME"`
+	S3StateEncryptionKey  string `env:"S3_STATE_ENCRYPTION_KEY,default=__random_strong_encryption_key__"`
 }
 
 type AuthConfig struct {
@@ -110,6 +118,8 @@ type Config struct {
 	UserNotifier notifier.UserNotifier
 
 	GithubApp *github.GithubAppConf
+
+	DefaultFileStore filestorage.FileStorageManager
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

@@ -116,7 +116,7 @@ module.exports = () => {
       host: "0.0.0.0",
       port: env.DEV_SERVER_PORT || 8080,
       hot: true,
-      sockPort: 443,
+      sockPort: env.DEV_SERVER_SOCKET_PORT || 443,
     },
     plugins: [
       new HtmlWebpackPlugin(htmlPluginOpts),

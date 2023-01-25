@@ -18,6 +18,9 @@ type Decoder interface {
 	// Decode accepts a target struct, a reader for the request body, and a URL
 	// for the request endpoint
 	Decode(s interface{}, r *http.Request) apierrors.RequestError
+
+	// DecodeQueryOnly is Decode but only looks at the query parameters
+	DecodeQueryOnly(s interface{}, r *http.Request) apierrors.RequestError
 }
 
 // DefaultDecoder decodes the request body with `json` and the URL query params with gorilla/schema,
@@ -56,6 +59,25 @@ func (d *DefaultDecoder) Decode(
 		if err := json.NewDecoder(r.Body).Decode(s); err != nil && !errors.Is(err, io.EOF) {
 			return requestErrorFromJSONErr(err)
 		}
+	}
+
+	return nil
+}
+
+// Decode reads the request and populates the target request object.
+func (d *DefaultDecoder) DecodeQueryOnly(
+	s interface{},
+	r *http.Request,
+) (reqErr apierrors.RequestError) {
+	if r == nil || r.URL == nil {
+		return apierrors.NewErrInternal(fmt.Errorf("decode: request or request.URL cannot be nil"))
+	}
+
+	// read query values from URL and decode using schema library
+	vals := r.URL.Query()
+
+	if err := d.schemaDecoder.Decode(s, vals); err != nil {
+		return requestErrorFromSchemaErr(err)
 	}
 
 	return nil

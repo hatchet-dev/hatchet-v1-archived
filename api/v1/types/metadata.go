@@ -34,6 +34,8 @@ const (
 	HTTPVerbPut    HTTPVerb = "PUT"
 	HTTPVerbPatch  HTTPVerb = "PATCH"
 	HTTPVerbDelete HTTPVerb = "DELETE"
+	HTTPVerbLock   HTTPVerb = "LOCK"
+	HTTPVerbUnlock HTTPVerb = "UNLOCK"
 )
 
 type PermissionScope string
@@ -41,12 +43,15 @@ type PermissionScope string
 const (
 	NoUserScope                PermissionScope = "no_user_scope"
 	UserScope                  PermissionScope = "user_scope"
+	BasicAuthUserScope         PermissionScope = "basic_auth_user_scope"
 	OrgScope                   PermissionScope = "org_scope"
 	OrgMemberScope             PermissionScope = "org_member_scope"
 	OrgOwnerScope              PermissionScope = "org_owner_scope"
 	TeamScope                  PermissionScope = "team_scope"
 	TeamMemberScope            PermissionScope = "team_member_scope"
 	GithubAppInstallationScope PermissionScope = "github_app_installation_scope"
+	ModuleScope                PermissionScope = "module_scope"
+	ModuleRunScope             PermissionScope = "module_run_scope"
 )
 
 const OrgMemberLookupKey string = "org_member"

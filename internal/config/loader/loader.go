@@ -10,6 +10,8 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage/s3"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/logger"
@@ -211,6 +213,28 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		}
 	}
 
+	var storageManager filestorage.FileStorageManager
+
+	if e.hasS3StateAppVars(sc) {
+		var stateEncryptionKey [32]byte
+
+		for i, b := range []byte(sc.S3StateEncryptionKey) {
+			stateEncryptionKey[i] = b
+		}
+
+		storageManager, err = s3.NewS3StorageClient(&s3.S3Options{
+			AWSRegion:      sc.S3StateAWSRegion,
+			AWSAccessKeyID: sc.S3StateAWSAccessKeyID,
+			AWSSecretKey:   sc.S3StateAWSSecretKey,
+			AWSBucketName:  sc.S3StateBucketName,
+			EncryptionKey:  &stateEncryptionKey,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -220,6 +244,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		TokenOpts:           tokenOpts,
 		UserNotifier:        notifier,
 		GithubApp:           githubAppConf,
+		DefaultFileStore:    storageManager,
 	}, nil
 }
 
@@ -230,4 +255,12 @@ func (e *EnvConfigLoader) hasGithubAppVars(sc *server.ConfigFile) bool {
 		sc.GithubAppWebhookSecret != "" &&
 		sc.GithubAppSecretPath != "" &&
 		sc.GithubAppID != ""
+}
+
+func (e *EnvConfigLoader) hasS3StateAppVars(sc *server.ConfigFile) bool {
+	return sc.S3StateAWSAccessKeyID != "" &&
+		sc.S3StateAWSRegion != "" &&
+		sc.S3StateAWSSecretKey != "" &&
+		sc.S3StateBucketName != "" &&
+		sc.S3StateEncryptionKey != ""
 }

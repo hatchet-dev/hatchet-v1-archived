@@ -75,3 +75,57 @@ func (repo *ModuleRepository) ListModulesByTeamID(teamID string, opts ...reposit
 
 	return mods, paginatedResult, nil
 }
+
+func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Create(run).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
+func (repo *ModuleRepository) ReadModuleRunByID(id string) (*models.ModuleRun, repository.RepositoryError) {
+	mod := &models.ModuleRun{}
+
+	if err := repo.db.Where("id = ?", id).First(&mod).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mod, nil
+}
+
+func (repo *ModuleRepository) UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Save(run).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
+func (repo *ModuleRepository) DeleteModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
+	del := repo.db.Delete(&run)
+
+	if del.Error != nil {
+		return nil, toRepoError(repo.db, del.Error)
+	} else if del.RowsAffected == 0 {
+		return nil, repository.RepositoryNoRowsAffected
+	}
+
+	return run, nil
+}
+
+func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
+	var runs []*models.ModuleRun
+
+	db := repo.db.Model(&models.ModuleRun{}).Where("module_id = ?", moduleID)
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
+
+	if err := db.Find(&runs).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return runs, paginatedResult, nil
+}

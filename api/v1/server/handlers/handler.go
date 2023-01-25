@@ -79,6 +79,10 @@ func (d *DefaultHatchetHandler) DecodeAndValidate(w http.ResponseWriter, r *http
 	return d.decoderValidator.DecodeAndValidate(w, r, v)
 }
 
+func (d *DefaultHatchetHandler) DecodeAndValidateQueryOnly(w http.ResponseWriter, r *http.Request, v interface{}) bool {
+	return d.decoderValidator.DecodeAndValidateQueryOnly(w, r, v)
+}
+
 func (d *DefaultHatchetHandler) DecodeAndValidateNoWrite(r *http.Request, v interface{}) error {
 	return d.decoderValidator.DecodeAndValidateNoWrite(r, v)
 }

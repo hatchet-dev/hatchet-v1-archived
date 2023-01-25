@@ -20,4 +20,21 @@ type ModuleRepository interface {
 
 	// DeleteModule soft-deletes a module
 	DeleteModule(module *models.Module) (*models.Module, RepositoryError)
+
+	// --- Run queries ---
+	//
+	// CreateModuleRun creates a new run in the database
+	CreateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
+
+	// ReadModuleRunByID reads the run by its unique UUID
+	ReadModuleRunByID(id string) (*models.ModuleRun, RepositoryError)
+
+	// ListRunsByModuleID lists all runs for a module
+	ListRunsByModuleID(moduleID string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
+
+	// UpdateModuleRun updates any modified values for a module
+	UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
+
+	// DeleteModuleRun soft-deletes a run
+	DeleteModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
 }

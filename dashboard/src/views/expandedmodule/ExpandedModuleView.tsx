@@ -6,8 +6,15 @@ import {
   Breadcrumbs,
   HeirarchyGraph,
   TabList,
+  StandardButton,
+  FlexRowRight,
 } from "@hatchet-dev/hatchet-components";
-import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useAtom } from "jotai";
+import React, { useState, useEffect } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import api from "shared/api";
+import { currTeamAtom } from "shared/atoms/atoms";
 import RunsList from "../../components/runslist";
 import ExpandedModuleMonitors from "./components/monitors";
 
@@ -20,20 +27,58 @@ const TabOptions = [
 ];
 
 const ExpandedModuleView: React.FunctionComponent = () => {
+  const history = useHistory();
   const [selectedTab, setSelectedTab] = useState(TabOptions[0]);
+  const [currTeam] = useAtom(currTeamAtom);
+  const [err, setErr] = useState("");
+  const params: any = useParams();
+
+  useEffect(() => {
+    if (!params?.module) {
+      history.push(`/team/${currTeam?.id}/modules`);
+    }
+  }, [params]);
+
+  const mutation = useMutation({
+    mutationKey: ["create_module_run", currTeam?.id, params?.module],
+    mutationFn: () => {
+      return api.createModuleRun(currTeam?.id, params?.module);
+    },
+    onSuccess: (data) => {
+      setErr("");
+    },
+    onError: (err: any) => {
+      if (!err.error.errors || err.error.errors.length == 0) {
+        setErr("An unexpected error occurred. Please try again.");
+      }
+
+      setErr(err.error.errors[0].description);
+    },
+  });
 
   const renderTabContents = () => {
     switch (selectedTab) {
       case "Runs":
         return (
-          <RunsList
-            runs={[
-              {
-                status: "deployed",
-                date: "7:09 AM on June 23rd, 2022",
-              },
-            ]}
-          />
+          <>
+            <FlexRowRight>
+              <StandardButton
+                label="New Run"
+                on_click={() => {
+                  mutation.mutate();
+                }}
+              />
+            </FlexRowRight>
+
+            <RunsList
+              runs={[
+                {
+                  status: "deployed",
+                  date: "7:09 AM on June 23rd, 2022",
+                },
+              ]}
+            />
+          </>
         );
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;

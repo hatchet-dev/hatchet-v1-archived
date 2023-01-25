@@ -185,6 +185,15 @@ func (f *failingDecoderValidator) DecodeAndValidate(
 	return false
 }
 
+func (f *failingDecoderValidator) DecodeAndValidateQueryOnly(
+	w http.ResponseWriter,
+	r *http.Request,
+	v interface{},
+) (ok bool) {
+	apierrors.HandleAPIError(f.config.Logger, f.config.ErrorAlerter, w, r, apierrors.NewErrInternal(fmt.Errorf("fake error")), true)
+	return false
+}
+
 func (f *failingDecoderValidator) DecodeAndValidateNoWrite(
 	r *http.Request,
 	v interface{},

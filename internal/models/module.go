@@ -63,4 +63,24 @@ type ModuleRun struct {
 	Base
 
 	ModuleID string
+
+	LockID        string
+	LockOperation string
+	LockInfo      string
+	LockWho       string
+	LockVersion   string
+	LockCreated   string
+	LockPath      string
+}
+
+func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
+	return &types.TerraformLock{
+		ID:        m.LockID,
+		Operation: m.LockOperation,
+		Info:      m.LockInfo,
+		Who:       m.LockWho,
+		Version:   m.LockVersion,
+		Created:   m.LockCreated,
+		Path:      m.LockPath,
+	}
 }

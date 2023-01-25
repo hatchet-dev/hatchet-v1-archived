@@ -26,6 +26,9 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 
 	baseRoutePath := "/api/v1"
 
+	chi.RegisterMethod("LOCK")
+	chi.RegisterMethod("UNLOCK")
+
 	r.Route(baseRoutePath, func(r chi.Router) {
 		baseRoutePath := &endpoint.Path{
 			RelativePath: baseRoutePath,
@@ -119,6 +122,7 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	// Create a new "user-scoped" factory which will create a new user-scoped request
 	// after authentication. Each subsequent http.Handler can lookup the user in context.
 	authNFactory := authn.NewAuthNFactory(config)
+	authNBasicFactory := authn.NewAuthNBasicFactory(config)
 	noAuthNFactory := authn.NewNoAuthNFactory(config)
 
 	orgFactory := authz.NewOrgScopedFactory(config)
@@ -126,6 +130,9 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 
 	teamFactory := authz.NewTeamScopedFactory(config)
 	teamMemberFactory := authz.NewTeamMemberScopedFactory(config)
+
+	moduleFactory := authz.NewModuleScopedFactory(config)
+	moduleRunFactory := authz.NewRunScopedFactory(config)
 
 	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
 
@@ -140,6 +147,12 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 					atomicGroup.Use(authNFactory.NewAuthenticatedWithoutEmailVerification)
 				} else {
 					atomicGroup.Use(authNFactory.NewAuthenticated)
+				}
+			case types.BasicAuthUserScope:
+				if !config.AuthConfig.RequireEmailVerification || route.Endpoint.Metadata.AllowUnverifiedEmails {
+					atomicGroup.Use(authNBasicFactory.NewAuthenticatedWithoutEmailVerification)
+				} else {
+					atomicGroup.Use(authNBasicFactory.NewAuthenticated)
 				}
 			case types.NoUserScope:
 				atomicGroup.Use(noAuthNFactory.NewNotAuthenticated)
@@ -162,6 +175,10 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(teamFactory.Middleware)
 			case types.TeamMemberScope:
 				atomicGroup.Use(teamMemberFactory.Middleware)
+			case types.ModuleScope:
+				atomicGroup.Use(moduleFactory.Middleware)
+			case types.ModuleRunScope:
+				atomicGroup.Use(moduleRunFactory.Middleware)
 			}
 		}
 

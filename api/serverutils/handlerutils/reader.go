@@ -11,6 +11,7 @@ import (
 
 type RequestDecoderValidator interface {
 	DecodeAndValidate(w http.ResponseWriter, r *http.Request, v interface{}) bool
+	DecodeAndValidateQueryOnly(w http.ResponseWriter, r *http.Request, v interface{}) bool
 	DecodeAndValidateNoWrite(r *http.Request, v interface{}) error
 }
 
@@ -40,6 +41,28 @@ func (j *DefaultRequestDecoderValidator) DecodeAndValidate(
 
 	// decode the request parameters (body and query)
 	if requestErr = j.decoder.Decode(v, r); requestErr != nil {
+		apierrors.HandleAPIError(j.logger, j.alerter, w, r, requestErr, true)
+		return false
+	}
+
+	// validate the request object
+	if requestErr = j.validator.Validate(v); requestErr != nil {
+		apierrors.HandleAPIError(j.logger, j.alerter, w, r, requestErr, true)
+		return false
+	}
+
+	return true
+}
+
+func (j *DefaultRequestDecoderValidator) DecodeAndValidateQueryOnly(
+	w http.ResponseWriter,
+	r *http.Request,
+	v interface{},
+) (ok bool) {
+	var requestErr apierrors.RequestError
+
+	// decode the request parameters (body and query)
+	if requestErr = j.decoder.DecodeQueryOnly(v, r); requestErr != nil {
 		apierrors.HandleAPIError(j.logger, j.alerter, w, r, requestErr, true)
 		return false
 	}

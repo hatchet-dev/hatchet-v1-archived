@@ -1,5 +1,10 @@
 package types
 
+const (
+	URLParamModuleID    URLParam = "module_id"
+	URLParamModuleRunID URLParam = "module_run_id"
+)
+
 // swagger:model
 type Module struct {
 	*APIResourceMeta
@@ -66,4 +71,35 @@ type ListModulesRequest struct {
 type ListModulesResponse struct {
 	Pagination *PaginationResponse `json:"pagination"`
 	Rows       []*Module           `json:"rows"`
+}
+
+// swagger:model
+type CreateTerraformStateRequest struct {
+	ID string `schema:"ID"`
+}
+
+// swagger:model
+type LockTerraformStateRequest struct {
+	ID        string `json:"ID"`
+	Operation string `json:"Operation"`
+	Info      string `json:"Info"`
+	Who       string `json:"Who"`
+	Version   string `json:"Version"`
+	Created   string `json:"Created"`
+	Path      string `json:"Path"`
+}
+
+// swagger:model
+type LockTerraformStateResponse struct {
+	*TerraformLock
+}
+
+type TerraformLock struct {
+	ID        string `json:"ID"`
+	Operation string `json:"Operation"`
+	Info      string `json:"Info"`
+	Who       string `json:"Who"`
+	Version   string `json:"Version"`
+	Created   string `json:"Created"`
+	Path      string `json:"Path"`
 }
