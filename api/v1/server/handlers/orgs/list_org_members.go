@@ -37,6 +37,7 @@ func (o *OrgListMembersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	members, paginate, err := o.Repo().Org().ListOrgMembersByOrgID(
 		org.ID,
+		false,
 		repository.WithPage(req.PaginationRequest),
 	)
 

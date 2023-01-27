@@ -34,10 +34,12 @@ type ModuleScopedMiddleware struct {
 }
 
 func (p *ModuleScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
+
 	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
 	moduleID := reqScopes[types.ModuleScope].ResourceID
 
-	mod, err := p.config.DB.Repository.Module().ReadModuleByID(moduleID)
+	mod, err := p.config.DB.Repository.Module().ReadModuleByID(team.ID, moduleID)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

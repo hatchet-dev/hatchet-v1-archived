@@ -53,7 +53,7 @@ func (o *OrgDeleteMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 
 	for _, team := range teams {
-		teamMember, err := o.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID)
+		teamMember, err := o.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID, false)
 
 		if err != nil {
 			o.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))

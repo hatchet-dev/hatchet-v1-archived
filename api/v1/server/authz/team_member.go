@@ -39,7 +39,7 @@ func (p *TeamMemberScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Re
 	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
 	teamMemberID := reqScopes[types.TeamMemberScope].ResourceID
 
-	teamMember, err := p.config.DB.Repository.Team().ReadTeamMemberByID(team.ID, teamMemberID)
+	teamMember, err := p.config.DB.Repository.Team().ReadTeamMemberByID(team.ID, teamMemberID, false)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

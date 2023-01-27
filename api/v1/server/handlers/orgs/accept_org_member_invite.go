@@ -116,7 +116,7 @@ func (o *OrgAcceptMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 	}
 
 	// add the user to the organization member list
-	orgMember, err := o.Repo().Org().ReadOrgMemberByID(invite.OrganizationID, invite.OrganizationMemberID)
+	orgMember, err := o.Repo().Org().ReadOrgMemberByID(invite.OrganizationID, invite.OrganizationMemberID, false)
 
 	if err != nil {
 		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))

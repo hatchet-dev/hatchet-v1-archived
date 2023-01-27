@@ -52,7 +52,7 @@ func (o *OrgUpdateOwnerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 
 	// read the new member
-	newOrgMember, err := o.Repo().Org().ReadOrgMemberByID(org.ID, req.NewOwnerMemberID)
+	newOrgMember, err := o.Repo().Org().ReadOrgMemberByID(org.ID, req.NewOwnerMemberID, false)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

@@ -39,7 +39,7 @@ func (p *OrgMemberScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Req
 	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
 	orgMemberID := reqScopes[types.OrgMemberScope].ResourceID
 
-	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByID(org.ID, orgMemberID)
+	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByID(org.ID, orgMemberID, false)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

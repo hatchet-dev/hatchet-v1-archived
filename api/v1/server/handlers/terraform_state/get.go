@@ -2,7 +2,6 @@ package terraform_state
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -33,8 +32,7 @@ func (t *TerraformStateGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	// TODO(abelanger5): pull path logic into separate method
-	path := fmt.Sprintf("%s/%s/%s", team.ID, module.ID, run.ID)
+	path := getStatePath(team.ID, module.ID, run.ID)
 
 	fileBytes, err := t.Config().DefaultFileStore.ReadFile(path, true)
 

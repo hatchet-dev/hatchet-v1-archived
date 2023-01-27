@@ -52,37 +52,55 @@ type AuthNBasic struct {
 // ServeHTTP attaches an authenticated subject to the request context,
 // or serves a forbidden error. If authenticated, it calls the next handler.
 func (authn *AuthNBasic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	userID, porterToken, ok := r.BasicAuth()
+	tokenKind, porterToken, ok := r.BasicAuth()
 
 	if ok {
+		if tokenKind != "pat" && tokenKind != "mrt" {
+			authn.sendForbiddenError(fmt.Errorf("basic auth username must be either pat or mrt"), w, r)
+			return
+		}
+
 		if porterToken == "" {
 			authn.sendForbiddenError(fmt.Errorf("porter token does not exist"), w, r)
 			return
 		}
 
-		pat, err := token.GetPATFromEncoded(porterToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
+		if tokenKind == "pat" {
+			pat, err := token.GetPATFromEncoded(porterToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
 
-		if err != nil {
-			authn.sendForbiddenError(err, w, r)
+			if err != nil {
+				authn.sendForbiddenError(err, w, r)
+				return
+			}
+
+			if pat.Revoked || pat.IsExpired() {
+				authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", pat.ID), w, r)
+				return
+			}
+
+			authn.nextWithUserID(w, r, pat.UserID)
+			return
+		} else if tokenKind == "mrt" {
+			mrt, err := token.GetMRTFromEncoded(porterToken, authn.config.DB.Repository.Module(), authn.config.TokenOpts)
+
+			if err != nil {
+				authn.sendForbiddenError(err, w, r)
+				return
+			}
+
+			if mrt.Revoked || mrt.IsExpired() {
+				authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", mrt.ID), w, r)
+				return
+			}
+
+			authn.nextWithUserID(w, r, mrt.UserID)
 			return
 		}
 
-		if pat.Revoked || pat.IsExpired() {
-			authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", pat.ID), w, r)
-			return
-		}
-
-		if pat.UserID != userID {
-			authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", pat.ID), w, r)
-			return
-		}
-
-		authn.nextWithUserID(w, r, pat.UserID)
 		return
 	}
 
 	authn.sendForbiddenError(fmt.Errorf("no basic auth credentials"), w, r)
-
 }
 
 // sendEmailNotVerifiedError sends a 400 Bad Request error to the end user indicating that the email

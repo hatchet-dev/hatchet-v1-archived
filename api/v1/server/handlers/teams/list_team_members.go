@@ -37,6 +37,7 @@ func (t *TeamListMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	teamMembers, paginate, err := t.Repo().Team().ListTeamMembersByTeamID(
 		team.ID,
+		false,
 		repository.WithPage(req.PaginationRequest),
 	)
 

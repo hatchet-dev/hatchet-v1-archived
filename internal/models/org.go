@@ -87,6 +87,10 @@ type OrganizationMember struct {
 
 	// The attached roles for this user.
 	OrgPolicies []OrganizationPolicy `gorm:"many2many:organization_member_policies;"`
+
+	// Whether this org member corresponds to a service account runner. This
+	// is to make queries easier.
+	IsServiceAccountRunner bool
 }
 
 func (o *OrganizationMember) ToAPITypeSanitized() *types.OrganizationMemberSanitized {

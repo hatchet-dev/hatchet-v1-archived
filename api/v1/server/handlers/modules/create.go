@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type ModuleCreateHandler struct {
@@ -55,8 +57,19 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		// ensure that the app installation id exists and the user has access to it
 		gai, err := m.Repo().GithubAppInstallation().ReadGithubAppInstallationByID(github.GithubAppInstallationID)
 
-		// TODO(abelanger5): handle this gracefully
 		if err != nil {
+			if errors.Is(err, repository.RepositoryErrorNotFound) {
+				m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+					types.APIError{
+						Description: "github installation id not found",
+						Code:        types.ErrCodeNotFound,
+					},
+					http.StatusNotFound,
+				))
+
+				return
+			}
+
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 			return
 		}

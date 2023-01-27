@@ -1,6 +1,12 @@
 package models
 
-import "github.com/hatchet-dev/hatchet/api/v1/types"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/encryption"
+)
 
 type DeploymentMechanism string
 
@@ -20,8 +26,6 @@ type Module struct {
 	DeploymentMechanism DeploymentMechanism
 
 	DeploymentConfig ModuleDeploymentConfig
-
-	// TODO(abelanger5): mechanism for values/secrets
 
 	Runs []ModuleRun
 }
@@ -71,6 +75,8 @@ type ModuleRun struct {
 	LockVersion   string
 	LockCreated   string
 	LockPath      string
+
+	Tokens []ModuleRunToken
 }
 
 func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
@@ -83,4 +89,87 @@ func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
 		Created:   m.LockCreated,
 		Path:      m.LockPath,
 	}
+}
+
+type ModuleRunToken struct {
+	Base
+	HasEncryptedFields
+
+	// The subject of the token (service account user)
+	UserID string
+
+	// The run id that this token was created for
+	ModuleRunID string
+
+	// When this PAT expires. This should match what's in the JWT data
+	Expires *time.Time
+
+	// Whether the personal access token has been revoked
+	Revoked bool
+
+	// Encrypted data that contains the token signing secret for that specific token
+	SigningSecret []byte
+}
+
+func NewModuleRunTokenFromRunID(userID, runID string) (*ModuleRunToken, error) {
+	mrt := &ModuleRunToken{
+		UserID:      userID,
+		ModuleRunID: runID,
+	}
+
+	// in this case, we generate the UUID ahead of time (rather than BeforeCreate), as the token's UUID
+	// is needed by the `token` package to generate the JWT.
+	mrt.Base.ID = uuid.New().String()
+
+	// we set the default expiry of module run tokens to be 6 hours
+	expires := time.Now().Add(6 * time.Hour)
+
+	mrt.Expires = &expires
+
+	secretData, err := encryption.GenerateRandomBytes(32)
+
+	if err != nil {
+		return nil, err
+	}
+
+	mrt.SigningSecret = []byte(secretData)
+
+	return mrt, err
+}
+
+func (m *ModuleRunToken) IsExpired() bool {
+	timeLeft := m.Expires.Sub(time.Now())
+	return timeLeft < 0
+}
+
+func (m *ModuleRunToken) Encrypt(key *[32]byte) error {
+	if !m.HasEncryptedFields.FieldsAreEncrypted {
+		ciphertext, err := encryption.Encrypt(m.SigningSecret, key)
+
+		if err != nil {
+			return err
+		}
+
+		m.SigningSecret = ciphertext
+
+		m.HasEncryptedFields.FieldsAreEncrypted = true
+	}
+
+	return nil
+}
+
+func (m *ModuleRunToken) Decrypt(key *[32]byte) error {
+	if m.HasEncryptedFields.FieldsAreEncrypted {
+		plaintext, err := encryption.Decrypt(m.SigningSecret, key)
+
+		if err != nil {
+			return err
+		}
+
+		m.SigningSecret = plaintext
+
+		m.HasEncryptedFields.FieldsAreEncrypted = false
+	}
+
+	return nil
 }

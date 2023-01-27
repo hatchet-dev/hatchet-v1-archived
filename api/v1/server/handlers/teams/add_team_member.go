@@ -37,7 +37,7 @@ func (t *TeamAddMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// look up the org member to make sure they exist
-	orgMember, err := t.Repo().Org().ReadOrgMemberByID(team.OrganizationID, req.OrgMemberID)
+	orgMember, err := t.Repo().Org().ReadOrgMemberByID(team.OrganizationID, req.OrgMemberID, false)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
@@ -57,7 +57,7 @@ func (t *TeamAddMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// make sure the org member is not already a part of the team
-	candTeamMember, err := t.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID)
+	candTeamMember, err := t.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID, false)
 
 	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))

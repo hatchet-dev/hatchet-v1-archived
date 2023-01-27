@@ -13,7 +13,7 @@ import (
 
 func TestCreateTeam(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMemberOwner, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.OrgModels[0].OwnerID)
+		orgMemberOwner, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.OrgModels[0].OwnerID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)

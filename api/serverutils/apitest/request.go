@@ -46,7 +46,7 @@ func WithOrg(initDataIndex uint) GenerateRequestCtx {
 
 func WithAuthOrgMember(orgInitDataIndex uint, orgMemberEmail string) GenerateRequestCtx {
 	return func(t *testing.T, config *server.Config) (interface{}, interface{}) {
-		authOrgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, orgMemberEmail)
+		authOrgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, orgMemberEmail, false)
 
 		if err != nil {
 			panic(err)
@@ -64,7 +64,7 @@ func WithOrgMember(initDataIndex uint) GenerateRequestCtx {
 
 func WithURLParamInviteID(orgInitDataIndex uint, inviteeEmail string) GenerateURLParam {
 	return func(t *testing.T, config *server.Config, currParams map[string]string) map[string]string {
-		orgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, inviteeEmail)
+		orgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, inviteeEmail, false)
 
 		if err != nil {
 			panic(err)
@@ -78,7 +78,7 @@ func WithURLParamInviteID(orgInitDataIndex uint, inviteeEmail string) GenerateUR
 
 func WithURLParamInviteTok(orgInitDataIndex uint, inviteeEmail string) GenerateURLParam {
 	return func(t *testing.T, config *server.Config, currParams map[string]string) map[string]string {
-		orgMember, _ := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, inviteeEmail)
+		orgMember, _ := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, inviteeEmail, false)
 		invite := &orgMember.InviteLink
 
 		currParams[string(types.URLParamOrgMemberInviteTok)] = testutils.OrgInviteLinksUnencryptedTok[invite.ID]
@@ -111,7 +111,7 @@ func WithBodyParamUserID(initDataIndex uint, varName string) GenerateBodyParam {
 
 func WithBodyParamOrgMemberID(orgInitDataIndex uint, email string, varName string) GenerateBodyParam {
 	return func(t *testing.T, config *server.Config) (string, string) {
-		orgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, email)
+		orgMember, err := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, email, false)
 
 		if err != nil {
 			panic(err)

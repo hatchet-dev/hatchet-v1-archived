@@ -33,7 +33,7 @@ func (repo *TeamRepository) CreateTeam(team *models.Team) (*models.Team, reposit
 func (repo *TeamRepository) ReadTeamByID(id string) (*models.Team, repository.RepositoryError) {
 	team := &models.Team{}
 
-	if err := repo.db.Where("id = ?", id).First(&team).Error; err != nil {
+	if err := repo.db.Joins("ServiceAccountRunner").Where("teams.id = ?", id).First(&team).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -86,30 +86,30 @@ func (repo *TeamRepository) CreateTeamMember(team *models.Team, teamMember *mode
 	return teamMember, nil
 }
 
-func (repo *TeamRepository) ReadTeamMemberByID(teamID, memberID string) (*models.TeamMember, repository.RepositoryError) {
+func (repo *TeamRepository) ReadTeamMemberByID(teamID, memberID string, isSARunner bool) (*models.TeamMember, repository.RepositoryError) {
 	member := &models.TeamMember{}
 
-	if err := repo.db.Preload("TeamPolicies").Joins("OrgMember").Where("team_members.team_id = ? AND team_members.id = ?", teamID, memberID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("TeamPolicies").Joins("OrgMember").Where("team_members.team_id = ? AND team_members.id = ? AND team_members.is_service_account_runner = ?", teamID, memberID, isSARunner).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return member, nil
 }
 
-func (repo *TeamRepository) ReadTeamMemberByOrgMemberID(teamID, orgMemberID string) (*models.TeamMember, repository.RepositoryError) {
+func (repo *TeamRepository) ReadTeamMemberByOrgMemberID(teamID, orgMemberID string, isSARunner bool) (*models.TeamMember, repository.RepositoryError) {
 	member := &models.TeamMember{}
 
-	if err := repo.db.Preload("TeamPolicies").Joins("OrgMember").Where("team_members.team_id = ? AND team_members.org_member_id = ?", teamID, orgMemberID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("TeamPolicies").Joins("OrgMember").Where("team_members.team_id = ? AND team_members.org_member_id = ? AND team_members.is_service_account_runner = ?", teamID, orgMemberID, isSARunner).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return member, nil
 }
 
-func (repo *TeamRepository) ListTeamMembersByTeamID(teamID string, opts ...repository.QueryOption) ([]*models.TeamMember, *repository.PaginatedResult, repository.RepositoryError) {
+func (repo *TeamRepository) ListTeamMembersByTeamID(teamID string, isSARunner bool, opts ...repository.QueryOption) ([]*models.TeamMember, *repository.PaginatedResult, repository.RepositoryError) {
 	var members []*models.TeamMember
 
-	db := repo.db.Model(&models.TeamMember{}).Where("team_id = ?", teamID)
+	db := repo.db.Model(&models.TeamMember{}).Where("team_id = ? AND team_members.is_service_account_runner = ?", teamID, isSARunner)
 
 	paginatedResult := &repository.PaginatedResult{}
 

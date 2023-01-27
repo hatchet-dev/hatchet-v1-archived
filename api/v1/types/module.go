@@ -103,3 +103,8 @@ type TerraformLock struct {
 	Created   string `json:"Created"`
 	Path      string `json:"Path"`
 }
+
+// swagger:model
+type GetModuleTarballURLResponse struct {
+	URL string `json:"url"`
+}

@@ -21,7 +21,7 @@ func TestAcceptOrgMemberInviteSuccessful(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Result().StatusCode, "status should be 200")
 
 		// query the database directly to ensure that user was added
-		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID)
+		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
