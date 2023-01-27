@@ -55,7 +55,7 @@ func (p *TeamScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(team.OrganizationID, user.ID)
+	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(team.OrganizationID, user.ID, user.UserAccountKind == models.UserAccountService)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
@@ -70,7 +70,7 @@ func (p *TeamScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// read the team members to verify that the user has access to this resource
-	teamMember, err := p.config.DB.Repository.Team().ReadTeamMemberByOrgMemberID(teamID, orgMember.ID)
+	teamMember, err := p.config.DB.Repository.Team().ReadTeamMemberByOrgMemberID(teamID, orgMember.ID, user.UserAccountKind == models.UserAccountService)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

@@ -19,7 +19,7 @@ func TestLeaveOrg(t *testing.T) {
 		assert.Equal(t, rr.Result().StatusCode, http.StatusOK)
 
 		// ensure only the original owner is listed
-		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID)
+		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)

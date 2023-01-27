@@ -31,13 +31,13 @@ type TeamRepository interface {
 
 	// ReadTeamMemberByUserID finds a team member by their user UUID. Not to be confused with ReadTeamMemberByID,
 	// which finds an team member by the **team member ID**.
-	ReadTeamMemberByOrgMemberID(teamID, orgMemberID string) (*models.TeamMember, RepositoryError)
+	ReadTeamMemberByOrgMemberID(teamID, orgMemberID string, isSARunner bool) (*models.TeamMember, RepositoryError)
 
 	// ReadTeamMemberByID finds a team member by their unique team member UUID.
-	ReadTeamMemberByID(teamID, memberID string) (*models.TeamMember, RepositoryError)
+	ReadTeamMemberByID(teamID, memberID string, isSARunner bool) (*models.TeamMember, RepositoryError)
 
 	// ListTeamMembersByTeamID lists team members that are part of that team.
-	ListTeamMembersByTeamID(teamID string, opts ...QueryOption) ([]*models.TeamMember, *PaginatedResult, RepositoryError)
+	ListTeamMembersByTeamID(teamID string, isSARunner bool, opts ...QueryOption) ([]*models.TeamMember, *PaginatedResult, RepositoryError)
 
 	// UpdateTeamMember updates team members. This MAY have the side effect of updating dependent models,
 	// depending on the implementation. Gorm is inconsistent about this so make sure any update methods

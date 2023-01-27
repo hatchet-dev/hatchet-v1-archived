@@ -6,6 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserAccountKind string
+
+const (
+	UserAccountEmail   UserAccountKind = "email"
+	UserAccountService UserAccountKind = "serviceaccount"
+)
+
 type User struct {
 	Base
 
@@ -14,6 +21,8 @@ type User struct {
 	EmailVerified bool
 	Password      string
 	Icon          string
+
+	UserAccountKind UserAccountKind
 }
 
 func (u *User) ToAPIType() *types.User {

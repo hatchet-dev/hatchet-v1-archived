@@ -111,40 +111,40 @@ func (repo *OrgRepository) CreateOrgMember(org *models.Organization, orgMember *
 	return orgMember, nil
 }
 
-func (repo *OrgRepository) ReadOrgMemberByID(orgID, memberID string) (*models.OrganizationMember, repository.RepositoryError) {
+func (repo *OrgRepository) ReadOrgMemberByID(orgID, memberID string, isSARunner bool) (*models.OrganizationMember, repository.RepositoryError) {
 	member := &models.OrganizationMember{}
 
-	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.id = ?", orgID, memberID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.id = ? AND is_service_account_runner = ?", orgID, memberID, isSARunner).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return member, nil
 }
 
-func (repo *OrgRepository) ReadOrgMemberByUserID(orgID, userID string) (*models.OrganizationMember, repository.RepositoryError) {
+func (repo *OrgRepository) ReadOrgMemberByUserID(orgID, userID string, isSARunner bool) (*models.OrganizationMember, repository.RepositoryError) {
 	member := &models.OrganizationMember{}
 
-	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.user_id = ?", orgID, userID).First(&member).Error; err != nil {
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND organization_members.user_id = ? AND is_service_account_runner = ?", orgID, userID, isSARunner).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return member, nil
 }
 
-func (repo *OrgRepository) ReadOrgMemberByUserOrInviteeEmail(orgID, email string) (*models.OrganizationMember, repository.RepositoryError) {
+func (repo *OrgRepository) ReadOrgMemberByUserOrInviteeEmail(orgID, email string, isSARunner bool) (*models.OrganizationMember, repository.RepositoryError) {
 	member := &models.OrganizationMember{}
 
-	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND (InviteLink.invitee_email = ? OR User.email = ?)", orgID, email, email).First(&member).Error; err != nil {
+	if err := repo.db.Preload("OrgPolicies").Joins("User").Joins("InviteLink").Where("organization_members.organization_id = ? AND is_service_account_runner = ? AND (InviteLink.invitee_email = ? OR User.email = ?)", orgID, isSARunner, email, email).First(&member).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return member, nil
 }
 
-func (repo *OrgRepository) ListOrgMembersByOrgID(orgID string, opts ...repository.QueryOption) ([]*models.OrganizationMember, *repository.PaginatedResult, repository.RepositoryError) {
+func (repo *OrgRepository) ListOrgMembersByOrgID(orgID string, isSARunner bool, opts ...repository.QueryOption) ([]*models.OrganizationMember, *repository.PaginatedResult, repository.RepositoryError) {
 	var members []*models.OrganizationMember
 
-	db := repo.db.Model(&models.OrganizationMember{}).Where("organization_id = ?", orgID)
+	db := repo.db.Model(&models.OrganizationMember{}).Where("organization_id = ? AND is_service_account_runner = ?", orgID, isSARunner)
 
 	paginatedResult := &repository.PaginatedResult{}
 

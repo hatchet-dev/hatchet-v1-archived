@@ -1,0 +1,172 @@
+# {{classname}}
+
+All URIs are relative to *http://localhost:8080*
+
+Method | HTTP request | Description
+------------- | ------------- | -------------
+[**CreateModule**](ModulesApi.md#CreateModule) | **Post** /api/v1/teams/{team_id}/modules | Create Module
+[**CreateModuleRun**](ModulesApi.md#CreateModuleRun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs | Create Module Run
+[**GetModuleTarballURL**](ModulesApi.md#GetModuleTarballURL) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
+[**GetTerraformState**](ModulesApi.md#GetTerraformState) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
+[**ListModules**](ModulesApi.md#ListModules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
+
+# **CreateModule**
+> CreateModuleResponse CreateModule(ctx, teamId, optional)
+Create Module
+
+Creates a new module.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+ **optional** | ***ModulesApiCreateModuleOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiCreateModuleOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **body** | [**optional.Interface of CreateModuleRequest**](CreateModuleRequest.md)| The module to create | 
+
+### Return type
+
+[**CreateModuleResponse**](CreateModuleResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **CreateModuleRun**
+> CreateModuleRun(ctx, teamId, moduleId)
+Create Module Run
+
+Creates a new module run.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModuleTarballURL**
+> GetModuleTarballUrlResponse GetModuleTarballURL(ctx, teamId, moduleId)
+Get Module Tarball URL
+
+Gets the Github tarball URL for the module.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+
+### Return type
+
+[**GetModuleTarballUrlResponse**](GetModuleTarballURLResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetTerraformState**
+> GetTerraformState(ctx, teamId, moduleId, moduleRunId)
+Create or Update Terraform State
+
+Creates a `GET` request for Terraform state. **Should only be called by Terraform in automation.**
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+  **moduleRunId** | **string**| The module run id | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ListModules**
+> ListModulesResponse ListModules(ctx, teamId, optional)
+List Modules
+
+Lists modules for a given team.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+ **optional** | ***ModulesApiListModulesOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiListModulesOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **page** | **optional.Int64**| The page to query for | 
+
+### Return type
+
+[**ListModulesResponse**](ListModulesResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+

@@ -4,14 +4,19 @@ import (
 	"fmt"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/erroralerter"
+	"github.com/hatchet-dev/hatchet/api/v1/client/grpc"
+	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/adapter"
 	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
+	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage/s3"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage/redis"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/logger"
@@ -24,6 +29,7 @@ import (
 
 type EnvDecoderConf struct {
 	ServerConfigFile   server.ConfigFile
+	RunnerConfigFile   runner.ConfigFile
 	DatabaseConfigFile database.ConfigFile
 	SharedConfigFile   shared.ConfigFile
 }
@@ -37,6 +43,17 @@ func ServerConfigFromEnv() (*server.ConfigFile, error) {
 	}
 
 	return &envDecoderConf.ServerConfigFile, nil
+}
+
+// RunnerConfigFromEnv loads the runner config file from environment variables
+func RunnerConfigFromEnv() (*runner.ConfigFile, error) {
+	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
+
+	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
+		return nil, fmt.Errorf("Failed to decode runner conf: %s", err)
+	}
+
+	return &envDecoderConf.RunnerConfigFile, nil
 }
 
 // DatabaseConfigFromEnv loads the database config file from environment variables
@@ -115,6 +132,44 @@ func (e *EnvConfigLoader) LoadDatabaseConfig() (res *database.Config, err error)
 	res.SetEncryptionKey(&key)
 
 	return res, nil
+}
+
+func (e *EnvConfigLoader) LoadRunnerConfigFromEnv() (res *runner.Config, err error) {
+	sharedConfig, err := e.loadSharedConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load shared config: %v", err)
+	}
+
+	rc, err := RunnerConfigFromEnv()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load server config from env: %v", err)
+	}
+
+	return e.LoadRunnerConfigFromConfigFile(rc, sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadRunnerConfigFromConfigFile(rc *runner.ConfigFile, sharedConfig *shared.Config) (res *runner.Config, err error) {
+	grpcClient, err := grpc.NewGRPCClient(fmt.Sprintf("%s/api/v1", rc.GRPCServerAddress), rc.GRPCToken, rc.TeamID, rc.ModuleID, rc.ModuleRunID)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load GRPC client: %v", err)
+	}
+
+	clientConf := swagger.NewConfiguration()
+
+	clientConf.AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", rc.APIToken))
+
+	c := swagger.NewAPIClient(clientConf)
+
+	return &runner.Config{
+		Config:           *sharedConfig,
+		ConfigFile:       rc,
+		GRPCClient:       grpcClient,
+		APIClient:        c,
+		GithubTarballURL: rc.GithubTarballURL,
+	}, nil
 }
 
 func (e *EnvConfigLoader) LoadServerConfigFromEnv() (res *server.Config, err error) {
@@ -235,6 +290,18 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		}
 	}
 
+	var logManager logstorage.LogStorageBackend
+
+	if e.hasRedisVars(sc) {
+		logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
+			RedisHost:     sc.RedisHost,
+			RedisPort:     sc.RedisPort,
+			RedisUsername: sc.RedisUsername,
+			RedisPassword: sc.RedisPassword,
+			RedisDB:       sc.RedisDB,
+		})
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -245,6 +312,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		UserNotifier:        notifier,
 		GithubApp:           githubAppConf,
 		DefaultFileStore:    storageManager,
+		DefaultLogStore:     logManager,
 	}, nil
 }
 
@@ -263,4 +331,8 @@ func (e *EnvConfigLoader) hasS3StateAppVars(sc *server.ConfigFile) bool {
 		sc.S3StateAWSSecretKey != "" &&
 		sc.S3StateBucketName != "" &&
 		sc.S3StateEncryptionKey != ""
+}
+
+func (e *EnvConfigLoader) hasRedisVars(sc *server.ConfigFile) bool {
+	return sc.RedisHost != ""
 }

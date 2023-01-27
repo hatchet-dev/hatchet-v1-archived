@@ -52,6 +52,10 @@ const (
 	GithubAppInstallationScope PermissionScope = "github_app_installation_scope"
 	ModuleScope                PermissionScope = "module_scope"
 	ModuleRunScope             PermissionScope = "module_run_scope"
+
+	// ModuleServiceAccountScope restricts the scope to service account types only. This is enforced
+	// by OPA policies
+	ModuleServiceAccountScope PermissionScope = "module_service_account_scope"
 )
 
 const OrgMemberLookupKey string = "org_member"

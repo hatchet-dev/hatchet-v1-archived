@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 )
@@ -71,6 +72,13 @@ type ConfigFile struct {
 	S3StateAWSRegion      string `env:"S3_STATE_AWS_REGION"`
 	S3StateBucketName     string `env:"S3_STATE_BUCKET_NAME"`
 	S3StateEncryptionKey  string `env:"S3_STATE_ENCRYPTION_KEY,default=__random_strong_encryption_key__"`
+
+	// Redis log storage options
+	RedisHost     string `env:"REDIS_HOST,default=redis"`
+	RedisPort     string `env:"REDIS_PORT,default=6379"`
+	RedisUsername string `env:"REDIS_USER"`
+	RedisPassword string `env:"REDIS_PASS"`
+	RedisDB       int    `env:"REDIS_DB,default=0"`
 }
 
 type AuthConfig struct {
@@ -120,6 +128,8 @@ type Config struct {
 	GithubApp *github.GithubAppConf
 
 	DefaultFileStore filestorage.FileStorageManager
+
+	DefaultLogStore logstorage.LogStorageBackend
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

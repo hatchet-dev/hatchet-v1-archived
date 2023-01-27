@@ -19,7 +19,7 @@ func TestDeleteOrgMemberSuccessful(t *testing.T) {
 		assert.Equal(t, http.StatusAccepted, rr.Result().StatusCode, "status should be accepted")
 
 		// query the database directly to ensure that user was removed
-		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID)
+		orgMembers, _, err := config.DB.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)

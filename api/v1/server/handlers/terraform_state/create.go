@@ -46,8 +46,7 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	// TODO(abelanger5): pull path logic into separate method
-	path := fmt.Sprintf("%s/%s/%s", team.ID, module.ID, run.ID)
+	path := getStatePath(team.ID, module.ID, run.ID)
 
 	// read state file
 	fileBytes, err := ioutil.ReadAll(r.Body)
@@ -67,4 +66,8 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	}
 
 	return
+}
+
+func getStatePath(teamID, moduleID, runID string) string {
+	return fmt.Sprintf("%s/%s/%s/terraform.tfstate", teamID, moduleID, runID)
 }

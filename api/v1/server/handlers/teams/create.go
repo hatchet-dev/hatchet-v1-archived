@@ -1,6 +1,7 @@
 package teams
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -59,7 +60,7 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	teamMember, err := t.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID)
+	teamMember, err := t.Repo().Team().ReadTeamMemberByOrgMemberID(team.ID, orgMember.ID, false)
 
 	if err != nil {
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -75,4 +76,64 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	t.WriteResult(w, r, team.ToAPIType())
+
+	// create service account team member by creating a new user and team member and appending them to
+	// the team
+	saUser, err := t.Repo().User().CreateUser(&models.User{
+		DisplayName:     fmt.Sprintf("%s-runner-service-account", team.ID),
+		UserAccountKind: models.UserAccountService,
+		Email:           fmt.Sprintf("%s-runner-service-account@hatchet.run", team.ID),
+		EmailVerified:   true,
+	})
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// create org member without an organization policy. this still gives the service account access
+	// to team-scoped endpoints, but not organization endpoints
+	saOrgMember, err := t.Repo().Org().CreateOrgMember(org, &models.OrganizationMember{
+		IsServiceAccountRunner: true,
+		UserID:                 saUser.ID,
+	})
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	saTeamMember, err := t.Repo().Team().CreateTeamMember(team, &models.TeamMember{
+		IsServiceAccountRunner: true,
+		OrgMemberID:            saOrgMember.ID,
+	})
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// read member policy
+	saMemberPolicy, err := t.Repo().Team().ReadPresetTeamPolicyByName(team.ID, models.PresetTeamPolicyNameMember)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	saTeamMember, err = t.Repo().Team().AppendTeamPolicyToTeamMember(saTeamMember, saMemberPolicy)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	team.ServiceAccountRunnerID = saUser.ID
+
+	team, err = t.Repo().Team().UpdateTeam(team)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
 }

@@ -30,17 +30,17 @@ type OrgRepository interface {
 	// can be set either in the OrganizationMember.User.Email field, or the OrganizationMember.InviteLink.InviteeEmail
 	// field. Some users won't have InviteLink set (i.e. owners of the organization), and not all org members
 	// will have user fields set (those with open invitations).
-	ReadOrgMemberByUserOrInviteeEmail(orgID, email string) (*models.OrganizationMember, RepositoryError)
+	ReadOrgMemberByUserOrInviteeEmail(orgID, email string, isSARunner bool) (*models.OrganizationMember, RepositoryError)
 
 	// ReadOrgMemberByUserID finds an org member by their user UUID. Not to be confused with ReadOrgMemberByID,
 	// which finds an org member by the **org member ID**.
-	ReadOrgMemberByUserID(orgID, userID string) (*models.OrganizationMember, RepositoryError)
+	ReadOrgMemberByUserID(orgID, userID string, isSARunner bool) (*models.OrganizationMember, RepositoryError)
 
 	// ReadOrgMemberByID finds an org member by their unique org member UUID.
-	ReadOrgMemberByID(orgID, memberID string) (*models.OrganizationMember, RepositoryError)
+	ReadOrgMemberByID(orgID, memberID string, isSARunner bool) (*models.OrganizationMember, RepositoryError)
 
 	// ListOrgMembersByOrgID lists org members that are part of that organization.
-	ListOrgMembersByOrgID(orgID string, opts ...QueryOption) ([]*models.OrganizationMember, *PaginatedResult, RepositoryError)
+	ListOrgMembersByOrgID(orgID string, isSARunner bool, opts ...QueryOption) ([]*models.OrganizationMember, *PaginatedResult, RepositoryError)
 
 	// UpdateOrgMember updates org members. This MAY have the side effect of updating dependent models,
 	// depending on the implementation. Gorm is inconsistent about this so make sure any update methods

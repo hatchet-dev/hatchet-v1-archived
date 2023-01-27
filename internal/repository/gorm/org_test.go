@@ -166,7 +166,7 @@ func TestCreateOrgMember(t *testing.T) {
 
 func TestReadOrgMemberByInviteeEmail(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[0].ID, testutils.OrgInviteLinks[0].InviteeEmail)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[0].ID, testutils.OrgInviteLinks[0].InviteeEmail, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -193,7 +193,7 @@ func TestReadOrgMemberByInviteeEmail(t *testing.T) {
 
 func TestReadOrgMemberByUserEmail(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].User.Email)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].User.Email, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -219,7 +219,7 @@ func TestReadOrgMemberByUserEmail(t *testing.T) {
 
 func TestReadOrgMemberByID(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -245,7 +245,7 @@ func TestReadOrgMemberByID(t *testing.T) {
 
 func TestReadOrgMemberByUserID(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[2].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[2].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -271,7 +271,7 @@ func TestReadOrgMemberByUserID(t *testing.T) {
 
 func TestListOrgMembersByOrgID(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMembers, pagination, err := conf.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID)
+		orgMembers, pagination, err := conf.Repository.Org().ListOrgMembersByOrgID(testutils.OrgModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -291,7 +291,7 @@ func TestListOrgMembersByOrgID(t *testing.T) {
 
 func TestUpdateOrgMember(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -306,7 +306,7 @@ func TestUpdateOrgMember(t *testing.T) {
 		}
 
 		// read the member again to ensure successful write
-		orgMember, err = conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID)
+		orgMember, err = conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -364,7 +364,7 @@ func TestUpdateOrgInvite(t *testing.T) {
 
 func TestDeleteOrgMember(t *testing.T) {
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -377,7 +377,7 @@ func TestDeleteOrgMember(t *testing.T) {
 		}
 
 		// read the member again to ensure successful write
-		orgMember, err = conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID)
+		orgMember, err = conf.Repository.Org().ReadOrgMemberByID(testutils.OrgModels[0].ID, testutils.OrgAdditionalMembers[0].ID, false)
 
 		assert.ErrorIs(t, err, repository.RepositoryErrorNotFound)
 		assert.Nil(t, orgMember)
@@ -396,7 +396,7 @@ func TestAppendOrgPolicyToOrgMember(t *testing.T) {
 		}
 
 		// get the org member
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -442,7 +442,7 @@ func TestReplaceOrgPoliciesForOrgMember(t *testing.T) {
 		}
 
 		// get the org member
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)
@@ -470,7 +470,7 @@ func TestRemoveOrgPolicyFromOrgMember(t *testing.T) {
 		}
 
 		// get the org member
-		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID)
+		orgMember, err := conf.Repository.Org().ReadOrgMemberByUserID(testutils.OrgModels[0].ID, testutils.UserModels[0].ID, false)
 
 		if err != nil {
 			t.Fatalf("%v", err)

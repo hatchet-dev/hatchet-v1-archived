@@ -10,7 +10,7 @@ type ModuleRepository interface {
 	CreateModule(mod *models.Module) (*models.Module, RepositoryError)
 
 	// ReadModuleByID reads the module by its unique UUID
-	ReadModuleByID(id string) (*models.Module, RepositoryError)
+	ReadModuleByID(teamID, moduleID string) (*models.Module, RepositoryError)
 
 	// ListModulesByTeamID lists all modules for a team
 	ListModulesByTeamID(teamID string, opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)
@@ -27,7 +27,7 @@ type ModuleRepository interface {
 	CreateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
 
 	// ReadModuleRunByID reads the run by its unique UUID
-	ReadModuleRunByID(id string) (*models.ModuleRun, RepositoryError)
+	ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, RepositoryError)
 
 	// ListRunsByModuleID lists all runs for a module
 	ListRunsByModuleID(moduleID string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
@@ -37,4 +37,18 @@ type ModuleRepository interface {
 
 	// DeleteModuleRun soft-deletes a run
 	DeleteModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
+
+	// --- Run token queries ---
+	//
+	// CreateModuleRunToken creates a new module run token in the database
+	CreateModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, RepositoryError)
+
+	// ReadModuleRunToken reads the module run token by its token ID
+	ReadModuleRunToken(userID, runID, tokenID string) (*models.ModuleRunToken, RepositoryError)
+
+	// UpdateModuleRunToken updates a module run token
+	UpdateModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, RepositoryError)
+
+	// DeleteModuleRunToken soft-deletes a module run token in the DB
+	DeleteModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, RepositoryError)
 }

@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
@@ -30,6 +31,8 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	chi.RegisterMethod("UNLOCK")
 
 	r.Route(baseRoutePath, func(r chi.Router) {
+		r.Use(ContentTypeJSON)
+
 		baseRoutePath := &endpoint.Path{
 			RelativePath: baseRoutePath,
 		}
@@ -188,4 +191,12 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 			route.Handler,
 		)
 	}
+}
+
+// ContentTypeJSON sets the content type for requests to application/json
+func ContentTypeJSON(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json;charset=utf8")
+		next.ServeHTTP(w, r)
+	})
 }

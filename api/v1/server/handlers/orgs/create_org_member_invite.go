@@ -41,7 +41,7 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 	}
 
 	// ensure that there are no org members with this email address
-	candOrgMember, err := o.Repo().Org().ReadOrgMemberByUserOrInviteeEmail(org.ID, req.InviteeEmail)
+	candOrgMember, err := o.Repo().Org().ReadOrgMemberByUserOrInviteeEmail(org.ID, req.InviteeEmail, false)
 
 	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))

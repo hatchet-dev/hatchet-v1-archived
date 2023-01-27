@@ -12,7 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun
+// swagger:parameters createModuleRun getModuleTarballURL
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -461,6 +461,64 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: tfStateUnlockEndpoint,
 		Handler:  tfStateUnlockHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/tarball_url -> modules.NewModuleTarballURLGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/tarball_url getModuleTarballURL
+	//
+	// ### Description
+	//
+	// Gets the Github tarball URL for the module.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Module Tarball URL
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	// responses:
+	//   '200':
+	//     description: Successfully got tarball url
+	//     schema:
+	//       $ref: '#/definitions/GetModuleTarballURLResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getTarballURLEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/tarball_url", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	getTarballURLHandler := modules.NewModuleTarballURLGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getTarballURLEndpoint,
+		Handler:  getTarballURLHandler,
 		Router:   r,
 	})
 

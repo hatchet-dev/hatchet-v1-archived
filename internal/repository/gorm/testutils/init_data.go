@@ -324,7 +324,7 @@ func InitTeams(t *testing.T, conf *database.Config) error {
 
 		teamCp.OrganizationID = parentOrg.ID
 
-		orgMemberOwner, err := conf.Repository.Org().ReadOrgMemberByUserID(parentOrg.ID, parentOrg.OwnerID)
+		orgMemberOwner, err := conf.Repository.Org().ReadOrgMemberByUserID(parentOrg.ID, parentOrg.OwnerID, false)
 
 		if err != nil {
 			return err

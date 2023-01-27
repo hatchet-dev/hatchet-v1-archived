@@ -55,17 +55,34 @@ type AuthN struct {
 // ServeHTTP attaches an authenticated subject to the request context,
 // or serves a forbidden error. If authenticated, it calls the next handler.
 func (authn *AuthN) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// first check for a bearer token
-	tok, err := getPATFromRequest(r, authn.config)
+	tok, err := getBearerTokenFromRequest(r)
 
-	// if the error is not an invalid auth header error, the token was invalid, and we throw error
-	// forbidden. If the error was an invalid auth error, we look for a cookie.
 	if err != nil && err != errInvalidAuthHeader {
 		authn.sendForbiddenError(err, w, r)
 		return
-	} else if err == nil && tok != nil {
-		authn.verifyTokenWithNext(w, r, tok)
-		return
+	} else if err == nil {
+		switch token.GetTokenKind(tok) {
+		case token.JWTClaimKindPAT:
+			pat, err := getPATFromRequestToken(r, authn.config, tok)
+
+			if err != nil {
+				authn.sendForbiddenError(err, w, r)
+				return
+			}
+
+			authn.verifyPATTokenWithNext(w, r, pat)
+			return
+		case token.JWTClaimKindMRT:
+			mrt, err := getMRTFromRequestToken(r, authn.config, tok)
+
+			if err != nil {
+				authn.sendForbiddenError(err, w, r)
+				return
+			}
+
+			authn.verifyMRTTokenWithNext(w, r, mrt)
+			return
+		}
 	}
 
 	// otherwise we check for a cookie-based user session
@@ -122,7 +139,7 @@ func (authn *AuthN) handleForbiddenForSession(
 	return
 }
 
-func (authn *AuthN) verifyTokenWithNext(w http.ResponseWriter, r *http.Request, pat *models.PersonalAccessToken) {
+func (authn *AuthN) verifyPATTokenWithNext(w http.ResponseWriter, r *http.Request, pat *models.PersonalAccessToken) {
 	// if the token has a stored token id and secret we check that the token is valid in the database
 	if pat.Revoked || pat.IsExpired() {
 		authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", pat.ID), w, r)
@@ -130,6 +147,16 @@ func (authn *AuthN) verifyTokenWithNext(w http.ResponseWriter, r *http.Request, 
 	}
 
 	authn.nextWithUserID(w, r, pat.UserID)
+}
+
+func (authn *AuthN) verifyMRTTokenWithNext(w http.ResponseWriter, r *http.Request, mrt *models.ModuleRunToken) {
+	// if the token has a stored token id and secret we check that the token is valid in the database
+	if mrt.Revoked || mrt.IsExpired() {
+		authn.sendForbiddenError(fmt.Errorf("token with id %s not valid", mrt.ID), w, r)
+		return
+	}
+
+	authn.nextWithUserID(w, r, mrt.UserID)
 }
 
 // sendForbiddenError sends a 403 Forbidden error to the end user while logging a
@@ -155,17 +182,22 @@ var errInvalidToken = fmt.Errorf("authorization header exists, but token is not 
 var errInvalidAuthHeader = fmt.Errorf("invalid authorization header in request")
 
 // getPATFromRequest finds an `Authorization` header of the form `Bearer <token>`,
-// and returns a valid token if it exists.
-func getPATFromRequest(r *http.Request, config *server.Config) (*models.PersonalAccessToken, error) {
+// and returns the token if it exists.
+func getBearerTokenFromRequest(r *http.Request) (string, error) {
 	reqToken := r.Header.Get("Authorization")
 	splitToken := strings.Split(reqToken, "Bearer")
 
 	if len(splitToken) != 2 {
-		return nil, errInvalidAuthHeader
+		return "", errInvalidAuthHeader
 	}
 
 	reqToken = strings.TrimSpace(splitToken[1])
 
+	return reqToken, nil
+}
+
+// getPATFromRequestToken gets the PAT if valid
+func getPATFromRequestToken(r *http.Request, config *server.Config, reqToken string) (*models.PersonalAccessToken, error) {
 	pat, err := token.GetPATFromEncoded(reqToken, config.DB.Repository.PersonalAccessToken(), config.TokenOpts)
 
 	if err != nil {
@@ -173,6 +205,17 @@ func getPATFromRequest(r *http.Request, config *server.Config) (*models.Personal
 	}
 
 	return pat, nil
+}
+
+// getMRTFromRequestToken gets the MRT if valid
+func getMRTFromRequestToken(r *http.Request, config *server.Config, reqToken string) (*models.ModuleRunToken, error) {
+	mrt, err := token.GetMRTFromEncoded(reqToken, config.DB.Repository.Module(), config.TokenOpts)
+
+	if err != nil {
+		return nil, errInvalidToken
+	}
+
+	return mrt, nil
 }
 
 // nextWithUserID calls the next handler with the user set in the context with key

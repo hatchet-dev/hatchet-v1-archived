@@ -62,7 +62,7 @@ func (u *OrgCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orgMember, err := u.Repo().Org().ReadOrgMemberByUserID(org.ID, user.ID)
+	orgMember, err := u.Repo().Org().ReadOrgMemberByUserID(org.ID, user.ID, false)
 
 	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))

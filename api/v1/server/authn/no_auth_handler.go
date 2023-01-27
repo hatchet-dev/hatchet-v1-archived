@@ -39,9 +39,9 @@ type NoAuthN struct {
 // ServeHTTP checks for credentials. If they exist, it throws bad request to the user.
 func (noauthn *NoAuthN) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// first check for a bearer token
-	tok, err := getPATFromRequest(r, noauthn.config)
+	tok, err := getBearerTokenFromRequest(r)
 
-	if err == nil && tok != nil {
+	if err == nil && tok != "" {
 		noauthn.sendBadRequest(w, r)
 		return
 	}

@@ -25,6 +25,10 @@ type Team struct {
 
 	// The list of policies for this team
 	TeamPolicies []TeamPolicy
+
+	// The service account runner user belonging to this team
+	ServiceAccountRunnerID string
+	ServiceAccountRunner   User `gorm:"foreignKey:ServiceAccountRunnerID"`
 }
 
 func (t *Team) ToAPIType() *types.Team {
@@ -66,6 +70,10 @@ type TeamMember struct {
 
 	// The attached roles for this user.
 	TeamPolicies []TeamPolicy `gorm:"many2many:team_member_policies;"`
+
+	// Whether this team member corresponds to a service account runner. This
+	// is to make queries easier.
+	IsServiceAccountRunner bool
 }
 
 func (o *TeamMember) ToAPIType() *types.TeamMember {

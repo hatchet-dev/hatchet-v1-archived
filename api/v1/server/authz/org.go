@@ -56,7 +56,7 @@ func (p *OrgScopedMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// read the org members to verify that the user has access to this resource
-	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(orgID, user.ID)
+	orgMember, err := p.config.DB.Repository.Org().ReadOrgMemberByUserID(orgID, user.ID, user.UserAccountKind == models.UserAccountService)
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {

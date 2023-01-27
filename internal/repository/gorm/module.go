@@ -28,10 +28,10 @@ func (repo *ModuleRepository) CreateModule(mod *models.Module) (*models.Module, 
 }
 
 // ReadModuleByID finds a single mod by its unique id
-func (repo *ModuleRepository) ReadModuleByID(id string) (*models.Module, repository.RepositoryError) {
+func (repo *ModuleRepository) ReadModuleByID(teamID, moduleID string) (*models.Module, repository.RepositoryError) {
 	mod := &models.Module{}
 
-	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Where("id = ?", id).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Where("team_id = ? AND id = ?", teamID, moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -84,10 +84,10 @@ func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.Mo
 	return run, nil
 }
 
-func (repo *ModuleRepository) ReadModuleRunByID(id string) (*models.ModuleRun, repository.RepositoryError) {
+func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Where("id = ?", id).First(&mod).Error; err != nil {
+	if err := repo.db.Where("module_id = ? AND id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -128,4 +128,42 @@ func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, opts ...reposi
 	}
 
 	return runs, paginatedResult, nil
+}
+
+func (repo *ModuleRepository) CreateModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, repository.RepositoryError) {
+	if err := repo.db.Create(mrt).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mrt, nil
+}
+
+func (repo *ModuleRepository) ReadModuleRunToken(userID, runID, tokenID string) (*models.ModuleRunToken, repository.RepositoryError) {
+	mrt := &models.ModuleRunToken{}
+
+	if err := repo.db.Where("user_id = ? AND module_run_id = ? AND id = ?", userID, runID, tokenID).First(&mrt).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mrt, nil
+}
+
+func (repo *ModuleRepository) UpdateModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, repository.RepositoryError) {
+	if err := repo.db.Save(mrt).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mrt, nil
+}
+
+func (repo *ModuleRepository) DeleteModuleRunToken(mrt *models.ModuleRunToken) (*models.ModuleRunToken, repository.RepositoryError) {
+	del := repo.db.Delete(&mrt)
+
+	if del.Error != nil {
+		return nil, toRepoError(repo.db, del.Error)
+	} else if del.RowsAffected == 0 {
+		return nil, repository.RepositoryNoRowsAffected
+	}
+
+	return mrt, nil
 }

@@ -1,15 +1,19 @@
 package policies
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/mitchellh/mapstructure"
 )
 
-type OrgPolicyInput struct {
+type PolicyInput struct {
 	Endpoint EndpointInput `mapstructure:"endpoint"`
+
+	User UserInput `mapstructure:"user"`
 }
 
 type EndpointInput struct {
@@ -20,11 +24,20 @@ type EndpointInput struct {
 	Resources []map[string]interface{} `mapstructure:"resources"`
 }
 
+type UserInput struct {
+	UserAccountKind string `mapstructure:"user_account_kind"`
+}
+
 func GetInputFromRequest(r *http.Request) map[string]interface{} {
+	user, _ := r.Context().Value(types.UserScope).(*models.User)
 	endpointMeta, _ := r.Context().Value(endpoint.EndpointMetadataCtxKey).(*endpoint.EndpointMetadata)
 	reqScopes, _ := r.Context().Value(endpoint.RequestScopeCtxKey).(map[types.PermissionScope]*endpoint.RequestAction)
 
-	structuredRes := &OrgPolicyInput{}
+	structuredRes := &PolicyInput{
+		User: UserInput{
+			UserAccountKind: string(user.UserAccountKind),
+		},
+	}
 
 	structuredRes.Endpoint = EndpointInput{
 		Verb:      string(endpointMeta.Verb),
@@ -42,6 +55,7 @@ func GetInputFromRequest(r *http.Request) map[string]interface{} {
 	res := make(map[string]interface{})
 
 	mapstructure.Decode(structuredRes, &res)
+	fmt.Println("INPUT IS", res)
 
 	return res
 }
