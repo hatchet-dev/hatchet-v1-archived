@@ -15,6 +15,10 @@ type ModuleRepository interface {
 	// ListModulesByTeamID lists all modules for a team
 	ListModulesByTeamID(teamID string, opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)
 
+	// ListGithubRepositoryModules lists modules that use the github deployment mechanism belonging
+	// to a specific repo owner and name
+	ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, RepositoryError)
+
 	// UpdateModule updates any modified values for a module
 	UpdateModule(module *models.Module) (*models.Module, RepositoryError)
 
@@ -28,6 +32,9 @@ type ModuleRepository interface {
 
 	// ReadModuleRunByID reads the run by its unique UUID
 	ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, RepositoryError)
+
+	// ReadModuleRunByGithubSHA finds a run by its Github SHA
+	ReadModuleRunByGithubSHA(moduleID, githubSHA string) (*models.ModuleRun, RepositoryError)
 
 	// ListRunsByModuleID lists all runs for a module
 	ListRunsByModuleID(moduleID string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)

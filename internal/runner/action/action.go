@@ -3,18 +3,22 @@ package action
 import (
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 )
 
+type actionHandler func(config *runner.Config, description string) error
+
 type RunnerAction struct {
-	writer io.Writer
+	writer     io.Writer
+	errHandler actionHandler
 }
 
-func NewRunnerAction(writer io.Writer) *RunnerAction {
-	return &RunnerAction{writer}
+func NewRunnerAction(writer io.Writer, errHandler actionHandler) *RunnerAction {
+	return &RunnerAction{writer, errHandler}
 }
 
 func (r *RunnerAction) Apply(
@@ -45,19 +49,37 @@ func (r *RunnerAction) Apply(
 func (r *RunnerAction) Plan(
 	config *runner.Config,
 	vals map[string]interface{},
-) ([]byte, error) {
+) ([]byte, []byte, error) {
 	if !commandExists("terraform") {
-		return nil, fmt.Errorf("terraform cli command does not exist")
+		return nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
 	// re initialize
 	err := r.reInit(config)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
 	}
 
-	return r.plan(config)
+	err = r.plan(config)
+
+	if err != nil {
+		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while running plan: %s", err.Error()))
+	}
+
+	prettyOut, err := r.showPretty(config)
+
+	if err != nil {
+		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
+	}
+
+	prettyJSON, err := r.showJSON(config)
+
+	if err != nil {
+		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
+	}
+
+	return prettyOut, prettyJSON, nil
 }
 
 func (r *RunnerAction) reInit(config *runner.Config) error {
@@ -125,11 +147,49 @@ func (r *RunnerAction) apply(
 
 func (r *RunnerAction) plan(
 	config *runner.Config,
-) ([]byte, error) {
-	args := []string{"plan"}
+) error {
+	args := []string{"plan", "-out=./plan.tfplan"}
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := r.setBackendEnv(config, cmd)
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.Run()
+}
+
+func (r *RunnerAction) showPretty(
+	config *runner.Config,
+) ([]byte, error) {
+	args := []string{"show", "-no-color", "./plan.tfplan"}
+
+	cmd := exec.Command("terraform", args...)
+	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Stderr = os.Stderr
+
+	err := r.setBackendEnv(config, cmd)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd.Output()
+}
+
+func (r *RunnerAction) showJSON(
+	config *runner.Config,
+) ([]byte, error) {
+	args := []string{"show", "-json", "./plan.tfplan"}
+
+	cmd := exec.Command("terraform", args...)
+	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Stderr = os.Stderr
 
 	err := r.setBackendEnv(config, cmd)
 

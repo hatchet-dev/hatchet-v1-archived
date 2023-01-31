@@ -1,7 +1,6 @@
 package policies
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
@@ -55,7 +54,6 @@ func GetInputFromRequest(r *http.Request) map[string]interface{} {
 	res := make(map[string]interface{})
 
 	mapstructure.Decode(structuredRes, &res)
-	fmt.Println("INPUT IS", res)
 
 	return res
 }

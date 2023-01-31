@@ -30,7 +30,10 @@ Class | Method | HTTP request | Description
 *MetadataApi* | [**GetServerMetadata**](docs/MetadataApi.md#getservermetadata) | **Get** /api/v1/metadata | Get server metadata
 *ModulesApi* | [**CreateModule**](docs/ModulesApi.md#createmodule) | **Post** /api/v1/teams/{team_id}/modules | Create Module
 *ModulesApi* | [**CreateModuleRun**](docs/ModulesApi.md#createmodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs | Create Module Run
+*ModulesApi* | [**CreateTerraformPlan**](docs/ModulesApi.md#createterraformplan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
+*ModulesApi* | [**FinalizeModuleRun**](docs/ModulesApi.md#finalizemodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
+*ModulesApi* | [**GetTerraformPlan**](docs/ModulesApi.md#getterraformplan) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Get Terraform plan
 *ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 *ModulesApi* | [**ListModules**](docs/ModulesApi.md#listmodules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
 *OrganizationsApi* | [**AcceptOrgMemberInvite**](docs/OrganizationsApi.md#acceptorgmemberinvite) | **Post** /api/v1/invites/{org_member_invite_id}/{org_member_invite_tok} | Accept an organization invite.
@@ -49,6 +52,7 @@ Class | Method | HTTP request | Description
 *TeamsApi* | [**CreateTeam**](docs/TeamsApi.md#createteam) | **Post** /api/v1/organizations/{org_id}/teams | Create a new team.
 *TeamsApi* | [**DeleteTeam**](docs/TeamsApi.md#deleteteam) | **Delete** /api/v1/teams/{team_id} | Delete team.
 *TeamsApi* | [**DeleteTeamMember**](docs/TeamsApi.md#deleteteammember) | **Delete** /api/v1/teams/{team_id}/members/{team_member_id} | Delete team member
+*TeamsApi* | [**GithubIncomingWebhook**](docs/TeamsApi.md#githubincomingwebhook) | **Post** /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} | Github incoming webhook endpoint
 *TeamsApi* | [**ListTeamMembers**](docs/TeamsApi.md#listteammembers) | **Get** /api/v1/teams/{team_id}/members | List team members
 *TeamsApi* | [**ListTeams**](docs/TeamsApi.md#listteams) | **Get** /api/v1/organizations/{org_id}/teams | List teams.
 *TeamsApi* | [**UpdateTeam**](docs/TeamsApi.md#updateteam) | **Post** /api/v1/teams/{team_id} | Update team
@@ -96,6 +100,7 @@ Class | Method | HTTP request | Description
  - [CreatePersonalAccessTokenRequest](docs/CreatePersonalAccessTokenRequest.md)
  - [CreateTeamRequest](docs/CreateTeamRequest.md)
  - [CreateTeamResponse](docs/CreateTeamResponse.md)
+ - [CreateTerraformPlanRequest](docs/CreateTerraformPlanRequest.md)
  - [CreateTerraformStateRequest](docs/CreateTerraformStateRequest.md)
  - [CreateUserRequest](docs/CreateUserRequest.md)
  - [CreateUserResponse](docs/CreateUserResponse.md)
@@ -103,6 +108,8 @@ Class | Method | HTTP request | Description
  - [DeletePatResponse](docs/DeletePatResponse.md)
  - [DeleteTeamResponse](docs/DeleteTeamResponse.md)
  - [EmptyResponse](docs/EmptyResponse.md)
+ - [FinalizeModuleRunRequest](docs/FinalizeModuleRunRequest.md)
+ - [FinalizeModuleRunResponse](docs/FinalizeModuleRunResponse.md)
  - [GetModuleTarballUrlResponse](docs/GetModuleTarballUrlResponse.md)
  - [GetOrgMemberResponse](docs/GetOrgMemberResponse.md)
  - [GetOrganizationResponse](docs/GetOrganizationResponse.md)
@@ -125,6 +132,7 @@ Class | Method | HTTP request | Description
  - [LoginUserResponse](docs/LoginUserResponse.md)
  - [Module](docs/Module.md)
  - [ModuleDeploymentConfig](docs/ModuleDeploymentConfig.md)
+ - [ModuleRun](docs/ModuleRun.md)
  - [Organization](docs/Organization.md)
  - [OrganizationInvite](docs/OrganizationInvite.md)
  - [OrganizationInviteSanitized](docs/OrganizationInviteSanitized.md)

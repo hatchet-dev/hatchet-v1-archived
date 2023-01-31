@@ -16,6 +16,9 @@ build-openapi:
 build-proto:
 	sh ./hack/proto/proto.sh
 
+build-runner:
+	go build -o ./bin/hatchet-runner -tags ee ./cmd/hatchet-runner/main.go 
+
 build-api-client: build-openapi
 	cd dashboard; npx swagger-typescript-api -p ../bin/oas/openapi.yaml -o ./src/shared/api/generated -n hatchet.ts --modular
 

@@ -1,8 +1,9 @@
 package types
 
 const (
-	URLParamTeamID       URLParam = "team_id"
-	URLParamTeamMemberID URLParam = "team_member_id"
+	URLParamTeamID          URLParam = "team_id"
+	URLParamTeamMemberID    URLParam = "team_member_id"
+	URLParamGithubWebhookID URLParam = "github_webhook_id"
 )
 
 // swagger:model

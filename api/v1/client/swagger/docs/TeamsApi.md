@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**CreateTeam**](TeamsApi.md#CreateTeam) | **Post** /api/v1/organizations/{org_id}/teams | Create a new team.
 [**DeleteTeam**](TeamsApi.md#DeleteTeam) | **Delete** /api/v1/teams/{team_id} | Delete team.
 [**DeleteTeamMember**](TeamsApi.md#DeleteTeamMember) | **Delete** /api/v1/teams/{team_id}/members/{team_member_id} | Delete team member
+[**GithubIncomingWebhook**](TeamsApi.md#GithubIncomingWebhook) | **Post** /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} | Github incoming webhook endpoint
 [**ListTeamMembers**](TeamsApi.md#ListTeamMembers) | **Get** /api/v1/teams/{team_id}/members | List team members
 [**ListTeams**](TeamsApi.md#ListTeams) | **Get** /api/v1/organizations/{org_id}/teams | List teams.
 [**UpdateTeam**](TeamsApi.md#UpdateTeam) | **Post** /api/v1/teams/{team_id} | Update team
@@ -128,6 +129,35 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**EmptyResponse**](EmptyResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GithubIncomingWebhook**
+> GithubIncomingWebhook(ctx, teamId, githubIncomingWebhookId)
+Github incoming webhook endpoint
+
+Github incoming webhook handler.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **githubIncomingWebhookId** | **string**| The incoming webhook id | 
+
+### Return type
+
+ (empty response body)
 
 ### Authorization
 

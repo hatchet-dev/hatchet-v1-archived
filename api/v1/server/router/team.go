@@ -29,6 +29,21 @@ type teamMemberPathParams struct {
 	TeamMember string `json:"team_member_id"`
 }
 
+// swagger:parameters githubIncomingWebhook
+type githubIncomingWebhookParams struct {
+	// The team id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Team string `json:"team_id"`
+
+	// The incoming webhook id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	WebhookID string `json:"github_incoming_webhook_id"`
+}
+
 func NewTeamRouteRegisterer(children ...*router.Registerer) *router.Registerer {
 	return &router.Registerer{
 		GetRoutes: GetTeamRoutes,
@@ -443,6 +458,58 @@ func GetTeamRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: deleteTeamMemberEndpoint,
 		Handler:  deleteTeamMemberHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} -> teams.NewGithubIncomingWebhookHandler
+	// swagger:operation POST /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} githubIncomingWebhook
+	//
+	// ### Description
+	//
+	// Github incoming webhook handler.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Github incoming webhook endpoint
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: team_id
+	//   - name: github_incoming_webhook_id
+	// responses:
+	//   '200':
+	//     description: Successfully responded to webhook
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	githubIncomingWebhookEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbCreate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/teams/{%s}/github_incoming/{%s}", string(types.URLParamTeamID), string(types.URLParamGithubWebhookID)),
+			},
+			// Incoming webhook has no permission scopes because it uses its own auth mechanism
+			Scopes: []types.PermissionScope{},
+		},
+	)
+
+	githubIncomingWebhookHandler := teams.NewGithubIncomingWebhookHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: githubIncomingWebhookEndpoint,
+		Handler:  githubIncomingWebhookHandler,
 		Router:   r,
 	})
 

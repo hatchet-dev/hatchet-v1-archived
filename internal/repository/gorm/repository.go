@@ -20,6 +20,8 @@ type GormRepository struct {
 	team        repository.TeamRepository
 	gao         repository.GithubAppOAuthRepository
 	gai         repository.GithubAppInstallationRepository
+	gw          repository.GithubWebhookRepository
+	gpr         repository.GithubPullRequestRepository
 	mod         repository.ModuleRepository
 }
 
@@ -59,6 +61,14 @@ func (t *GormRepository) GithubAppInstallation() repository.GithubAppInstallatio
 	return t.gai
 }
 
+func (t *GormRepository) GithubWebhook() repository.GithubWebhookRepository {
+	return t.gw
+}
+
+func (t *GormRepository) GithubPullRequest() repository.GithubPullRequestRepository {
+	return t.gpr
+}
+
 func (t *GormRepository) Module() repository.ModuleRepository {
 	return t.mod
 }
@@ -76,6 +86,8 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		team:        NewTeamRepository(db),
 		gao:         NewGithubAppOAuthRepository(db, key),
 		gai:         NewGithubAppInstallationRepository(db),
+		gw:          NewGithubWebhookRepository(db, key),
+		gpr:         NewGithubPullRequestRepository(db),
 		mod:         NewModuleRepository(db),
 	}
 }

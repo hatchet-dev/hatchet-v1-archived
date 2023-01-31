@@ -32,6 +32,14 @@ func NewModuleTarballURLGetHandler(
 func (m *ModuleTarballURLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
+	req := &types.GetModuleTarballURLRequest{}
+
+	if ok := m.DecodeAndValidate(w, r, req); !ok {
+		return
+	}
+
+	sha := req.GithubSHA
+
 	client, err := github.GetGithubAppClientFromModule(m.Config(), module)
 
 	if err != nil {
@@ -39,17 +47,21 @@ func (m *ModuleTarballURLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	branchResp, _, err := client.Repositories.GetBranch(
-		context.TODO(),
-		module.DeploymentConfig.GithubRepoOwner,
-		module.DeploymentConfig.GithubRepoName,
-		module.DeploymentConfig.GithubRepoBranch,
-		false,
-	)
+	if sha == "" {
+		branchResp, _, err := client.Repositories.GetBranch(
+			context.TODO(),
+			module.DeploymentConfig.GithubRepoOwner,
+			module.DeploymentConfig.GithubRepoName,
+			module.DeploymentConfig.GithubRepoBranch,
+			false,
+		)
 
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
+
+		sha = branchResp.GetCommit().GetSHA()
 	}
 
 	ghURL, _, err := client.Repositories.GetArchiveLink(
@@ -58,7 +70,7 @@ func (m *ModuleTarballURLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		module.DeploymentConfig.GithubRepoName,
 		githubsdk.Zipball,
 		&githubsdk.RepositoryContentGetOptions{
-			Ref: *branchResp.Commit.SHA,
+			Ref: sha,
 		},
 		false,
 	)

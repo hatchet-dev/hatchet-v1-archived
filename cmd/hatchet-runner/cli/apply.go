@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/antihax/optional"
 	"github.com/fatih/color"
+	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
@@ -57,7 +59,7 @@ func runApply() error {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer)
+	action := action.NewRunnerAction(writer, errorHandler)
 
 	_, err = action.Apply(rc, map[string]interface{}{})
 
@@ -73,6 +75,9 @@ func downloadGithubRepoContents(config *runner.Config) error {
 		context.Background(),
 		config.ConfigFile.TeamID,
 		config.ConfigFile.ModuleID,
+		&swagger.ModulesApiGetModuleTarballURLOpts{
+			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
+		},
 	)
 
 	if err != nil {
@@ -105,9 +110,13 @@ func downloadGithubRepoContents(config *runner.Config) error {
 	var res string
 
 	for _, info := range dstFiles {
-		if info.Mode().IsDir() && strings.Contains(info.Name(), strings.Replace(config.ConfigFile.GithubRepositoryName, "/", "-", 1)) {
+		if info.Mode().IsDir() &&
+			strings.Contains(info.Name(), strings.Replace(config.ConfigFile.GithubRepositoryName, "/", "-", 1)) &&
+			strings.Contains(info.Name(), config.ConfigFile.GithubSHA) {
 			res = filepath.Join(dstDir, info.Name())
 		}
+
+		fmt.Println(info.Name(), config.ConfigFile.GithubSHA, strings.Contains(info.Name(), config.ConfigFile.GithubSHA), strings.Contains(info.Name(), strings.Replace(config.ConfigFile.GithubRepositoryName, "/", "-", 1)))
 	}
 
 	if res == "" {

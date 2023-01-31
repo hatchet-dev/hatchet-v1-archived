@@ -63,10 +63,32 @@ func (m *ModuleDeploymentConfig) ToAPIType() *types.ModuleDeploymentConfig {
 	}
 }
 
+type ModuleRunStatus string
+
+const (
+	ModuleRunStatusQueued     ModuleRunStatus = "queued"
+	ModuleRunStatusInProgress ModuleRunStatus = "in_progress"
+	ModuleRunStatusCompleted  ModuleRunStatus = "completed"
+	ModuleRunStatusFailed     ModuleRunStatus = "failed"
+)
+
+type ModuleRunKind string
+
+const (
+	ModuleRunKindPlan    ModuleRunKind = "plan"
+	ModuleRunKindApply   ModuleRunKind = "apply"
+	ModuleRunKindDestroy ModuleRunKind = "destroy"
+)
+
 type ModuleRun struct {
 	Base
 
 	ModuleID string
+
+	Status            ModuleRunStatus
+	StatusDescription string
+
+	Kind ModuleRunKind
 
 	LockID        string
 	LockOperation string
@@ -77,6 +99,8 @@ type ModuleRun struct {
 	LockPath      string
 
 	Tokens []ModuleRunToken
+
+	ModuleRunConfig ModuleRunConfig
 }
 
 func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
@@ -88,6 +112,15 @@ func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
 		Version:   m.LockVersion,
 		Created:   m.LockCreated,
 		Path:      m.LockPath,
+	}
+}
+
+func (m *ModuleRun) ToAPIType() *types.ModuleRun {
+	return &types.ModuleRun{
+		APIResourceMeta:   m.ToAPITypeMetadata(),
+		Status:            types.ModuleRunStatus(m.Status),
+		StatusDescription: m.StatusDescription,
+		Kind:              types.ModuleRunKind(m.Kind),
 	}
 }
 
@@ -172,4 +205,23 @@ func (m *ModuleRunToken) Decrypt(key *[32]byte) error {
 	}
 
 	return nil
+}
+
+type ModuleRunTriggerKind string
+
+const (
+	ModuleRunTriggerKindGithub ModuleRunTriggerKind = "github"
+	ModuleRunTriggerKindManual ModuleRunTriggerKind = "manual"
+)
+
+type ModuleRunConfig struct {
+	Base
+
+	ModuleRunID string
+
+	TriggerKind ModuleRunTriggerKind
+
+	GithubCheckID   int64
+	GithubCommentID int64
+	GithubCommitSHA string
 }

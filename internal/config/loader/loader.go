@@ -23,6 +23,8 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/notifier/noop"
 	"github.com/hatchet-dev/hatchet/internal/notifier/sendgrid"
+	"github.com/hatchet-dev/hatchet/internal/provisioner"
+	"github.com/hatchet-dev/hatchet/internal/provisioner/local"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm"
 	"github.com/joeshaw/envdecode"
 )
@@ -164,11 +166,10 @@ func (e *EnvConfigLoader) LoadRunnerConfigFromConfigFile(rc *runner.ConfigFile, 
 	c := swagger.NewAPIClient(clientConf)
 
 	return &runner.Config{
-		Config:           *sharedConfig,
-		ConfigFile:       rc,
-		GRPCClient:       grpcClient,
-		APIClient:        c,
-		GithubTarballURL: rc.GithubTarballURL,
+		Config:     *sharedConfig,
+		ConfigFile: rc,
+		GRPCClient: grpcClient,
+		APIClient:  c,
 	}, nil
 }
 
@@ -302,6 +303,12 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		})
 	}
 
+	var provisioner provisioner.Provisioner
+
+	if sc.ProvisionerRunnerMethod == "local" {
+		provisioner = local.NewLocalProvisioner()
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -313,6 +320,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		GithubApp:           githubAppConf,
 		DefaultFileStore:    storageManager,
 		DefaultLogStore:     logManager,
+		DefaultProvisioner:  provisioner,
 	}, nil
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
+	"github.com/hatchet-dev/hatchet/internal/provisioner"
 )
 
 type ConfigFile struct {
@@ -79,6 +80,10 @@ type ConfigFile struct {
 	RedisUsername string `env:"REDIS_USER"`
 	RedisPassword string `env:"REDIS_PASS"`
 	RedisDB       int    `env:"REDIS_DB,default=0"`
+
+	// Provisioner config options
+	ProvisionerRunnerMethod string `env:"PROVISIONER_RUNNER_METHOD,default=local"`
+	RunnerGRPCServerAddress string `env:"RUNNER_GRPC_SERVER_ADDRESS,default=http://localhost:8080"`
 }
 
 type AuthConfig struct {
@@ -130,6 +135,8 @@ type Config struct {
 	DefaultFileStore filestorage.FileStorageManager
 
 	DefaultLogStore logstorage.LogStorageBackend
+
+	DefaultProvisioner provisioner.Provisioner
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

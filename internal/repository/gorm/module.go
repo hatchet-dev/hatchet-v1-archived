@@ -31,7 +31,7 @@ func (repo *ModuleRepository) CreateModule(mod *models.Module) (*models.Module, 
 func (repo *ModuleRepository) ReadModuleByID(teamID, moduleID string) (*models.Module, repository.RepositoryError) {
 	mod := &models.Module{}
 
-	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Where("team_id = ? AND id = ?", teamID, moduleID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Where("team_id = ? AND modules.id = ?", teamID, moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -76,6 +76,18 @@ func (repo *ModuleRepository) ListModulesByTeamID(teamID string, opts ...reposit
 	return mods, paginatedResult, nil
 }
 
+func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
+	var mods []*models.Module
+
+	db := repo.db.Joins("DeploymentConfig").Where("team_id = ? AND DeploymentConfig.github_repo_owner = ? AND DeploymentConfig.github_repo_name = ?", teamID, repoOwner, repoName)
+
+	if err := db.Find(&mods).Error; err != nil {
+		return nil, err
+	}
+
+	return mods, nil
+}
+
 func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
 	if err := repo.db.Create(run).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
@@ -87,7 +99,17 @@ func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.Mo
 func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Where("module_id = ? AND id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
+	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND module_runs.id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mod, nil
+}
+
+func (repo *ModuleRepository) ReadModuleRunByGithubSHA(moduleID, githubSHA string) (*models.ModuleRun, repository.RepositoryError) {
+	mod := &models.ModuleRun{}
+
+	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.github_commit_sha = ?", moduleID, githubSHA).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

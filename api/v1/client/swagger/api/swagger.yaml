@@ -2048,6 +2048,100 @@ paths:
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id}:
+    post:
+      tags:
+      - Teams
+      summary: Github incoming webhook endpoint
+      description: Github incoming webhook handler.
+      operationId: githubIncomingWebhook
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: github_incoming_webhook_id
+        in: path
+        description: The incoming webhook id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: WebhookID
+        x-go-name: WebhookID
+      responses:
+        "200":
+          description: Successfully responded to webhook
+          content: {}
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/github_incoming/322346f9-54b4-497d-bc9a-c54b5aaa4400 \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/github_incoming/322346f9-54b4-497d-bc9a-c54b5aaa4400';
+
+          let options = {method: 'POST', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/github_incoming/322346f9-54b4-497d-bc9a-c54b5aaa4400")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/github_incoming/322346f9-54b4-497d-bc9a-c54b5aaa4400"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("POST", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/github_incoming/322346f9-54b4-497d-bc9a-c54b5aaa4400\"\
+          \n\n\treq, _ := http.NewRequest(\"POST\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
   /api/v1/teams/{team_id}/members:
     get:
       tags:
@@ -2662,6 +2756,389 @@ paths:
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize:
+    post:
+      tags:
+      - Modules
+      summary: Finalize module run
+      description: Updates a module run with a finalized status.
+      operationId: finalizeModuleRun
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      requestBody:
+        description: The module run status to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/finalizeModuleRun_request'
+        required: true
+      responses:
+        "200":
+          description: Successfully updated the module run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizeModuleRunResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+        "423":
+          description: Locked
+          content: {}
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{"description":"string","status":"string"}'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize';
+
+          let options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer REPLACE_BEARER_TOKEN',
+              'content-type': 'application/json'
+            },
+            body: '{"description":"string","status":"string"}'
+          };
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+          request["content-type"] = 'application/json'
+          request.body = "{\"description\":\"string\",\"status\":\"string\"}"
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize"
+
+          payload = {
+              "description": "string",
+              "status": "string"
+          }
+          headers = {
+              "Authorization": "Bearer REPLACE_BEARER_TOKEN",
+              "content-type": "application/json"
+          }
+
+          response = requests.request("POST", url, json=payload, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
+          \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize\"\
+          \n\n\tpayload := strings.NewReader(\"{\\\"description\\\":\\\"string\\\"\
+          ,\\\"status\\\":\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\"\
+          , url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
+      x-codegen-request-body-name: FinalizeModuleRunRequest
+  /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan:
+    get:
+      tags:
+      - Modules
+      summary: Get Terraform plan
+      description: Creates a `GET` request for a Terraform plan. **Should only be
+        called by Terraform in automation.**
+      operationId: getTerraformPlan
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      responses:
+        "200":
+          description: Successfully created the TF plan
+          content: {}
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+        "423":
+          description: Locked
+          content: {}
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+    post:
+      tags:
+      - Modules
+      summary: Create Terraform plan
+      description: Creates a `POST` request for a Terraform plan. **Should only be
+        called by Terraform in automation.**
+      operationId: createTerraformPlan
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      requestBody:
+        description: The terraform plan contents
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createTerraformPlan_request'
+        required: true
+      responses:
+        "200":
+          description: Successfully created the TF plan
+          content: {}
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+        "423":
+          description: Locked
+          content: {}
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{"plan_json":"string","plan_pretty":"string"}'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan';
+
+          let options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer REPLACE_BEARER_TOKEN',
+              'content-type': 'application/json'
+            },
+            body: '{"plan_json":"string","plan_pretty":"string"}'
+          };
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+          request["content-type"] = 'application/json'
+          request.body = "{\"plan_json\":\"string\",\"plan_pretty\":\"string\"}"
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan"
+
+          payload = {
+              "plan_json": "string",
+              "plan_pretty": "string"
+          }
+          headers = {
+              "Authorization": "Bearer REPLACE_BEARER_TOKEN",
+              "content-type": "application/json"
+          }
+
+          response = requests.request("POST", url, json=payload, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
+          \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/plan\"\
+          \n\n\tpayload := strings.NewReader(\"{\\\"plan_json\\\":\\\"string\\\",\\\
+          \"plan_pretty\\\":\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\"\
+          , url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
+      x-codegen-request-body-name: CreateTerraformPlanRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate:
     post:
       tags:
@@ -2775,6 +3252,14 @@ paths:
       description: Gets the Github tarball URL for the module.
       operationId: getModuleTarballURL
       parameters:
+      - name: github_sha
+        in: query
+        description: the SHA to get the tarball from
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
       - name: team_id
         in: path
         description: The team id
@@ -2818,13 +3303,13 @@ paths:
       - lang: Shell
         source: |-
           curl --request GET \
-            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url \
+            --url 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url?github_sha=SOME_STRING_VALUE' \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
 
-          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url';
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url?github_sha=SOME_STRING_VALUE';
 
           let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
 
@@ -2837,7 +3322,7 @@ paths:
           require 'uri'
           require 'net/http'
 
-          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url")
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url?github_sha=SOME_STRING_VALUE")
 
           http = Net::HTTP.new(url.host, url.port)
 
@@ -2852,14 +3337,16 @@ paths:
 
           url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url"
 
+          querystring = {"github_sha":"SOME_STRING_VALUE"}
+
           headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
 
-          response = requests.request("GET", url, headers=headers)
+          response = requests.request("GET", url, headers=headers, params=querystring)
 
           print(response.text)
       - lang: Go
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
-          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url?github_sha=SOME_STRING_VALUE\"\
           \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
@@ -5130,6 +5617,24 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateTeamResponse:
       $ref: '#/components/schemas/Team'
+    CreateTerraformPlanRequest:
+      required:
+      - plan_json
+      - plan_pretty
+      type: object
+      properties:
+        plan_json:
+          type: string
+          description: the JSON contents of the plan
+          x-go-name: PlanJSON
+        plan_pretty:
+          type: string
+          description: the prettified contents of the plan
+          x-go-name: PlanPretty
+      example:
+        plan_pretty: plan_pretty
+        plan_json: plan_json
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateTerraformStateRequest:
       type: object
       properties:
@@ -5174,6 +5679,25 @@ components:
     EmptyResponse:
       type: object
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    FinalizeModuleRunRequest:
+      required:
+      - description
+      - status
+      type: object
+      properties:
+        description:
+          type: string
+          description: the description for the module run status
+          x-go-name: Description
+        status:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      example:
+        description: description
+        status: status
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    FinalizeModuleRunResponse:
+      $ref: '#/components/schemas/ModuleRun'
     GetModuleTarballURLResponse:
       type: object
       properties:
@@ -5718,6 +6242,49 @@ components:
         github_repo_name: github_repo_name
         github_repo_branch: github_repo_branch
         github_repo_owner: github_repo_owner
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleRun:
+      type: object
+      properties:
+        created_at:
+          type: string
+          description: the time that this resource was created
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: CreatedAt
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+        status:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+        status_description:
+          type: string
+          x-go-name: StatusDescription
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+      example:
+        status_description: status_description
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        kind: kind
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        status: status
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleRunKind:
+      type: string
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleRunStatus:
+      type: string
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     Organization:
       type: object
@@ -6587,6 +7154,35 @@ components:
         name:
           type: string
           x-go-name: Name
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    finalizeModuleRun_request:
+      required:
+      - description
+      - status
+      type: object
+      properties:
+        description:
+          type: string
+          description: the description for the module run status
+          x-go-name: Description
+        status:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    createTerraformPlan_request:
+      required:
+      - plan_json
+      - plan_pretty
+      type: object
+      properties:
+        plan_json:
+          type: string
+          description: the JSON contents of the plan
+          x-go-name: PlanJSON
+        plan_pretty:
+          type: string
+          description: the prettified contents of the plan
+          x-go-name: PlanPretty
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     createUser_request:
       required:

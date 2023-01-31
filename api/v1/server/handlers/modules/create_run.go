@@ -7,9 +7,9 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
-	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/provisioner"
 )
 
 type RunCreateHandler struct {
@@ -32,6 +32,7 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	run := &models.ModuleRun{
 		ModuleID: module.ID,
+		Status:   models.ModuleRunStatusInProgress,
 	}
 
 	run, err := m.Repo().Module().CreateModuleRun(run)
@@ -41,22 +42,14 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mrt, err := models.NewModuleRunTokenFromRunID(team.ServiceAccountRunnerID, run.ID)
-
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
-	_, err = token.GenerateTokenFromMRT(mrt, m.Config().TokenOpts)
-
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
-	// write the user to the db
-	mrt, err = m.Repo().Module().CreateModuleRunToken(mrt)
+	err = m.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
+		Team:       team,
+		Module:     module,
+		ModuleRun:  run,
+		TokenOpts:  *m.Config().TokenOpts,
+		Repository: m.Repo(),
+		ServerURL:  m.Config().ServerRuntimeConfig.ServerURL,
+	})
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

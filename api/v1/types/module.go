@@ -16,6 +16,30 @@ type Module struct {
 	DeploymentConfig ModuleDeploymentConfig `json:"deployment"`
 }
 
+type ModuleRunStatus string
+
+const (
+	ModuleRunStatusCompleted ModuleRunStatus = "completed"
+	ModuleRunStatusFailed    ModuleRunStatus = "failed"
+)
+
+type ModuleRunKind string
+
+const (
+	ModuleRunKindPlan    ModuleRunKind = "plan"
+	ModuleRunKindApply   ModuleRunKind = "apply"
+	ModuleRunKindDestroy ModuleRunKind = "destroy"
+)
+
+// swagger:model
+type ModuleRun struct {
+	*APIResourceMeta
+
+	Status            ModuleRunStatus `json:"status"`
+	StatusDescription string          `json:"status_description"`
+	Kind              ModuleRunKind   `json:"kind"`
+}
+
 // swagger:model
 type ModuleDeploymentConfig struct {
 	Path                    string `json:"path"`
@@ -107,4 +131,36 @@ type TerraformLock struct {
 // swagger:model
 type GetModuleTarballURLResponse struct {
 	URL string `json:"url"`
+}
+
+// swagger:model
+type CreateTerraformPlanRequest struct {
+	// the prettified contents of the plan
+	// required: true
+	PlanPretty string `json:"plan_pretty"`
+
+	// the JSON contents of the plan
+	// required: true
+	PlanJSON string `json:"plan_json"`
+}
+
+// swagger:model
+type FinalizeModuleRunRequest struct {
+	// the status of the module run
+	// required: true
+	Status ModuleRunStatus `json:"status" form:"required"`
+
+	// the description for the module run status
+	// required: true
+	Description string `json:"description" form:"required"`
+}
+
+// swagger:model
+type FinalizeModuleRunResponse ModuleRun
+
+// swagger:parameters getModuleTarballURL
+type GetModuleTarballURLRequest struct {
+	// the SHA to get the tarball from
+	// in: query
+	GithubSHA string `schema:"github_sha"`
 }

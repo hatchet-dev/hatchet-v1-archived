@@ -14,6 +14,8 @@ type Repository interface {
 	Team() TeamRepository
 	GithubAppOAuth() GithubAppOAuthRepository
 	GithubAppInstallation() GithubAppInstallationRepository
+	GithubWebhook() GithubWebhookRepository
+	GithubPullRequest() GithubPullRequestRepository
 	Module() ModuleRepository
 }
 

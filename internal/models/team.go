@@ -29,6 +29,9 @@ type Team struct {
 	// The service account runner user belonging to this team
 	ServiceAccountRunnerID string
 	ServiceAccountRunner   User `gorm:"foreignKey:ServiceAccountRunnerID"`
+
+	// The github webhooks registered for this team
+	GithubWebhooks []GithubWebhook
 }
 
 func (t *Team) ToAPIType() *types.Team {

@@ -27,9 +27,9 @@ type ConfigFile struct {
 	APIServerAddress string `env:"API_SERVER_ADDRESS,default=http://localhost:8080"`
 
 	// Github options
-	GithubTarballURL     string `env:"GITHUB_TARBALL_URL"`
 	GithubRepositoryName string `env:"GITHUB_REPOSITORY_NAME"`
 	GithubModulePath     string `env:"GITHUB_MODULE_PATH"`
+	GithubSHA            string `env:"GITHUB_SHA"`
 	GithubRepositoryDest string `env:"GITHUB_REPOSITORY_DEST,default=./bin/tmp"`
 
 	// Terraform options
