@@ -16,6 +16,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/repository"
+	"github.com/hatchet-dev/hatchet/internal/runmanager"
 
 	githubsdk "github.com/google/go-github/v49/github"
 )
@@ -133,7 +134,8 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEvent(team *models.Team
 func (g *GithubIncomingWebhookHandler) processPushEvent(team *models.Team, event *githubsdk.PushEvent, r *http.Request) error {
 	owner := event.GetRepo().GetOwner().GetLogin()
 	repoName := event.GetRepo().GetName()
-	sha := event.GetHeadCommit().GetID()
+	baseSHA := event.GetBefore()
+	headSHA := event.GetHeadCommit().GetID()
 
 	headBranch := strings.TrimPrefix(event.GetRef(), "refs/heads/")
 
@@ -162,7 +164,7 @@ func (g *GithubIncomingWebhookHandler) processPushEvent(team *models.Team, event
 
 	for _, mod := range mods {
 		for _, pr := range prs {
-			err := g.newPlanFromPR(team, mod, pr, &eventData{owner, repoName, sha}, ghClients)
+			err := g.newPlanFromPR(team, mod, pr, &eventData{owner, repoName, baseSHA, headSHA, ""}, ghClients)
 
 			if err != nil {
 				errs = append(errs, err.Error())
@@ -180,7 +182,9 @@ func (g *GithubIncomingWebhookHandler) processPushEvent(team *models.Team, event
 func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Team, event *githubsdk.PullRequestEvent) error {
 	owner := event.GetRepo().GetOwner().GetLogin()
 	repoName := event.GetRepo().GetName()
-	sha := event.GetPullRequest().GetHead().GetSHA()
+	baseSHA := event.GetPullRequest().GetBase().GetSHA()
+	headSHA := event.GetPullRequest().GetHead().GetSHA()
+	branch := event.GetPullRequest().GetBase().GetRef()
 
 	// determine all modules that should trigger based on this PR
 	mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
@@ -238,7 +242,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Tea
 
 	// create comments corresponding to each module
 	for _, mod := range mods {
-		err := g.newPlanFromPR(team, mod, ghPR, &eventData{owner, repoName, sha}, ghClients)
+		err := g.newPlanFromPR(team, mod, ghPR, &eventData{owner, repoName, baseSHA, headSHA, branch}, ghClients)
 
 		if err != nil {
 			errs = append(errs, err.Error())
@@ -293,7 +297,9 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Tea
 func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Team, event *githubsdk.PullRequestEvent) error {
 	owner := event.GetRepo().GetOwner().GetLogin()
 	repoName := event.GetRepo().GetName()
-	sha := event.GetPullRequest().GetHead().GetSHA()
+	baseSHA := event.GetPullRequest().GetBase().GetSHA()
+	baseBranch := event.GetPullRequest().GetBase().GetRef()
+	headSHA := event.GetPullRequest().GetHead().GetSHA()
 	headBranch := event.GetPullRequest().GetHead().GetRef()
 
 	ghPR, err := g.Repo().GithubPullRequest().ReadGithubPullRequestByGithubID(team.ID, event.GetPullRequest().GetID())
@@ -354,13 +360,31 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			ghClients[mod.DeploymentConfig.GithubAppInstallationID] = client
 		}
 
+		// check if we should actually process this module
+		shouldTrigger, msg, err := g.shouldTrigger(
+			client, mod,
+			models.ModuleRunKindPlan,
+			owner,
+			repoName,
+			baseBranch,
+			baseSHA,
+			headSHA,
+		)
+
+		if err != nil {
+			return err
+		} else if !shouldTrigger {
+			g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
+			continue
+		}
+
 		checkResp, _, err := client.Checks.CreateCheckRun(
 			context.Background(),
 			owner,
 			repoName,
 			githubsdk.CreateCheckRunOptions{
 				Name:    fmt.Sprintf("Hatchet apply for %s", mod.DeploymentConfig.ModulePath),
-				HeadSHA: sha,
+				HeadSHA: headSHA,
 			},
 		)
 
@@ -376,7 +400,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			ModuleRunConfig: models.ModuleRunConfig{
 				TriggerKind:     models.ModuleRunTriggerKindGithub,
 				GithubCheckID:   checkResp.GetID(),
-				GithubCommitSHA: sha,
+				GithubCommitSHA: headSHA,
 			},
 		}
 
@@ -404,7 +428,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 }
 
 type eventData struct {
-	repoOwner, repoName, sha string
+	repoOwner, repoName, baseSHA, headSHA, branch string
 }
 
 func (g *GithubIncomingWebhookHandler) newPlanFromPR(
@@ -414,12 +438,10 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	eventData *eventData,
 	ghClients map[string]*githubsdk.Client,
 ) error {
-	// TODO: check if we should actually process this module
-
 	commentBody := "## Hatchet Plan\nRunning `terraform plan`..."
 
 	// check if there's an existing run for that specific commit SHA. If so, don't queue another run
-	existingRun, _ := g.Repo().Module().ReadModuleRunByGithubSHA(mod.ID, eventData.sha)
+	existingRun, _ := g.Repo().Module().ReadModuleRunByGithubSHA(mod.ID, eventData.headSHA)
 
 	if existingRun != nil {
 		return nil
@@ -438,13 +460,31 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		ghClients[mod.DeploymentConfig.GithubAppInstallationID] = client
 	}
 
+	// check if we should actually process this module
+	shouldTrigger, msg, err := g.shouldTrigger(
+		client, mod,
+		models.ModuleRunKindPlan,
+		eventData.repoOwner,
+		eventData.repoName,
+		eventData.branch,
+		eventData.baseSHA,
+		eventData.headSHA,
+	)
+
+	if err != nil {
+		return err
+	} else if !shouldTrigger {
+		g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
+		return nil
+	}
+
 	checkResp, _, err := client.Checks.CreateCheckRun(
 		context.Background(),
 		eventData.repoOwner,
 		eventData.repoName,
 		githubsdk.CreateCheckRunOptions{
 			Name:    fmt.Sprintf("Hatchet plan for %s", mod.DeploymentConfig.ModulePath),
-			HeadSHA: eventData.sha,
+			HeadSHA: eventData.headSHA,
 		},
 	)
 
@@ -488,7 +528,7 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 			TriggerKind:     models.ModuleRunTriggerKindGithub,
 			GithubCheckID:   checkResp.GetID(),
 			GithubCommentID: commentResp.GetID(),
-			GithubCommitSHA: eventData.sha,
+			GithubCommitSHA: eventData.headSHA,
 		},
 	}
 
@@ -512,4 +552,38 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	}
 
 	return nil
+}
+
+func (g *GithubIncomingWebhookHandler) shouldTrigger(
+	client *githubsdk.Client,
+	mod *models.Module,
+	kind models.ModuleRunKind,
+	repoOwner, repoName, baseBranch, baseCommit, headCommit string,
+) (bool, string, error) {
+	// get files for pull request
+	commitsRes, _, err := client.Repositories.CompareCommits(
+		context.Background(),
+		repoOwner,
+		repoName,
+		baseCommit,
+		headCommit,
+		&githubsdk.ListOptions{},
+	)
+
+	if err != nil {
+		return false, "", err
+	}
+
+	fileNames := make([]string, 0)
+
+	for _, file := range commitsRes.Files {
+		fileNames = append(fileNames, file.GetFilename())
+	}
+
+	res, msg := runmanager.Trigger(mod, kind, &runmanager.TriggerInput{
+		BaseBranch: baseBranch,
+		Files:      fileNames,
+	})
+
+	return res, msg, nil
 }

@@ -69,5 +69,5 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 }
 
 func getStatePath(teamID, moduleID, runID string) string {
-	return fmt.Sprintf("%s/%s/%s/terraform.tfstate", teamID, moduleID, runID)
+	return fmt.Sprintf("%s/%s/terraform.tfstate", teamID, moduleID)
 }
