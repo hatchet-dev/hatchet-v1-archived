@@ -106,14 +106,30 @@ func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*
 	return mod, nil
 }
 
-func (repo *ModuleRepository) ReadModuleRunByGithubSHA(moduleID, githubSHA string) (*models.ModuleRun, repository.RepositoryError) {
+func (repo *ModuleRepository) ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.github_commit_sha = ?", moduleID, githubSHA).First(&mod).Error; err != nil {
+	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND lock_id != ''", moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
 	return mod, nil
+}
+
+func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, repository.RepositoryError) {
+	mods := make([]*models.ModuleRun, 0)
+
+	db := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.github_commit_sha = ?", moduleID, githubSHA)
+
+	if kind != nil {
+		db = db.Where("kind = ?", kind)
+	}
+
+	if err := db.Find(&mods).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return mods, nil
 }
 
 func (repo *ModuleRepository) UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
@@ -136,10 +152,14 @@ func (repo *ModuleRepository) DeleteModuleRun(run *models.ModuleRun) (*models.Mo
 	return run, nil
 }
 
-func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
+func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, status *models.ModuleRunStatus, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
 	var runs []*models.ModuleRun
 
 	db := repo.db.Model(&models.ModuleRun{}).Where("module_id = ?", moduleID)
+
+	if status != nil && *status != "" {
+		db = db.Where("status = ?", *status)
+	}
 
 	paginatedResult := &repository.PaginatedResult{}
 

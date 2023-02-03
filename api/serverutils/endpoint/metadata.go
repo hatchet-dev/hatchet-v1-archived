@@ -76,6 +76,10 @@ type EndpointMetadata struct {
 	// AllowUnverifiedEmails controls whether or not the endpoint should permit authenticated
 	// users with unverified email addresses
 	AllowUnverifiedEmails bool
+
+	// (optional) ContentType describes the content type for the endpoint. If unspecified, it's
+	// registered as application/json;utf8.
+	ContentType string
 }
 
 type RequestAction struct {

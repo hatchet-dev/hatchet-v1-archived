@@ -15,6 +15,13 @@ const (
 	DeploymentMechanismAPI    DeploymentMechanism = "api"
 )
 
+type ModuleLockKind string
+
+const (
+	ModuleLockKindGithubBranch ModuleLockKind = "github_branch"
+	ModuleLockKindManual       ModuleLockKind = "manual"
+)
+
 type Module struct {
 	Base
 
@@ -26,6 +33,13 @@ type Module struct {
 	DeploymentMechanism DeploymentMechanism
 
 	DeploymentConfig ModuleDeploymentConfig
+
+	// LockID represents a unique lock ID for the module. This operates at a higher level than the
+	// Terraform state lock. For a LockKind of type "github," this corresponds to a commit SHA.
+	LockID string
+
+	// LockKind describes the type of lock.
+	LockKind ModuleLockKind
 
 	Runs []ModuleRun
 }

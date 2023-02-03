@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/erroralerter"
+	"github.com/hatchet-dev/hatchet/api/v1/client/fileclient"
 	"github.com/hatchet-dev/hatchet/api/v1/client/grpc"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/adapter"
@@ -165,11 +166,14 @@ func (e *EnvConfigLoader) LoadRunnerConfigFromConfigFile(rc *runner.ConfigFile, 
 
 	c := swagger.NewAPIClient(clientConf)
 
+	fileClient := fileclient.NewFileClient(rc.APIServerAddress, rc.APIToken)
+
 	return &runner.Config{
 		Config:     *sharedConfig,
 		ConfigFile: rc,
 		GRPCClient: grpcClient,
 		APIClient:  c,
+		FileClient: fileClient,
 	}, nil
 }
 

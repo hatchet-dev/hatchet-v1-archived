@@ -9,8 +9,8 @@ Method | HTTP request | Description
 [**CreateTerraformPlan**](ModulesApi.md#CreateTerraformPlan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 [**FinalizeModuleRun**](ModulesApi.md#FinalizeModuleRun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
 [**GetModuleTarballURL**](ModulesApi.md#GetModuleTarballURL) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
-[**GetTerraformPlan**](ModulesApi.md#GetTerraformPlan) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Get Terraform plan
 [**GetTerraformState**](ModulesApi.md#GetTerraformState) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
+[**ListModuleRuns**](ModulesApi.md#ListModuleRuns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 [**ListModules**](ModulesApi.md#ListModules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
 
 # **CreateModule**
@@ -178,11 +178,11 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetTerraformPlan**
-> GetTerraformPlan(ctx, teamId, moduleId, moduleRunId)
-Get Terraform plan
+# **GetTerraformState**
+> GetTerraformState(ctx, teamId, moduleId, moduleRunId)
+Create or Update Terraform State
 
-Creates a `GET` request for a Terraform plan. **Should only be called by Terraform in automation.**
+Creates a `GET` request for Terraform state. **Should only be called by Terraform in automation.**
 
 ### Required Parameters
 
@@ -208,24 +208,29 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetTerraformState**
-> GetTerraformState(ctx, teamId, moduleId, moduleRunId)
-Create or Update Terraform State
+# **ListModuleRuns**
+> ListModuleRunsResponse ListModuleRuns(ctx, optional)
+List Module Runs
 
-Creates a `GET` request for Terraform state. **Should only be called by Terraform in automation.**
+Lists module runs for a given module id.
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **teamId** | **string**| The team id | 
-  **moduleId** | **string**| The module id | 
-  **moduleRunId** | **string**| The module run id | 
+ **optional** | ***ModulesApiListModuleRunsOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiListModuleRunsOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **teamId** | **optional.Int64**| The page to query for | 
+ **moduleId** | **optional.String**| the status of the module run | 
 
 ### Return type
 
- (empty response body)
+[**ListModuleRunsResponse**](ListModuleRunsResponse.md)
 
 ### Authorization
 

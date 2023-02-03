@@ -34,10 +34,13 @@ type ModuleRepository interface {
 	ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, RepositoryError)
 
 	// ReadModuleRunByGithubSHA finds a run by its Github SHA
-	ReadModuleRunByGithubSHA(moduleID, githubSHA string) (*models.ModuleRun, RepositoryError)
+	ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, RepositoryError)
+
+	// ReadModuleRunWithStateLock returns a module run that has a lock on the module state
+	ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, RepositoryError)
 
 	// ListRunsByModuleID lists all runs for a module
-	ListRunsByModuleID(moduleID string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
+	ListRunsByModuleID(moduleID string, status *models.ModuleRunStatus, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
 
 	// UpdateModuleRun updates any modified values for a module
 	UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)

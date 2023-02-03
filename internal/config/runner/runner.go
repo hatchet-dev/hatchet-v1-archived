@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/hatchet-dev/hatchet/api/v1/client/fileclient"
 	"github.com/hatchet-dev/hatchet/api/v1/client/grpc"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
@@ -43,6 +44,8 @@ type Config struct {
 	ConfigFile *ConfigFile
 
 	GRPCClient *grpc.GRPCClient
+
+	FileClient *fileclient.FileClient
 
 	APIClient *swagger.APIClient
 

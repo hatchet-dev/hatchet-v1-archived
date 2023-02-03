@@ -28,7 +28,6 @@ cat ./bin/oas/api-populated-pre-fmt.yaml | sed 's/%7B/{/g' | sed 's/%7D/}/g' | s
 
 # remove the generated directories
 rm -rf ./api-server-3.0
-rm openapitools.json
 rm ./bin/oas/api-populated-pre-fmt.yaml
 rm ./bin/oas/api-server-generated-with-samples.yaml
 rm ./bin/oas/api-server-generated-with-mixins.yaml

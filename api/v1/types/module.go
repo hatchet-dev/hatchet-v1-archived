@@ -97,6 +97,20 @@ type ListModulesResponse struct {
 	Rows       []*Module           `json:"rows"`
 }
 
+// swagger:parameters listModuleRuns
+type ListModuleRunsRequest struct {
+	*PaginationRequest
+
+	// the status of the module run
+	Status ModuleRunStatus `schema:"status" json:"status"`
+}
+
+// swagger:model
+type ListModuleRunsResponse struct {
+	Pagination *PaginationResponse `json:"pagination"`
+	Rows       []*ModuleRun        `json:"rows"`
+}
+
 // swagger:model
 type CreateTerraformStateRequest struct {
 	ID string `schema:"ID"`

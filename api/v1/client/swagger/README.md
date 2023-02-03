@@ -33,8 +33,8 @@ Class | Method | HTTP request | Description
 *ModulesApi* | [**CreateTerraformPlan**](docs/ModulesApi.md#createterraformplan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 *ModulesApi* | [**FinalizeModuleRun**](docs/ModulesApi.md#finalizemodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
-*ModulesApi* | [**GetTerraformPlan**](docs/ModulesApi.md#getterraformplan) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Get Terraform plan
 *ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
+*ModulesApi* | [**ListModuleRuns**](docs/ModulesApi.md#listmoduleruns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 *ModulesApi* | [**ListModules**](docs/ModulesApi.md#listmodules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
 *OrganizationsApi* | [**AcceptOrgMemberInvite**](docs/OrganizationsApi.md#acceptorgmemberinvite) | **Post** /api/v1/invites/{org_member_invite_id}/{org_member_invite_tok} | Accept an organization invite.
 *OrganizationsApi* | [**CreateOrgMemberInvite**](docs/OrganizationsApi.md#createorgmemberinvite) | **Post** /api/v1/organizations/{org_id}/members | Create a member invite
@@ -119,6 +119,7 @@ Class | Method | HTTP request | Description
  - [GithubBranch](docs/GithubBranch.md)
  - [GithubRepo](docs/GithubRepo.md)
  - [ListGithubAppInstallationsResponse](docs/ListGithubAppInstallationsResponse.md)
+ - [ListModuleRunsResponse](docs/ListModuleRunsResponse.md)
  - [ListModulesResponse](docs/ListModulesResponse.md)
  - [ListOrgMembersResponse](docs/ListOrgMembersResponse.md)
  - [ListPatsResponse](docs/ListPatsResponse.md)

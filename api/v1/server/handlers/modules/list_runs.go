@@ -11,56 +11,50 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
-type ModuleRunFinalizeHandler struct {
+type ModuleRunsListHandler struct {
 	handlers.HatchetHandlerReadWriter
 }
 
-func NewModuleRunFinalizeHandler(
+func NewModuleRunsListHandler(
 	config *server.Config,
 	decoderValidator handlerutils.RequestDecoderValidator,
 	writer handlerutils.ResultWriter,
 ) http.Handler {
-	return &ModuleRunFinalizeHandler{
+	return &ModuleRunsListHandler{
 		HatchetHandlerReadWriter: handlers.NewDefaultHatchetHandler(config, decoderValidator, writer),
 	}
 }
 
-func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *ModuleRunsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
-	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	req := &types.FinalizeModuleRunRequest{}
+	req := &types.ListModuleRunsRequest{}
 
 	if ok := m.DecodeAndValidate(w, r, req); !ok {
 		return
 	}
 
-	switch req.Status {
-	case types.ModuleRunStatusFailed:
-		run.Status = models.ModuleRunStatusFailed
-	case types.ModuleRunStatusCompleted:
-		run.Status = models.ModuleRunStatusCompleted
+	var status *models.ModuleRunStatus
+
+	if req.Status != "" {
+		status = (*models.ModuleRunStatus)(&req.Status)
 	}
 
-	run.StatusDescription = req.Description
-
-	run, err := m.Repo().Module().UpdateModuleRun(run)
+	modRuns, paginate, err := m.Repo().Module().ListRunsByModuleID(module.ID, status)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
 
-	// clear the lock from the module
-	module.LockID = ""
-	module.LockKind = models.ModuleLockKind("")
-
-	module, err = m.Repo().Module().UpdateModule(module)
-
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
+	resp := &types.ListModuleRunsResponse{
+		Pagination: paginate.ToAPIType(),
+		Rows:       make([]*types.ModuleRun, 0),
 	}
 
-	m.WriteResult(w, r, run.ToAPIType())
+	for _, modRun := range modRuns {
+		resp.Rows = append(resp.Rows, modRun.ToAPIType())
+	}
+
+	m.WriteResult(w, r, resp)
 }

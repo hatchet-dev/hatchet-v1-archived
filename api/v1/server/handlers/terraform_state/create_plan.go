@@ -119,3 +119,7 @@ func getPlanJSONPath(teamID, moduleID, runID string) string {
 func getPlanPrettyPath(teamID, moduleID, runID string) string {
 	return fmt.Sprintf("%s/%s/%s/plan.txt", teamID, moduleID, runID)
 }
+
+func getPlanZIPPath(teamID, moduleID, runID string) string {
+	return fmt.Sprintf("%s/%s/%s/plan.zip", teamID, moduleID, runID)
+}

@@ -27,7 +27,7 @@ type modulePathParams struct {
 	Module string `json:"module_id"`
 }
 
-// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan getTerraformPlan finalizeModuleRun
+// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun
 type moduleRunPathParams struct {
 	// The team id
 	// in: path
@@ -229,6 +229,64 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: runCreateEndpoint,
 		Handler:  runCreateHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs -> modules.NewModuleRunsListHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs listModuleRuns
+	//
+	// ### Description
+	//
+	// Lists module runs for a given module id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List Module Runs
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - name: status
+	// responses:
+	//   '200':
+	//     description: Successfully listed the module runs
+	//     schema:
+	//       $ref: '#/definitions/ListModuleRunsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listRunsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbList,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+			},
+		},
+	)
+
+	listRunsHandler := modules.NewModuleRunsListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listRunsEndpoint,
+		Handler:  listRunsHandler,
 		Router:   r,
 	})
 
@@ -530,40 +588,41 @@ func GetModuleRoutes(
 		Router:   r,
 	})
 
-	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan -> terraform_state.NewTerraformPlanGetHandler
-	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan getTerraformPlan
-	//
-	// ### Description
-	//
-	// Creates a `GET` request for a Terraform plan. **Should only be called by Terraform in automation.**
-	//
-	// ---
-	// produces:
-	// - application/json
-	// summary: Get Terraform plan
-	// tags:
-	// - Modules
-	// parameters:
-	//   - name: team_id
-	//   - name: module_id
-	//   - name: module_run_id
-	// responses:
-	//   '200':
-	//     description: Successfully created the TF plan
-	//   '400':
-	//     description: A malformed or bad request
-	//     schema:
-	//       $ref: '#/definitions/APIErrorBadRequestExample'
-	//   '403':
-	//     description: Forbidden
-	//     schema:
-	//       $ref: '#/definitions/APIErrorForbiddenExample'
-	//   '423':
-	//     description: Locked
+	tfPlanUploadEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbCreate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/plan/zip", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	tfPlanUploadHandler := terraform_state.NewTerraformPlanUploadZIPHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: tfPlanUploadEndpoint,
+		Handler:  tfPlanUploadHandler,
+		Router:   r,
+	})
+
 	tfPlanGetEndpoint := factory.NewAPIEndpoint(
 		&endpoint.EndpointMetadata{
-			Verb:   types.APIVerbGet,
-			Method: types.HTTPVerbGet,
+			ContentType: "application/octet-stream",
+			Verb:        types.APIVerbGet,
+			Method:      types.HTTPVerbGet,
 			Path: &endpoint.Path{
 				Parent:       basePath,
 				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/plan", types.URLParamModuleID, types.URLParamModuleRunID),
@@ -587,6 +646,37 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: tfPlanGetEndpoint,
 		Handler:  tfPlanGetHandler,
+		Router:   r,
+	})
+
+	tfPlanGetBySHAEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			ContentType: "application/octet-stream",
+			Verb:        types.APIVerbGet,
+			Method:      types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/plan/sha", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	tfPlanGetBySHAHandler := terraform_state.NewTerraformPlanGetBySHAHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: tfPlanGetBySHAEndpoint,
+		Handler:  tfPlanGetBySHAHandler,
 		Router:   r,
 	})
 

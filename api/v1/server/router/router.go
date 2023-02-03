@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
 	"github.com/hatchet-dev/hatchet/api/v1/server/authn"
@@ -31,7 +32,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	chi.RegisterMethod("UNLOCK")
 
 	r.Route(baseRoutePath, func(r chi.Router) {
-		r.Use(ContentTypeJSON)
+		r.Use(middleware.Logger)
 
 		baseRoutePath := &endpoint.Path{
 			RelativePath: baseRoutePath,
@@ -139,8 +140,12 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 
 	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
 
+	contentTypeFactory := ContentTypeMiddleware
+
 	for _, route := range routes {
 		atomicGroup := route.Router.Group(nil)
+
+		atomicGroup.Use(contentTypeFactory(route.Endpoint.Metadata.ContentType))
 
 		// always register user scopes first
 		for _, scope := range route.Endpoint.Metadata.Scopes {
@@ -193,10 +198,15 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	}
 }
 
-// ContentTypeJSON sets the content type for requests to application/json
-func ContentTypeJSON(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json;charset=utf8")
-		next.ServeHTTP(w, r)
-	})
+func ContentTypeMiddleware(contentType string) func(http.Handler) http.Handler {
+	if contentType == "" {
+		contentType = "application/json;charset=utf8"
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", contentType)
+			next.ServeHTTP(w, r)
+		})
+	}
 }

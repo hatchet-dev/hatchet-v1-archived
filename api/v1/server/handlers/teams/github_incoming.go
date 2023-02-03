@@ -164,7 +164,7 @@ func (g *GithubIncomingWebhookHandler) processPushEvent(team *models.Team, event
 
 	for _, mod := range mods {
 		for _, pr := range prs {
-			err := g.newPlanFromPR(team, mod, pr, &eventData{owner, repoName, baseSHA, headSHA, ""}, ghClients)
+			err := g.newPlanFromPR(team, mod, pr, &eventData{owner, repoName, baseSHA, headSHA, "", headBranch}, ghClients)
 
 			if err != nil {
 				errs = append(errs, err.Error())
@@ -184,7 +184,8 @@ func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Tea
 	repoName := event.GetRepo().GetName()
 	baseSHA := event.GetPullRequest().GetBase().GetSHA()
 	headSHA := event.GetPullRequest().GetHead().GetSHA()
-	branch := event.GetPullRequest().GetBase().GetRef()
+	baseBranch := event.GetPullRequest().GetBase().GetRef()
+	headBranch := event.GetPullRequest().GetHead().GetRef()
 
 	// determine all modules that should trigger based on this PR
 	mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
@@ -242,7 +243,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Tea
 
 	// create comments corresponding to each module
 	for _, mod := range mods {
-		err := g.newPlanFromPR(team, mod, ghPR, &eventData{owner, repoName, baseSHA, headSHA, branch}, ghClients)
+		err := g.newPlanFromPR(team, mod, ghPR, &eventData{owner, repoName, baseSHA, headSHA, baseBranch, headBranch}, ghClients)
 
 		if err != nil {
 			errs = append(errs, err.Error())
@@ -337,16 +338,6 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 
 	// create comments corresponding to each module
 	for _, mod := range mods {
-		// TODO: check that there's not an EXISTING APPLY which is IN PROGRESS
-		// check if there's an existing run for that specific commit SHA. If so, don't queue another run
-		// existingRun, _ := g.Repo().Module().ReadModuleRunByGithubSHA(mod.ID, sha)
-
-		// if existingRun != nil {
-		// 	continue
-		// }
-
-		// TODO: check if we should actually process this module
-
 		client, ok := ghClients[mod.DeploymentConfig.GithubAppInstallationID]
 
 		if !ok {
@@ -378,19 +369,9 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			continue
 		}
 
-		checkResp, _, err := client.Checks.CreateCheckRun(
-			context.Background(),
-			owner,
-			repoName,
-			githubsdk.CreateCheckRunOptions{
-				Name:    fmt.Sprintf("Hatchet apply for %s", mod.DeploymentConfig.ModulePath),
-				HeadSHA: headSHA,
-			},
-		)
-
-		if err != nil {
-			return fmt.Errorf("error creating new github check run for owner: %s repo %s branch: %s. Error: %w",
-				owner, repoName, headBranch, err)
+		if mod.LockID != headBranch {
+			g.Config().Logger.Debug().Msgf("skipped apply for module %s (branch: %s) because lock is currently held by %s", mod.ID, headBranch, mod.LockID)
+			continue
 		}
 
 		run := &models.ModuleRun{
@@ -399,7 +380,6 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			Kind:     models.ModuleRunKindApply,
 			ModuleRunConfig: models.ModuleRunConfig{
 				TriggerKind:     models.ModuleRunTriggerKindGithub,
-				GithubCheckID:   checkResp.GetID(),
 				GithubCommitSHA: headSHA,
 			},
 		}
@@ -428,7 +408,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 }
 
 type eventData struct {
-	repoOwner, repoName, baseSHA, headSHA, branch string
+	repoOwner, repoName, baseSHA, headSHA, baseBranch, headBranch string
 }
 
 func (g *GithubIncomingWebhookHandler) newPlanFromPR(
@@ -440,10 +420,11 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 ) error {
 	commentBody := "## Hatchet Plan\nRunning `terraform plan`..."
 
-	// check if there's an existing run for that specific commit SHA. If so, don't queue another run
-	existingRun, _ := g.Repo().Module().ReadModuleRunByGithubSHA(mod.ID, eventData.headSHA)
+	// check if there's an existing plan for that specific commit SHA. If so, don't queue another run
+	planKind := models.ModuleRunKindPlan
+	existingRun, _ := g.Repo().Module().ListModuleRunsByGithubSHA(mod.ID, eventData.headSHA, &planKind)
 
-	if existingRun != nil {
+	if existingRun != nil && len(existingRun) > 0 {
 		return nil
 	}
 
@@ -466,7 +447,7 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		models.ModuleRunKindPlan,
 		eventData.repoOwner,
 		eventData.repoName,
-		eventData.branch,
+		eventData.baseBranch,
 		eventData.baseSHA,
 		eventData.headSHA,
 	)
@@ -476,6 +457,13 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	} else if !shouldTrigger {
 		g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
 		return nil
+	}
+
+	// check if module lock is held by a different module run
+	locked := mod.LockID != "" && (mod.LockKind != models.ModuleLockKindGithubBranch || mod.LockID != eventData.headBranch)
+
+	if locked {
+		commentBody = "## Hatchet Plan\nLock is currently held by a different PR. Queued..."
 	}
 
 	checkResp, _, err := client.Checks.CreateCheckRun(
@@ -520,9 +508,15 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 			eventData.repoOwner, eventData.repoName, ghPR.GithubPullRequestNumber, err)
 	}
 
+	status := models.ModuleRunStatusQueued
+
+	if !locked {
+		status = models.ModuleRunStatusInProgress
+	}
+
 	run := &models.ModuleRun{
 		ModuleID: mod.ID,
-		Status:   models.ModuleRunStatusInProgress,
+		Status:   status,
 		Kind:     models.ModuleRunKindPlan,
 		ModuleRunConfig: models.ModuleRunConfig{
 			TriggerKind:     models.ModuleRunTriggerKindGithub,
@@ -538,17 +532,28 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		return err
 	}
 
-	err = g.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
-		Team:       team,
-		Module:     mod,
-		ModuleRun:  run,
-		TokenOpts:  *g.Config().TokenOpts,
-		Repository: g.Repo(),
-		ServerURL:  g.Config().ServerRuntimeConfig.ServerURL,
-	})
+	if !locked {
+		err = g.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
+			Team:       team,
+			Module:     mod,
+			ModuleRun:  run,
+			TokenOpts:  *g.Config().TokenOpts,
+			Repository: g.Repo(),
+			ServerURL:  g.Config().ServerRuntimeConfig.ServerURL,
+		})
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		mod.LockID = eventData.headBranch
+		mod.LockKind = models.ModuleLockKindGithubBranch
+
+		mod, err = g.Repo().Module().UpdateModule(mod)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

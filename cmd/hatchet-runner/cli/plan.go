@@ -6,9 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
-	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
-	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
 
 	"github.com/spf13/cobra"
@@ -53,7 +51,14 @@ func runPlan() error {
 
 	a := action.NewRunnerAction(writer, errorHandler)
 
-	prettyOut, jsonOut, err := a.Plan(rc, map[string]interface{}{})
+	zipOut, prettyOut, jsonOut, err := a.Plan(rc, map[string]interface{}{})
+
+	_, err = rc.FileClient.UploadPlanZIPFile(
+		rc.ConfigFile.TeamID,
+		rc.ConfigFile.ModuleID,
+		rc.ConfigFile.ModuleRunID,
+		zipOut,
+	)
 
 	if err != nil {
 		return err
@@ -74,20 +79,5 @@ func runPlan() error {
 		return err
 	}
 
-	return nil
-}
-
-func errorHandler(config *runner.Config, description string) error {
-	_, _, err := config.APIClient.ModulesApi.FinalizeModuleRun(
-		context.Background(),
-		swagger.FinalizeModuleRunRequest{
-			Status:      string(types.ModuleRunStatusFailed),
-			Description: description,
-		},
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
-		config.ConfigFile.ModuleRunID,
-	)
-
-	return err
+	return successHandler(rc, "plan ran successfully")
 }

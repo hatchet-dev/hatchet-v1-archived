@@ -3,8 +3,10 @@ package action
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
@@ -29,6 +31,39 @@ func (r *RunnerAction) Apply(
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
+	var planPath string
+
+	// download plan, if github commit sha is passed in
+	if config.ConfigFile.GithubSHA != "" {
+		resp, _, err := config.FileClient.GetPlanByCommitSHA(
+			config.ConfigFile.TeamID,
+			config.ConfigFile.ModuleID,
+			config.ConfigFile.ModuleRunID,
+		)
+
+		if resp != nil {
+			defer resp.Close()
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		fileBytes, err := ioutil.ReadAll(resp)
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, "./plan.tfplan"), fileBytes, 0666)
+
+		if err != nil {
+			return nil, err
+		}
+
+		planPath = "./plan.tfplan"
+	}
+
 	// re initialize
 	err := r.reInit(config)
 
@@ -36,7 +71,7 @@ func (r *RunnerAction) Apply(
 		return nil, err
 	}
 
-	err = r.apply(config)
+	err = r.apply(config, planPath)
 
 	if err != nil {
 		return nil, err
@@ -49,37 +84,43 @@ func (r *RunnerAction) Apply(
 func (r *RunnerAction) Plan(
 	config *runner.Config,
 	vals map[string]interface{},
-) ([]byte, []byte, error) {
+) ([]byte, []byte, []byte, error) {
 	if !commandExists("terraform") {
-		return nil, nil, fmt.Errorf("terraform cli command does not exist")
+		return nil, nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
 	// re initialize
 	err := r.reInit(config)
 
 	if err != nil {
-		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
 	}
 
 	err = r.plan(config)
 
 	if err != nil {
-		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while running plan: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while running plan: %s", err.Error()))
+	}
+
+	zipOut, err := r.getPlanZIP(config)
+
+	if err != nil {
+		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while getting zip output: %s", err.Error()))
 	}
 
 	prettyOut, err := r.showPretty(config)
 
 	if err != nil {
-		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
 	}
 
-	prettyJSON, err := r.showJSON(config)
+	jsonOut, err := r.showJSON(config)
 
 	if err != nil {
-		return nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
 	}
 
-	return prettyOut, prettyJSON, nil
+	return zipOut, prettyOut, jsonOut, nil
 }
 
 func (r *RunnerAction) reInit(config *runner.Config) error {
@@ -126,8 +167,15 @@ func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error
 
 func (r *RunnerAction) apply(
 	config *runner.Config,
+	planPath string,
 ) error {
 	args := []string{"apply", "-json", "-auto-approve"}
+
+	if planPath != "" {
+		args = append(args, fmt.Sprintf("%s", planPath))
+	}
+
+	fmt.Printf("running apply with args: [%v]", args)
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir
@@ -162,6 +210,13 @@ func (r *RunnerAction) plan(
 	}
 
 	return cmd.Run()
+}
+
+func (r *RunnerAction) getPlanZIP(
+	config *runner.Config,
+) ([]byte, error) {
+	path := filepath.Join(config.TerraformConf.TFDir, "./plan.tfplan")
+	return ioutil.ReadFile(path)
 }
 
 func (r *RunnerAction) showPretty(
