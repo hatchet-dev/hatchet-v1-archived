@@ -79,5 +79,5 @@ func runPlan() error {
 		return err
 	}
 
-	return successHandler(rc, "plan ran successfully")
+	return successHandler(rc, "")
 }

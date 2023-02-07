@@ -55,5 +55,5 @@ func runApply() error {
 		return err
 	}
 
-	return successHandler(rc, "apply ran successfully")
+	return successHandler(rc, "")
 }

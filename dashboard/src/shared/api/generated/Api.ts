@@ -25,12 +25,16 @@ import {
   CreatePersonalAccessTokenRequest,
   CreateTeamRequest,
   CreateTeamResponse,
+  CreateTerraformPlanRequest,
   CreateUserRequest,
   CreateUserResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
   DeleteTeamResponse,
   EmptyResponse,
+  FinalizeModuleRunRequest,
+  FinalizeModuleRunResponse,
+  GetModuleTarballURLResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -38,6 +42,7 @@ import {
   ListGithubAppInstallationsResponse,
   ListGithubRepoBranchesResponse,
   ListGithubReposResponse,
+  ListModuleRunsResponse,
   ListModulesResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
@@ -470,6 +475,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Github incoming webhook handler.
+   *
+   * @tags Teams
+   * @name GithubIncomingWebhook
+   * @summary Github incoming webhook endpoint
+   * @request POST:/api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id}
+   * @secure
+   */
+  githubIncomingWebhook = (teamId: string, githubIncomingWebhookId: string, params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/github_incoming/${githubIncomingWebhookId}`,
+      method: "POST",
+      secure: true,
+      ...params,
+    });
+  /**
    * @description Lists team members for a team.
    *
    * @tags Teams
@@ -570,6 +591,37 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Lists module runs for a given module id.
+   *
+   * @tags Modules
+   * @name ListModuleRuns
+   * @summary List Module Runs
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/runs
+   * @secure
+   */
+  listModuleRuns = (
+    teamId: string,
+    moduleId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+      /** the status of the module run */
+      status?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListModuleRunsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Creates a new module run.
    *
    * @tags Modules
@@ -583,6 +635,98 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs`,
       method: "POST",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Updates a module run with a finalized status.
+   *
+   * @tags Modules
+   * @name FinalizeModuleRun
+   * @summary Finalize module run
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize
+   * @secure
+   */
+  finalizeModuleRun = (
+    teamId: string,
+    moduleId: string,
+    moduleRunId: string,
+    data: FinalizeModuleRunRequest,
+    params: RequestParams = {},
+  ) =>
+    this.request<FinalizeModuleRunResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/finalize`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a `POST` request for a Terraform plan. **Should only be called by Terraform in automation.**
+   *
+   * @tags Modules
+   * @name CreateTerraformPlan
+   * @summary Create Terraform plan
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan
+   * @secure
+   */
+  createTerraformPlan = (
+    teamId: string,
+    moduleId: string,
+    moduleRunId: string,
+    data: CreateTerraformPlanRequest,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/plan`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Creates a `GET` request for Terraform state. **Should only be called by Terraform in automation.**
+   *
+   * @tags Modules
+   * @name GetTerraformState
+   * @summary Create or Update Terraform State
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
+   * @secure
+   */
+  getTerraformState = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/tfstate`,
+      method: "POST",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description Gets the Github tarball URL for the module.
+   *
+   * @tags Modules
+   * @name GetModuleTarballUrl
+   * @summary Get Module Tarball URL
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/tarball_url
+   * @secure
+   */
+  getModuleTarballUrl = (
+    githubSha: string,
+    teamId: string,
+    moduleId: string,
+    query?: {
+      /** the SHA to get the tarball from */
+      module_id?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<GetModuleTarballURLResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/tarball_url`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
       ...params,
     });
   /**

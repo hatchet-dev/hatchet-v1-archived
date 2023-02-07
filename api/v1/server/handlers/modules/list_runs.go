@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type ModuleRunsListHandler struct {
@@ -40,7 +41,13 @@ func (m *ModuleRunsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		status = (*models.ModuleRunStatus)(&req.Status)
 	}
 
-	modRuns, paginate, err := m.Repo().Module().ListRunsByModuleID(module.ID, status)
+	modRuns, paginate, err := m.Repo().Module().ListRunsByModuleID(
+		module.ID,
+		status,
+		repository.WithPage(req.PaginationRequest),
+		repository.WithSortBy("created_at"),
+		repository.WithOrder(repository.OrderDesc),
+	)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

@@ -38,6 +38,7 @@ export const RunWrapper = styled(FlexRow)`
   padding: 14px;
   overflow: hidden;
   height: 60px;
+  margin: 6px 0;
 
   .next-icon {
     display: none;

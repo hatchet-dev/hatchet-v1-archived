@@ -102,6 +102,7 @@ type ListModuleRunsRequest struct {
 	*PaginationRequest
 
 	// the status of the module run
+	// in: query
 	Status ModuleRunStatus `schema:"status" json:"status"`
 }
 
@@ -166,7 +167,7 @@ type FinalizeModuleRunRequest struct {
 
 	// the description for the module run status
 	// required: true
-	Description string `json:"description" form:"required"`
+	Description string `json:"description"`
 }
 
 // swagger:model

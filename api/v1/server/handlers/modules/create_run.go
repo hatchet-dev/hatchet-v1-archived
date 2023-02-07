@@ -33,15 +33,26 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	run := &models.ModuleRun{
 		ModuleID: module.ID,
 		Status:   models.ModuleRunStatusInProgress,
+		Kind:     models.ModuleRunKindPlan,
 	}
 
-	run, err := m.Repo().Module().CreateModuleRun(run)
+	desc, err := generateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
 
+	run.StatusDescription = desc
+
+	run, err = m.Repo().Module().CreateModuleRun(run)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// TODO(abelanger5): queue, don't run plan
 	err = m.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
 		Team:       team,
 		Module:     module,

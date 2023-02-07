@@ -8,6 +8,7 @@ import {
   TabList,
   StandardButton,
   FlexRowRight,
+  FlexCol,
 } from "@hatchet-dev/hatchet-components";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
@@ -16,6 +17,7 @@ import { useHistory, useParams } from "react-router-dom";
 import api from "shared/api";
 import { currTeamAtom } from "shared/atoms/atoms";
 import RunsList from "../../components/runslist";
+import ModuleRunsList from "./components/modulerunslist";
 import ExpandedModuleMonitors from "./components/monitors";
 
 const TabOptions = [
@@ -60,7 +62,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
     switch (selectedTab) {
       case "Runs":
         return (
-          <>
+          <FlexCol height="100%">
             <FlexRowRight>
               <StandardButton
                 label="New Run"
@@ -70,15 +72,8 @@ const ExpandedModuleView: React.FunctionComponent = () => {
               />
             </FlexRowRight>
 
-            <RunsList
-              runs={[
-                {
-                  status: "deployed",
-                  date: "7:09 AM on June 23rd, 2022",
-                },
-              ]}
-            />
-          </>
+            <ModuleRunsList team_id={currTeam.id} module_id={params?.module} />
+          </FlexCol>
         );
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;

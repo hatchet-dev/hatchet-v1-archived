@@ -12,7 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun getModuleTarballURL
+// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -245,10 +245,6 @@ func GetModuleRoutes(
 	// summary: List Module Runs
 	// tags:
 	// - Modules
-	// parameters:
-	//   - name: team_id
-	//   - name: module_id
-	//   - name: status
 	// responses:
 	//   '200':
 	//     description: Successfully listed the module runs

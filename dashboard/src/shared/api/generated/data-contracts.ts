@@ -210,6 +210,18 @@ export interface CreateTeamRequest {
 
 export type CreateTeamResponse = Team;
 
+/** @example {"plan_pretty":"plan_pretty","plan_json":"plan_json"} */
+export interface CreateTerraformPlanRequest {
+  /** the JSON contents of the plan */
+  plan_json: string;
+  /** the prettified contents of the plan */
+  plan_pretty: string;
+}
+
+export interface CreateTerraformStateRequest {
+  ID?: string;
+}
+
 /** @example {"password":"Securepassword123","display_name":"User 1","email":"user1@gmail.com"} */
 export interface CreateUserRequest {
   /**
@@ -238,6 +250,20 @@ export type DeletePATResponse = PersonalAccessToken;
 export type DeleteTeamResponse = Team;
 
 export type EmptyResponse = object;
+
+/** @example {"description":"description","status":"status"} */
+export interface FinalizeModuleRunRequest {
+  /** the description for the module run status */
+  description: string;
+  status: string;
+}
+
+export type FinalizeModuleRunResponse = ModuleRun;
+
+/** @example {"url":"url"} */
+export interface GetModuleTarballURLResponse {
+  url?: string;
+}
 
 export type GetOrgMemberResponse = OrganizationMember;
 
@@ -295,6 +321,12 @@ export type ListGithubRepoBranchesResponse = GithubBranch[];
 
 export type ListGithubReposResponse = GithubRepo[];
 
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"},{"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"}]} */
+export interface ListModuleRunsResponse {
+  pagination?: PaginationResponse;
+  rows?: ModuleRun[];
+}
+
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}},{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}}]} */
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
@@ -335,6 +367,26 @@ export interface ListUserOrgsResponse {
 export interface ListUserTeamsResponse {
   pagination?: PaginationResponse;
   rows?: Team[];
+}
+
+export interface LockTerraformStateRequest {
+  Created?: string;
+  ID?: string;
+  Info?: string;
+  Operation?: string;
+  Path?: string;
+  Version?: string;
+  Who?: string;
+}
+
+export interface LockTerraformStateResponse {
+  Created?: string;
+  ID?: string;
+  Info?: string;
+  Operation?: string;
+  Path?: string;
+  Version?: string;
+  Who?: string;
 }
 
 /** @example {"password":"Securepassword123","email":"user1@gmail.com"} */
@@ -388,6 +440,34 @@ export interface ModuleDeploymentConfig {
   github_repo_owner?: string;
   path?: string;
 }
+
+/** @example {"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"} */
+export interface ModuleRun {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  kind?: string;
+  status?: string;
+  status_description?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+export type ModuleRunKind = string;
+
+export type ModuleRunStatus = string;
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {
@@ -821,6 +901,16 @@ export interface TeamUpdateRequest {
 
 export type TeamUpdateResponse = Team;
 
+export interface TerraformLock {
+  Created?: string;
+  ID?: string;
+  Info?: string;
+  Operation?: string;
+  Path?: string;
+  Version?: string;
+  Who?: string;
+}
+
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
   policies: OrganizationPolicyReference[];
@@ -973,6 +1063,19 @@ export interface AddTeamMemberRequest {
 export interface CreateModuleRequest {
   github?: CreateModuleRequestGithub;
   name?: string;
+}
+
+export interface FinalizeModuleRunRequest {
+  /** the description for the module run status */
+  description: string;
+  status: string;
+}
+
+export interface CreateTerraformPlanRequest {
+  /** the JSON contents of the plan */
+  plan_json: string;
+  /** the prettified contents of the plan */
+  plan_pretty: string;
 }
 
 export interface CreateUserRequest {

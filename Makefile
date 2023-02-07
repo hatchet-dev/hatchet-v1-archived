@@ -10,6 +10,12 @@ migrate:
 start-dev:
 	sh ./hack/dev/start.sh
 
+start-ngrok:
+	ngrok http 8081
+
+start-redis:
+	redis-server
+
 build-openapi:
 	sh ./hack/oas/generate-spec.sh
 

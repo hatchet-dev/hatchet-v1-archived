@@ -1,5 +1,7 @@
-import { MaterialIcon } from "@hatchet-dev/hatchet-components";
+import { MaterialIcon, Spinner } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
+import { ModuleRun } from "shared/api/generated/data-contracts";
+import { relativeDate } from "shared/utils";
 import ExpandedRun from "../../views/expandedmodule/components/expandedrun";
 import {
   RunListWrapper,
@@ -9,13 +11,8 @@ import {
   NextIconContainer,
 } from "./styles";
 
-export type Run = {
-  status: string;
-  date: string;
-};
-
 export type Props = {
-  runs: Run[];
+  runs: ModuleRun[];
 };
 
 const RunsList: React.FC<Props> = ({ runs }) => {
@@ -29,17 +26,28 @@ const RunsList: React.FC<Props> = ({ runs }) => {
     );
   }
 
+  const renderIcon = (run: ModuleRun) => {
+    switch (run.status) {
+      case "completed":
+        return <MaterialIcon className="material-icons">check</MaterialIcon>;
+      case "failed":
+        return <MaterialIcon className="material-icons">error</MaterialIcon>;
+      case "in_progress":
+        return <Spinner />;
+    }
+  };
+
   return (
     <RunListWrapper>
       {runs.map((val, i) => {
         return (
           <RunWrapper onClick={() => setSelectedRun(val)}>
             <RunStatusWrapper>
-              <MaterialIcon className="material-icons">error</MaterialIcon>
-              <div>Successfully deployed infrastructure.</div>
+              {renderIcon(val)}
+              <div>{val.status_description}</div>
             </RunStatusWrapper>
             <DateWrapper>
-              <div>{val.date}</div>
+              <div>{relativeDate(val.created_at)}</div>
             </DateWrapper>
             <NextIconContainer>
               <MaterialIcon className="material-icons next-icon">
