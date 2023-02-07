@@ -51,15 +51,17 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// clear the lock from the module
-	module.LockID = ""
-	module.LockKind = models.ModuleLockKind("")
+	// if this is a successful apply, clear the lock from the module
+	if run.Kind == models.ModuleRunKindApply && run.Status == models.ModuleRunStatusCompleted {
+		module.LockID = ""
+		module.LockKind = models.ModuleLockKind("")
 
-	module, err = m.Repo().Module().UpdateModule(module)
+		module, err = m.Repo().Module().UpdateModule(module)
 
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
 	}
 
 	m.WriteResult(w, r, run.ToAPIType())

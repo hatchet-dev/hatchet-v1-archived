@@ -5,6 +5,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/queryutils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // ModuleRepository uses gorm.DB for querying the database
@@ -40,7 +41,7 @@ func (repo *ModuleRepository) ReadModuleByID(teamID, moduleID string) (*models.M
 
 // UpdateModule updates an module in the database
 func (repo *ModuleRepository) UpdateModule(mod *models.Module) (*models.Module, repository.RepositoryError) {
-	if err := repo.db.Save(mod).Error; err != nil {
+	if err := repo.db.Omit(clause.Associations).Save(mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

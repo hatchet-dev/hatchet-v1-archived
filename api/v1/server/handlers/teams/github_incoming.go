@@ -274,6 +274,29 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Tea
 
 	var errs = make([]string, 0)
 
+	// if the pr has been closed, determine if the head branch holds the lock on
+	// any module. if so, remove the lock
+	if state == "closed" {
+		mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
+
+		if err != nil {
+			return err
+		}
+
+		for _, mod := range mods {
+			if mod.LockKind == models.ModuleLockKindGithubBranch && mod.LockID == headBranch {
+				mod.LockID = ""
+				mod.LockKind = models.ModuleLockKind("")
+
+				mod, err = g.Repo().Module().UpdateModule(mod)
+
+				if err != nil {
+					continue
+				}
+			}
+		}
+	}
+
 	for _, pr := range prs {
 		pr.GithubPullRequestTitle = title
 		pr.GithubPullRequestHeadBranch = headBranch

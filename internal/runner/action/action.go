@@ -258,6 +258,13 @@ func (r *RunnerAction) showJSON(
 func (r *RunnerAction) output(config *runner.Config) ([]byte, error) {
 	cmd := exec.Command("terraform", "output", "-json")
 	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Stderr = os.Stderr
+
+	err := r.setBackendEnv(config, cmd)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return cmd.Output()
 }
