@@ -5,8 +5,8 @@ import {
   Breadcrumbs,
   StandardButton,
 } from "@hatchet-dev/hatchet-components";
-import React, { useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import ChooseGitSource from "./components/ChooseGitSource";
 import SetupRuntime from "./components/SetupRuntime";
 import { useAtom } from "jotai";
@@ -17,8 +17,10 @@ import api from "shared/api";
 
 const CreateModuleView: React.FunctionComponent = () => {
   const history = useHistory();
+  const location = useLocation();
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const [request, setRequest] = useState<CreateModuleRequest>(null);
+  const [submittedStepOne, setSubmittedStepOne] = useState(false);
   const [err, setErr] = useState("");
 
   const { step } = useParams<{ step: string }>();
@@ -41,7 +43,14 @@ const CreateModuleView: React.FunctionComponent = () => {
     },
   });
 
+  useEffect(() => {
+    if (location.pathname.includes("step_2") && !submittedStepOne) {
+      history.push(`/team/${currTeam.id}/modules/create/step_1`);
+    }
+  }, [submittedStepOne, location.pathname]);
+
   const submitStepOne = (req: CreateModuleRequest) => {
+    setSubmittedStepOne(true);
     setRequest(req);
     history.push(`/team/${currTeam.id}/modules/create/step_2`);
   };
@@ -54,7 +63,7 @@ const CreateModuleView: React.FunctionComponent = () => {
     case "step_1":
       return <ChooseGitSource submit={submitStepOne} />;
     case "step_2":
-      return <SetupRuntime req={request} submit={submitStepTwo} />;
+      return <SetupRuntime req={request} submit={submitStepTwo} err={err} />;
   }
 };
 

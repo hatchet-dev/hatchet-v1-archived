@@ -84,11 +84,10 @@ func (repo *ModuleValuesRepository) CreateModuleValues(mv *models.ModuleValues) 
 	return mv, nil
 }
 
-// ReadPersonalAccessToken reads a PAT by both the user ID and the token ID
-func (repo *ModuleValuesRepository) ReadModuleValuesByID(moduleID, moduleValuesID string) (*models.ModuleValues, repository.RepositoryError) {
+func (repo *ModuleValuesRepository) ReadModuleValuesByID(moduleValuesID string) (*models.ModuleValues, repository.RepositoryError) {
 	mv := &models.ModuleValues{}
 
-	if err := repo.db.Where("module_id = ? AND id = ?", moduleID, moduleValuesID).First(&mv).Error; err != nil {
+	if err := repo.db.Where("id = ?", moduleValuesID).First(&mv).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -101,10 +100,10 @@ func (repo *ModuleValuesRepository) ReadModuleValuesByID(moduleID, moduleValuesI
 	return mv, nil
 }
 
-func (repo *ModuleValuesRepository) ReadModuleValuesByVersionID(moduleID, moduleValuesVersionID string) (*models.ModuleValues, repository.RepositoryError) {
+func (repo *ModuleValuesRepository) ReadModuleValuesByVersionID(moduleValuesVersionID string) (*models.ModuleValues, repository.RepositoryError) {
 	mv := &models.ModuleValues{}
 
-	if err := repo.db.Where("module_id = ? AND module_values_version_id = ?", moduleID, moduleValuesVersionID).First(&mv).Error; err != nil {
+	if err := repo.db.Where("module_values_version_id = ?", moduleValuesVersionID).First(&mv).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

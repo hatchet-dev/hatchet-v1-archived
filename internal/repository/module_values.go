@@ -24,11 +24,11 @@ type ModuleValuesRepository interface {
 	CreateModuleValues(mv *models.ModuleValues) (*models.ModuleValues, RepositoryError)
 
 	// ReadModuleValuesByID reads the module values by its unique UUID
-	ReadModuleValuesByID(moduleID, moduleValuesID string) (*models.ModuleValues, RepositoryError)
+	ReadModuleValuesByID(moduleValuesID string) (*models.ModuleValues, RepositoryError)
 
 	// ReadModuleValuesByVersionID finds the first module values entry with the values version ID. There should
 	// only be one entry per version since values are immutable.
-	ReadModuleValuesByVersionID(moduleID, moduleValuesVersionID string) (*models.ModuleValues, RepositoryError)
+	ReadModuleValuesByVersionID(moduleValuesVersionID string) (*models.ModuleValues, RepositoryError)
 
 	// DeleteModuleValues soft-deletes a module values version
 	DeleteModuleValues(mv *models.ModuleValues) (*models.ModuleValues, RepositoryError)

@@ -36,7 +36,7 @@ func (d *DatabaseValuesStore) WriteValues(mvv *models.ModuleValuesVersion, value
 }
 
 func (d *DatabaseValuesStore) ReadValues(mvv *models.ModuleValuesVersion) (map[string]interface{}, error) {
-	mv, err := d.repo.ModuleValues().ReadModuleValuesByVersionID(mvv.ModuleID, mvv.ID)
+	mv, err := d.repo.ModuleValues().ReadModuleValuesByVersionID(mvv.ID)
 
 	if err != nil {
 		return nil, err

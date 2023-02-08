@@ -10,6 +10,8 @@ import {
   StandardButton,
   H1,
   Breadcrumbs,
+  FlexColScroll,
+  ErrorBar,
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { css } from "styled-components";
@@ -17,6 +19,7 @@ import theme from "shared/theme";
 import { CreateModuleRequest } from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
+import CodeBlock from "components/codeblock";
 
 const variableOptions = [
   {
@@ -29,22 +32,20 @@ const variableOptions = [
     value: "manual",
     material_icon: "data_object",
   },
-  {
-    label: "Environment variables",
-    value: "env",
-    material_icon: "input",
-  },
 ];
 
 type Props = {
   req: CreateModuleRequest;
   submit: (req: CreateModuleRequest) => void;
+  err?: string;
 };
 
-const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
+const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
   const [varOption, setSelectedVarOption] = useState<string>();
   const [filePath, setFilePath] = useState("");
+  const [jsonValues, setJSONValues] = useState("{\n  \n}");
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
+  const [jsonParseErr, setJSONParseErr] = useState("");
 
   const breadcrumbs = [
     {
@@ -56,7 +57,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
       link: `/team/${currTeam.id}/modules/create/step_1`,
     },
     {
-      label: "Step 2: Choose Variable Source",
+      label: "Step 2: Configure Runtime",
       link: `/team/${currTeam.id}/modules/create/step_2`,
     },
   ];
@@ -80,10 +81,29 @@ const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
     ];
   };
 
+  const renderManualImportOptions = () => {
+    return [
+      <HorizontalSpacer spacepixels={24} />,
+      <P>Upload your JSON variables here.</P>,
+      <HorizontalSpacer spacepixels={24} />,
+      <FlexColScroll height="200px" width="100%">
+        <CodeBlock
+          value={jsonValues}
+          height="200px"
+          onChange={(e) => setJSONValues(e)}
+        />
+      </FlexColScroll>,
+      jsonParseErr && <HorizontalSpacer spacepixels={20} />,
+      jsonParseErr && <ErrorBar text={jsonParseErr} />,
+    ];
+  };
+
   const renderAdditionalFormOptions = () => {
     switch (varOption) {
       case "filesystem":
         return renderFilesystemOptions();
+      case "manual":
+        return renderManualImportOptions();
       default:
         return [];
     }
@@ -99,11 +119,23 @@ const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
           github_repository_name: req.github.github_repository_name,
           github_repository_owner: req.github.github_repository_owner,
         };
+
+        submit(req);
+        break;
+      case "manual":
+        try {
+          const values = JSON.parse(jsonValues);
+
+          req.values_raw = values;
+
+          submit(req);
+        } catch (e) {
+          setJSONParseErr("Could not parse JSON");
+        }
+
         break;
       default:
     }
-
-    submit(req);
   };
 
   return (
@@ -113,7 +145,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
       <H1>Create a new module</H1>
       <HorizontalSpacer spacepixels={20} />
       <SectionArea>
-        <H2>Step 2: Link Variables</H2>
+        <H2>Step 2: Configure Runtime Environment</H2>
         <HorizontalSpacer
           spacepixels={14}
           overrides={css({
@@ -134,14 +166,23 @@ const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
           select={selectVariableOption}
         />
         {renderAdditionalFormOptions()}
+        <HorizontalSpacer spacepixels={24} />
+        <P>
+          Add any additional environment variables (for example, credentials or
+          Terraform variables) below.
+        </P>
+        <HorizontalSpacer spacepixels={24} />
       </SectionArea>
       <HorizontalSpacer spacepixels={20} />
+      {err && <ErrorBar text={err} />}
+      {err && <HorizontalSpacer spacepixels={20} />}
       <FlexRowRight>
         <StandardButton
           label="Submit"
           material_icon="chevron_right"
           icon_side="right"
           on_click={onSubmit}
+          disabled={!varOption}
         />
       </FlexRowRight>
     </>

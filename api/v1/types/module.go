@@ -53,11 +53,11 @@ type ModuleDeploymentConfig struct {
 type CreateModuleRequest struct {
 	Name string `json:"name" form:"required,max=255"`
 
-	ValuesRaw map[string]interface{} `json:"values_raw"`
+	ValuesRaw map[string]interface{} `json:"values_raw,omitempty" form:"required_without=ValuesGithub,omitempty"`
 
-	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"dive"`
+	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"required_without=ValuesRaw,omitempty"`
 
-	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"dive"`
+	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"omitempty"`
 }
 
 type CreateModuleRequestGithub struct {
