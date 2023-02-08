@@ -448,7 +448,7 @@ Gets the Github tarball URL for the module.
  * @param teamId The team id
  * @param moduleId The module id
  * @param optional nil or *ModulesApiGetModuleTarballURLOpts - Optional Parameters:
-     * @param "GithubSha" (optional.String) -  the SHA to get the tarball from
+     * @param "GithubSha" (optional.String) -  the SHA to get the tarball from name: github_sha
 @return GetModuleTarballUrlResponse
 */
 
@@ -525,6 +525,123 @@ func (a *ModulesApiService) GetModuleTarballURL(ctx context.Context, teamId stri
 		}
 		if localVarHttpResponse.StatusCode == 200 {
 			var v GetModuleTarballUrlResponse
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 400 {
+			var v ApiErrorBadRequestExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 403 {
+			var v ApiErrorForbiddenExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+/*
+ModulesApiService Get Module Values
+Gets the current module values for the given module.
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param teamId The team id
+ * @param moduleId The module id
+ * @param optional nil or *ModulesApiGetModuleValuesOpts - Optional Parameters:
+     * @param "GithubSha" (optional.String) -  the SHA to get the module values file from name: github_sha
+@return map[string]interface{}
+*/
+
+type ModulesApiGetModuleValuesOpts struct {
+    GithubSha optional.String
+}
+
+func (a *ModulesApiService) GetModuleValues(ctx context.Context, teamId string, moduleId string, localVarOptionals *ModulesApiGetModuleValuesOpts) (map[string]interface{}, *http.Response, error) {
+	var (
+		localVarHttpMethod = strings.ToUpper("Get")
+		localVarPostBody   interface{}
+		localVarFileName   string
+		localVarFileBytes  []byte
+		localVarReturnValue map[string]interface{}
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/modules/{module_id}/values"
+	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"module_id"+"}", fmt.Sprintf("%v", moduleId), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.GithubSha.IsSet() {
+		localVarQueryParams.Add("github_sha", parameterToString(localVarOptionals.GithubSha.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+		if err == nil { 
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body: localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+		if localVarHttpResponse.StatusCode == 200 {
+			var v map[string]interface{}
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
@@ -654,18 +771,20 @@ func (a *ModulesApiService) GetTerraformState(ctx context.Context, teamId string
 ModulesApiService List Module Runs
 Lists module runs for a given module id.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param teamId The team id
+ * @param moduleId The module id
  * @param optional nil or *ModulesApiListModuleRunsOpts - Optional Parameters:
-     * @param "TeamId" (optional.Int64) -  The page to query for
-     * @param "ModuleId" (optional.String) -  the status of the module run
+     * @param "Page" (optional.Int64) -  The page to query for
+     * @param "Status" (optional.String) -  the status of the module run
 @return ListModuleRunsResponse
 */
 
 type ModulesApiListModuleRunsOpts struct {
-    TeamId optional.Int64
-    ModuleId optional.String
+    Page optional.Int64
+    Status optional.String
 }
 
-func (a *ModulesApiService) ListModuleRuns(ctx context.Context, localVarOptionals *ModulesApiListModuleRunsOpts) (ListModuleRunsResponse, *http.Response, error) {
+func (a *ModulesApiService) ListModuleRuns(ctx context.Context, teamId string, moduleId string, localVarOptionals *ModulesApiListModuleRunsOpts) (ListModuleRunsResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
@@ -676,16 +795,18 @@ func (a *ModulesApiService) ListModuleRuns(ctx context.Context, localVarOptional
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/modules/{module_id}/runs"
+	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"module_id"+"}", fmt.Sprintf("%v", moduleId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.TeamId.IsSet() {
-		localVarQueryParams.Add("team_id", parameterToString(localVarOptionals.TeamId.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Page.IsSet() {
+		localVarQueryParams.Add("page", parameterToString(localVarOptionals.Page.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.ModuleId.IsSet() {
-		localVarQueryParams.Add("module_id", parameterToString(localVarOptionals.ModuleId.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Status.IsSet() {
+		localVarQueryParams.Add("status", parameterToString(localVarOptionals.Status.Value(), ""))
 	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}

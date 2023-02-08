@@ -1,7 +1,6 @@
 package terraform_state
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -10,10 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
-	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
-
-	githubsdk "github.com/google/go-github/v49/github"
 )
 
 type TerraformPlanCreateHandler struct {
@@ -41,8 +37,8 @@ func (t *TerraformPlanCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	jsonPlanPath := getPlanJSONPath(team.ID, module.ID, run.ID)
-	prettyPlanPath := getPlanPrettyPath(team.ID, module.ID, run.ID)
+	jsonPlanPath := GetPlanJSONPath(team.ID, module.ID, run.ID)
+	prettyPlanPath := GetPlanPrettyPath(team.ID, module.ID, run.ID)
 
 	err := t.Config().DefaultFileStore.WriteFile(jsonPlanPath, []byte(req.PlanJSON), true)
 
@@ -61,65 +57,16 @@ func (t *TerraformPlanCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	t.WriteResult(w, r, nil)
-
-	// TODO: update module run status
-	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
-		client, err := github.GetGithubAppClientFromModule(t.Config(), module)
-
-		if err != nil {
-			t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-
-			return
-		}
-
-		commentBody := "## Hatchet Plan\n"
-
-		commentBody += fmt.Sprintf("```\n%s\n```", req.PlanPretty)
-
-		_, _, err = client.Issues.EditComment(
-			context.Background(),
-			module.DeploymentConfig.GithubRepoOwner,
-			module.DeploymentConfig.GithubRepoName,
-			run.ModuleRunConfig.GithubCommentID,
-			&githubsdk.IssueComment{
-				Body: &commentBody,
-			},
-		)
-
-		if err != nil {
-			t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-
-			return
-		}
-
-		_, _, err = client.Checks.UpdateCheckRun(
-			context.Background(),
-			module.DeploymentConfig.GithubRepoOwner,
-			module.DeploymentConfig.GithubRepoName,
-			run.ModuleRunConfig.GithubCheckID,
-			githubsdk.UpdateCheckRunOptions{
-				Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
-				Status:     githubsdk.String("completed"),
-				Conclusion: githubsdk.String("success"),
-			},
-		)
-
-		if err != nil {
-			t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-
-			return
-		}
-	}
 }
 
-func getPlanJSONPath(teamID, moduleID, runID string) string {
+func GetPlanJSONPath(teamID, moduleID, runID string) string {
 	return fmt.Sprintf("%s/%s/%s/plan.json", teamID, moduleID, runID)
 }
 
-func getPlanPrettyPath(teamID, moduleID, runID string) string {
+func GetPlanPrettyPath(teamID, moduleID, runID string) string {
 	return fmt.Sprintf("%s/%s/%s/plan.txt", teamID, moduleID, runID)
 }
 
-func getPlanZIPPath(teamID, moduleID, runID string) string {
+func GetPlanZIPPath(teamID, moduleID, runID string) string {
 	return fmt.Sprintf("%s/%s/%s/plan.zip", teamID, moduleID, runID)
 }

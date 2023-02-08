@@ -120,10 +120,12 @@ export interface APIServerMetadataAuth {
   require_email_verification?: boolean;
 }
 
-/** @example {"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name"} */
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"}} */
 export interface CreateModuleRequest {
   github?: CreateModuleRequestGithub;
   name?: string;
+  values_github?: CreateModuleValuesRequestGithub;
+  values_raw?: Record<string, object>;
 }
 
 /** @example {"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"} */
@@ -156,6 +158,35 @@ export interface CreateModuleRequestGithub {
 }
 
 export type CreateModuleResponse = Module;
+
+/** @example {"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"} */
+export interface CreateModuleValuesRequestGithub {
+  /**
+   * this refers to the Hatchet app installation id, **not** the installation id stored on Github
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  github_app_installation_id: string;
+  /**
+   * the repository branch on Github
+   * @example "main"
+   */
+  github_repository_branch: string;
+  /**
+   * the repository name on Github
+   * @example "infra"
+   */
+  github_repository_name: string;
+  /**
+   * the repository owner on Github
+   * @example "hatchet-dev"
+   */
+  github_repository_owner: string;
+  /**
+   * path to the module values in the github repository (including file name)
+   * @example "./staging/eks"
+   */
+  path: string;
+}
 
 /** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
@@ -264,6 +295,8 @@ export type FinalizeModuleRunResponse = ModuleRun;
 export interface GetModuleTarballURLResponse {
   url?: string;
 }
+
+export type GetModuleValuesResponse = Record<string, object>;
 
 export type GetOrgMemberResponse = OrganizationMember;
 
@@ -1063,6 +1096,8 @@ export interface AddTeamMemberRequest {
 export interface CreateModuleRequest {
   github?: CreateModuleRequestGithub;
   name?: string;
+  values_github?: CreateModuleValuesRequestGithub;
+  values_raw?: Record<string, object>;
 }
 
 export interface FinalizeModuleRunRequest {

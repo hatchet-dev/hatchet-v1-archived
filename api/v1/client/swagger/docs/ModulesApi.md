@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**CreateTerraformPlan**](ModulesApi.md#CreateTerraformPlan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 [**FinalizeModuleRun**](ModulesApi.md#FinalizeModuleRun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
 [**GetModuleTarballURL**](ModulesApi.md#GetModuleTarballURL) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
+[**GetModuleValues**](ModulesApi.md#GetModuleValues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values | Get Module Values
 [**GetTerraformState**](ModulesApi.md#GetTerraformState) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 [**ListModuleRuns**](ModulesApi.md#ListModuleRuns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 [**ListModules**](ModulesApi.md#ListModules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
@@ -161,11 +162,49 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **githubSha** | **optional.String**| the SHA to get the tarball from | 
+ **githubSha** | **optional.String**| the SHA to get the tarball from name: github_sha | 
 
 ### Return type
 
 [**GetModuleTarballUrlResponse**](GetModuleTarballURLResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModuleValues**
+> map[string]interface{} GetModuleValues(ctx, teamId, moduleId, optional)
+Get Module Values
+
+Gets the current module values for the given module.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+ **optional** | ***ModulesApiGetModuleValuesOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiGetModuleValuesOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+ **githubSha** | **optional.String**| the SHA to get the module values file from name: github_sha | 
+
+### Return type
+
+[**map[string]interface{}**](map.md)
 
 ### Authorization
 
@@ -209,7 +248,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ListModuleRuns**
-> ListModuleRunsResponse ListModuleRuns(ctx, optional)
+> ListModuleRunsResponse ListModuleRuns(ctx, teamId, moduleId, optional)
 List Module Runs
 
 Lists module runs for a given module id.
@@ -219,14 +258,18 @@ Lists module runs for a given module id.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
  **optional** | ***ModulesApiListModuleRunsOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
 Optional parameters are passed through a pointer to a ModulesApiListModuleRunsOpts struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **teamId** | **optional.Int64**| The page to query for | 
- **moduleId** | **optional.String**| the status of the module run | 
+
+
+ **page** | **optional.Int64**| The page to query for | 
+ **status** | **optional.String**| the status of the module run | 
 
 ### Return type
 

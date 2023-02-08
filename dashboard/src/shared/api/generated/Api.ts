@@ -35,6 +35,7 @@ import {
   FinalizeModuleRunRequest,
   FinalizeModuleRunResponse,
   GetModuleTarballURLResponse,
+  GetModuleValuesResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -712,12 +713,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   getModuleTarballUrl = (
-    githubSha: string,
     teamId: string,
     moduleId: string,
     query?: {
       /** the SHA to get the tarball from */
-      module_id?: string;
+      GithubSHA?: string;
     },
     params: RequestParams = {},
   ) =>
@@ -725,6 +725,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/tarball_url`,
       method: "GET",
       query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets the current module values for the given module.
+   *
+   * @tags Modules
+   * @name GetModuleValues
+   * @summary Get Module Values
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/values
+   * @secure
+   */
+  getModuleValues = (teamId: string, moduleId: string, params: RequestParams = {}) =>
+    this.request<GetModuleValuesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/values`,
+      method: "GET",
       secure: true,
       format: "json",
       ...params,

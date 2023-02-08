@@ -33,6 +33,7 @@ Class | Method | HTTP request | Description
 *ModulesApi* | [**CreateTerraformPlan**](docs/ModulesApi.md#createterraformplan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 *ModulesApi* | [**FinalizeModuleRun**](docs/ModulesApi.md#finalizemodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
+*ModulesApi* | [**GetModuleValues**](docs/ModulesApi.md#getmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values | Get Module Values
 *ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 *ModulesApi* | [**ListModuleRuns**](docs/ModulesApi.md#listmoduleruns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 *ModulesApi* | [**ListModules**](docs/ModulesApi.md#listmodules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
@@ -91,6 +92,7 @@ Class | Method | HTTP request | Description
  - [CreateModuleRequest](docs/CreateModuleRequest.md)
  - [CreateModuleRequestGithub](docs/CreateModuleRequestGithub.md)
  - [CreateModuleResponse](docs/CreateModuleResponse.md)
+ - [CreateModuleValuesRequestGithub](docs/CreateModuleValuesRequestGithub.md)
  - [CreateOrgMemberInviteRequest](docs/CreateOrgMemberInviteRequest.md)
  - [CreateOrgMemberInviteResponse](docs/CreateOrgMemberInviteResponse.md)
  - [CreateOrganizationRequest](docs/CreateOrganizationRequest.md)

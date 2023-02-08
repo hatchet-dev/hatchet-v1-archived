@@ -17,6 +17,7 @@ type Repository interface {
 	GithubWebhook() GithubWebhookRepository
 	GithubPullRequest() GithubPullRequestRepository
 	Module() ModuleRepository
+	ModuleValues() ModuleValuesRepository
 }
 
 var (

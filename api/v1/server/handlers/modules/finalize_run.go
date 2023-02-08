@@ -1,15 +1,20 @@
 package modules
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/terraform_state"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
+
+	githubsdk "github.com/google/go-github/v49/github"
 )
 
 type ModuleRunFinalizeHandler struct {
@@ -77,6 +82,91 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 
 	m.WriteResult(w, r, run.ToAPIType())
+
+	// write github comment
+	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+		client, err := github.GetGithubAppClientFromModule(m.Config(), module)
+
+		if err != nil {
+			m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
+
+		var commentBody string
+
+		// if the run was successful, write the prettified plan to github
+		if run.Status == models.ModuleRunStatusCompleted {
+			fileBytes, err := m.Config().DefaultFileStore.ReadFile(terraform_state.GetPlanPrettyPath(module.TeamID, module.ID, run.ID), true)
+
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+
+			commentBody = "## Hatchet Plan\n"
+
+			commentBody += fmt.Sprintf("```\n%s\n```", string(fileBytes))
+
+			_, _, err = client.Checks.UpdateCheckRun(
+				context.Background(),
+				module.DeploymentConfig.GithubRepoOwner,
+				module.DeploymentConfig.GithubRepoName,
+				run.ModuleRunConfig.GithubCheckID,
+				githubsdk.UpdateCheckRunOptions{
+					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
+					Status:     githubsdk.String("completed"),
+					Conclusion: githubsdk.String("success"),
+				},
+			)
+
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+		} else if run.Status == models.ModuleRunStatusFailed {
+			// otherwise, write that the module run failed
+			commentBody = "## Hatchet Plan\n"
+
+			commentBody += fmt.Sprintf("Plan failed")
+
+			_, _, err = client.Checks.UpdateCheckRun(
+				context.Background(),
+				module.DeploymentConfig.GithubRepoOwner,
+				module.DeploymentConfig.GithubRepoName,
+				run.ModuleRunConfig.GithubCheckID,
+				githubsdk.UpdateCheckRunOptions{
+					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
+					Status:     githubsdk.String("completed"),
+					Conclusion: githubsdk.String("success"),
+				},
+			)
+
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+		}
+
+		_, _, err = client.Issues.EditComment(
+			context.Background(),
+			module.DeploymentConfig.GithubRepoOwner,
+			module.DeploymentConfig.GithubRepoName,
+			run.ModuleRunConfig.GithubCommentID,
+			&githubsdk.IssueComment{
+				Body: &commentBody,
+			},
+		)
+
+		if err != nil {
+			m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
+	}
 }
 
 func generateRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {

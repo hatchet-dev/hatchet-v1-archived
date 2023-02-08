@@ -12,4 +12,6 @@ package swagger
 type CreateModuleRequest struct {
 	Github *CreateModuleRequestGithub `json:"github,omitempty"`
 	Name string `json:"name,omitempty"`
+	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty"`
+	ValuesRaw map[string]interface{} `json:"values_raw,omitempty"`
 }

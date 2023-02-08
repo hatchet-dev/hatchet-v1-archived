@@ -29,7 +29,11 @@ func errorHandler(config *runner.Config, description string) error {
 		config.ConfigFile.ModuleRunID,
 	)
 
-	return err
+	if err != nil {
+		return fmt.Errorf("Error reporting error: %s. Original error: %s", err.Error(), description)
+	}
+
+	return fmt.Errorf(description)
 }
 
 func successHandler(config *runner.Config, description string) error {
@@ -44,7 +48,11 @@ func successHandler(config *runner.Config, description string) error {
 		config.ConfigFile.ModuleRunID,
 	)
 
-	return err
+	if err != nil {
+		return fmt.Errorf("Error reporting success: %s. Success message: %s", err.Error(), description)
+	}
+
+	return nil
 }
 
 func downloadGithubRepoContents(config *runner.Config) error {

@@ -41,8 +41,9 @@ type Props = {
   submit: (req: CreateModuleRequest) => void;
 };
 
-const LinkVariables: React.FC<Props> = ({ req, submit }) => {
+const SetupRuntime: React.FC<Props> = ({ req, submit }) => {
   const [varOption, setSelectedVarOption] = useState<string>();
+  const [filePath, setFilePath] = useState("");
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
 
   const breadcrumbs = [
@@ -72,7 +73,10 @@ const LinkVariables: React.FC<Props> = ({ req, submit }) => {
         Github repository.
       </P>,
       <HorizontalSpacer spacepixels={24} />,
-      <TextInput placeholder="./env1.tfvars" />,
+      <TextInput
+        placeholder="./env1.tfvars"
+        on_change={(p) => setFilePath(p)}
+      />,
     ];
   };
 
@@ -83,6 +87,23 @@ const LinkVariables: React.FC<Props> = ({ req, submit }) => {
       default:
         return [];
     }
+  };
+
+  const onSubmit = () => {
+    switch (varOption) {
+      case "filesystem":
+        req.values_github = {
+          path: filePath,
+          github_app_installation_id: req.github.github_app_installation_id,
+          github_repository_branch: req.github.github_repository_branch,
+          github_repository_name: req.github.github_repository_name,
+          github_repository_owner: req.github.github_repository_owner,
+        };
+        break;
+      default:
+    }
+
+    submit(req);
   };
 
   return (
@@ -120,13 +141,11 @@ const LinkVariables: React.FC<Props> = ({ req, submit }) => {
           label="Submit"
           material_icon="chevron_right"
           icon_side="right"
-          on_click={() => {
-            submit(req);
-          }}
+          on_click={onSubmit}
         />
       </FlexRowRight>
     </>
   );
 };
 
-export default LinkVariables;
+export default SetupRuntime;

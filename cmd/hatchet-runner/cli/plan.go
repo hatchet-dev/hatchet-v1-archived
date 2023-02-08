@@ -53,6 +53,10 @@ func runPlan() error {
 
 	zipOut, prettyOut, jsonOut, err := a.Plan(rc, map[string]interface{}{})
 
+	if err != nil {
+		return err
+	}
+
 	_, err = rc.FileClient.UploadPlanZIPFile(
 		rc.ConfigFile.TeamID,
 		rc.ConfigFile.ModuleID,

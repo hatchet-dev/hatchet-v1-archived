@@ -12,7 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns
+// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getModuleValues
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -689,10 +689,6 @@ func GetModuleRoutes(
 	// summary: Get Module Tarball URL
 	// tags:
 	// - Modules
-	// parameters:
-	//   - name: github_sha
-	//   - name: team_id
-	//   - name: module_id
 	// responses:
 	//   '200':
 	//     description: Successfully got tarball url
@@ -732,6 +728,61 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getTarballURLEndpoint,
 		Handler:  getTarballURLHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/values -> modules.NewModuleValuesGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values getModuleValues
+	//
+	// ### Description
+	//
+	// Gets the current module values for the given module.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Module Values
+	// tags:
+	// - Modules
+	// responses:
+	//   '200':
+	//     description: Successfully got module values
+	//     schema:
+	//       $ref: '#/definitions/GetModuleValuesResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getModuleValuesEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/values", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	getModuleValuesHandler := modules.NewModuleValuesGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getModuleValuesEndpoint,
+		Handler:  getModuleValuesHandler,
 		Router:   r,
 	})
 

@@ -49,7 +49,7 @@ func (t *TerraformPlanUploadZIPHandler) ServeHTTP(w http.ResponseWriter, r *http
 
 	fileBytes, err := ioutil.ReadAll(file)
 
-	zipPlanPath := getPlanZIPPath(team.ID, module.ID, run.ID)
+	zipPlanPath := GetPlanZIPPath(team.ID, module.ID, run.ID)
 
 	err = t.Config().DefaultFileStore.WriteFile(zipPlanPath, fileBytes, true)
 

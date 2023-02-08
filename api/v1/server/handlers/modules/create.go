@@ -12,6 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
+	"github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/db"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 
@@ -111,6 +112,51 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	var mvv *models.ModuleValuesVersion
+
+	if valuesGithub := request.ValuesGithub; valuesGithub != nil {
+		// ensure that the app installation id exists and the user has access to it
+		gai, err := m.Repo().GithubAppInstallation().ReadGithubAppInstallationByID(valuesGithub.GithubAppInstallationID)
+
+		if err != nil {
+			if errors.Is(err, repository.RepositoryErrorNotFound) {
+				m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(
+					types.APIError{
+						Description: "github installation id not found",
+						Code:        types.ErrCodeNotFound,
+					},
+					http.StatusNotFound,
+				))
+
+				return
+			}
+
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
+
+		if gai.GithubAppOAuth.UserID != user.ID {
+			m.HandleAPIError(w, r, apierrors.NewErrForbidden(
+				fmt.Errorf("user %s does not have access to github app installation %s", user.ID, gai.ID),
+			))
+
+			return
+		}
+
+		mvv, err = createModuleValuesGithub(m.Config(), mod, valuesGithub)
+	} else {
+		mvv, err = createModuleValuesRaw(m.Config(), mod, request.ValuesRaw)
+	}
+
+	mod.CurrentModuleValuesVersionID = mvv.ID
+
+	mod, err = m.Repo().Module().UpdateModule(mod)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	m.WriteResult(w, r, mod.ToAPIType())
 
@@ -170,4 +216,43 @@ func createGithubWebhook(config *server.Config, gai *models.GithubAppInstallatio
 	}
 
 	return gw, nil
+}
+
+func createModuleValuesRaw(config *server.Config, module *models.Module, vals map[string]interface{}) (*models.ModuleValuesVersion, error) {
+	valuesManager := db.NewDatabaseValuesStore(config.DB.Repository)
+
+	mvv := &models.ModuleValuesVersion{
+		ModuleID: module.ID,
+		Version:  1,
+		Kind:     models.ModuleValuesVersionKindDatabase,
+	}
+
+	mvv, err := config.DB.Repository.ModuleValues().CreateModuleValuesVersion(mvv)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = valuesManager.WriteValues(mvv, vals)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mvv, nil
+}
+
+func createModuleValuesGithub(config *server.Config, module *models.Module, req *types.CreateModuleValuesRequestGithub) (*models.ModuleValuesVersion, error) {
+	mvv := &models.ModuleValuesVersion{
+		ModuleID:                module.ID,
+		Version:                 1,
+		Kind:                    models.ModuleValuesVersionKindGithub,
+		GithubValuesPath:        req.Path,
+		GithubRepoOwner:         req.GithubRepositoryOwner,
+		GithubRepoName:          req.GithubRepositoryName,
+		GithubRepoBranch:        req.GithubRepositoryBranch,
+		GithubAppInstallationID: req.GithubAppInstallationID,
+	}
+
+	return config.DB.Repository.ModuleValues().CreateModuleValuesVersion(mvv)
 }

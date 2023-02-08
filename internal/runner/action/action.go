@@ -1,6 +1,8 @@
 package action
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/antihax/optional"
+	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 )
 
@@ -64,14 +68,20 @@ func (r *RunnerAction) Apply(
 		planPath = "./plan.tfplan"
 	}
 
-	// re initialize
-	err := r.reInit(config)
+	err := r.downloadModuleValues(config, "./tfvars.json")
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.apply(config, planPath)
+	// re initialize
+	err = r.reInit(config)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.apply(config, planPath, "./tfvars.json")
 
 	if err != nil {
 		return nil, err
@@ -89,14 +99,20 @@ func (r *RunnerAction) Plan(
 		return nil, nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
+	err := r.downloadModuleValues(config, "./tfvars.json")
+
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	// re initialize
-	err := r.reInit(config)
+	err = r.reInit(config)
 
 	if err != nil {
 		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
 	}
 
-	err = r.plan(config)
+	err = r.plan(config, "./tfvars.json")
 
 	if err != nil {
 		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while running plan: %s", err.Error()))
@@ -121,6 +137,32 @@ func (r *RunnerAction) Plan(
 	}
 
 	return zipOut, prettyOut, jsonOut, nil
+}
+
+func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath string) error {
+	// download values
+	vals, _, err := config.APIClient.ModulesApi.GetModuleValues(
+		context.Background(),
+		config.ConfigFile.TeamID,
+		config.ConfigFile.ModuleID,
+		&swagger.ModulesApiGetModuleValuesOpts{
+			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	fileBytes, err := json.Marshal(vals)
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, relPath), fileBytes, 0666)
+
+	return err
 }
 
 func (r *RunnerAction) reInit(config *runner.Config) error {
@@ -168,11 +210,16 @@ func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error
 func (r *RunnerAction) apply(
 	config *runner.Config,
 	planPath string,
+	valsFilePath string,
 ) error {
 	args := []string{"apply", "-json", "-auto-approve"}
 
 	if planPath != "" {
 		args = append(args, fmt.Sprintf("%s", planPath))
+	}
+
+	if valsFilePath != "" {
+		args = append(args, fmt.Sprintf("-var-file=%s", valsFilePath))
 	}
 
 	fmt.Printf("running apply with args: [%v]", args)
@@ -195,8 +242,13 @@ func (r *RunnerAction) apply(
 
 func (r *RunnerAction) plan(
 	config *runner.Config,
+	valsFilePath string,
 ) error {
 	args := []string{"plan", "-out=./plan.tfplan"}
+
+	if valsFilePath != "" {
+		args = append(args, fmt.Sprintf("-var-file=%s", valsFilePath))
+	}
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir

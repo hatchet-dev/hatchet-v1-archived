@@ -8,7 +8,7 @@ import {
 import React, { useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import ChooseGitSource from "./components/ChooseGitSource";
-import LinkVariables from "./components/LinkVariables";
+import SetupRuntime from "./components/SetupRuntime";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
 import { CreateModuleRequest } from "shared/api/generated/data-contracts";
@@ -54,7 +54,7 @@ const CreateModuleView: React.FunctionComponent = () => {
     case "step_1":
       return <ChooseGitSource submit={submitStepOne} />;
     case "step_2":
-      return <LinkVariables req={request} submit={submitStepTwo} />;
+      return <SetupRuntime req={request} submit={submitStepTwo} />;
   }
 };
 

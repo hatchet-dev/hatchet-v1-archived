@@ -2589,7 +2589,7 @@ paths:
             --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
             --header 'content-type: application/json' \
-            --data '{"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string"}'
+            --data '{"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
@@ -2602,7 +2602,7 @@ paths:
               Authorization: 'Bearer REPLACE_BEARER_TOKEN',
               'content-type': 'application/json'
             },
-            body: '{"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string"}'
+            body: '{"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
           };
 
           fetch(url, options)
@@ -2621,7 +2621,7 @@ paths:
           request = Net::HTTP::Post.new(url)
           request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
           request["content-type"] = 'application/json'
-          request.body = "{\"github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"name\":\"string\"}"
+          request.body = "{\"github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"name\":\"string\",\"values_github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"values_raw\":{\"property1\":{},\"property2\":{}}}"
 
           response = http.request(request)
           puts response.read_body
@@ -2639,7 +2639,18 @@ paths:
                   "github_repository_owner": "hatchet-dev",
                   "path": "./staging/eks"
               },
-              "name": "string"
+              "name": "string",
+              "values_github": {
+                  "github_app_installation_id": "bb214807-246e-43a5-a25d-41761d1cff9e",
+                  "github_repository_branch": "main",
+                  "github_repository_name": "infra",
+                  "github_repository_owner": "hatchet-dev",
+                  "path": "./staging/eks"
+              },
+              "values_raw": {
+                  "property1": {},
+                  "property2": {}
+              }
           }
           headers = {
               "Authorization": "Bearer REPLACE_BEARER_TOKEN",
@@ -2656,11 +2667,16 @@ paths:
           \":\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
           \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
           \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"name\\\"\
-          :\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\", url, payload)\n\
-          \n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\
-          \treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _ :=\
-          \ http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\
-          \n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+          :\\\"string\\\",\\\"values_github\\\":{\\\"github_app_installation_id\\\"\
+          :\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
+          \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
+          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"values_raw\\\
+          \":{\\\"property1\\\":{},\\\"property2\\\":{}}}\")\n\n\treq, _ := http.NewRequest(\"\
+          POST\", url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
       x-codegen-request-body-name: CreateModuleRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs:
     get:
@@ -2670,7 +2686,7 @@ paths:
       description: Lists module runs for a given module id.
       operationId: listModuleRuns
       parameters:
-      - name: team_id
+      - name: page
         in: query
         description: The page to query for
         required: false
@@ -2681,7 +2697,7 @@ paths:
           format: int64
           x-go-name: Page
         x-go-name: Page
-      - name: module_id
+      - name: status
         in: query
         description: the status of the module run
         required: false
@@ -2691,6 +2707,26 @@ paths:
           type: string
           x-go-name: Status
         x-go-name: Status
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
       responses:
         "200":
           description: Successfully listed the module runs
@@ -2714,13 +2750,13 @@ paths:
       - lang: Shell
         source: |-
           curl --request GET \
-            --url 'http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/runs?team_id=2&module_id=SOME_STRING_VALUE' \
+            --url 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE' \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
 
-          let url = 'http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/runs?team_id=2&module_id=SOME_STRING_VALUE';
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE';
 
           let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
 
@@ -2733,7 +2769,7 @@ paths:
           require 'uri'
           require 'net/http'
 
-          url = URI("http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/runs?team_id=2&module_id=SOME_STRING_VALUE")
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE")
 
           http = Net::HTTP.new(url.host, url.port)
 
@@ -2746,9 +2782,9 @@ paths:
         source: |-
           import requests
 
-          url = "http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/runs"
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs"
 
-          querystring = {"team_id":"2","module_id":"SOME_STRING_VALUE"}
+          querystring = {"page":"2","status":"SOME_STRING_VALUE"}
 
           headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
 
@@ -2757,7 +2793,7 @@ paths:
           print(response.text)
       - lang: Go
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
-          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/runs?team_id=2&module_id=SOME_STRING_VALUE\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE\"\
           \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
@@ -3246,12 +3282,16 @@ paths:
       parameters:
       - name: github_sha
         in: query
-        description: the SHA to get the tarball from
+        description: |-
+          the SHA to get the tarball from
+          name: github_sha
         required: false
         style: form
         explode: true
         schema:
           type: string
+          x-go-name: GithubSHA
+        x-go-name: GithubSHA
       - name: team_id
         in: path
         description: The team id
@@ -3339,6 +3379,117 @@ paths:
       - lang: Go
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
           \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/tarball_url?github_sha=SOME_STRING_VALUE\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/modules/{module_id}/values:
+    get:
+      tags:
+      - Modules
+      summary: Get Module Values
+      description: Gets the current module values for the given module.
+      operationId: getModuleValues
+      parameters:
+      - name: github_sha
+        in: query
+        description: |-
+          the SHA to get the module values file from
+          name: github_sha
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          x-go-name: GithubSHA
+        x-go-name: GithubSHA
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      responses:
+        "200":
+          description: Successfully got module values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetModuleValuesResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/values?github_sha=SOME_STRING_VALUE' \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/values?github_sha=SOME_STRING_VALUE';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/values?github_sha=SOME_STRING_VALUE")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/values"
+
+          querystring = {"github_sha":"SOME_STRING_VALUE"}
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers, params=querystring)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/values?github_sha=SOME_STRING_VALUE\"\
           \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
@@ -5468,7 +5619,17 @@ components:
         name:
           type: string
           x-go-name: Name
+        values_github:
+          $ref: '#/components/schemas/CreateModuleValuesRequestGithub'
+        values_raw:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+          x-go-name: ValuesRaw
       example:
+        values_raw:
+          key: "{}"
         github:
           github_repository_branch: main
           path: ./staging/eks
@@ -5476,6 +5637,12 @@ components:
           github_repository_owner: hatchet-dev
           github_repository_name: infra
         name: name
+        values_github:
+          github_repository_branch: main
+          path: ./staging/eks
+          github_app_installation_id: bb214807-246e-43a5-a25d-41761d1cff9e
+          github_repository_owner: hatchet-dev
+          github_repository_name: infra
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleRequestGithub:
       required:
@@ -5521,6 +5688,49 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleResponse:
       $ref: '#/components/schemas/Module'
+    CreateModuleValuesRequestGithub:
+      required:
+      - github_app_installation_id
+      - github_repository_branch
+      - github_repository_name
+      - github_repository_owner
+      - path
+      type: object
+      properties:
+        github_app_installation_id:
+          type: string
+          description: "this refers to the Hatchet app installation id, **not** the\
+            \ installation id stored on Github"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: GithubAppInstallationID
+        github_repository_branch:
+          type: string
+          description: the repository branch on Github
+          example: main
+          x-go-name: GithubRepositoryBranch
+        github_repository_name:
+          type: string
+          description: the repository name on Github
+          example: infra
+          x-go-name: GithubRepositoryName
+        github_repository_owner:
+          type: string
+          description: the repository owner on Github
+          example: hatchet-dev
+          x-go-name: GithubRepositoryOwner
+        path:
+          type: string
+          description: path to the module values in the github repository (including
+            file name)
+          example: ./staging/eks
+          x-go-name: Path
+      example:
+        github_repository_branch: main
+        path: ./staging/eks
+        github_app_installation_id: bb214807-246e-43a5-a25d-41761d1cff9e
+        github_repository_owner: hatchet-dev
+        github_repository_name: infra
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateOrgMemberInviteRequest:
       required:
       - invitee_email
@@ -5699,6 +5909,14 @@ components:
       example:
         url: url
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    GetModuleValuesResponse:
+      type: object
+      additionalProperties:
+        type: object
+        properties: {}
+        example: {}
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      x-schema-name: GetModuleValuesResponse
     GetOrgMemberResponse:
       $ref: '#/components/schemas/OrganizationMember'
     GetOrganizationResponse:
@@ -7175,6 +7393,14 @@ components:
         name:
           type: string
           x-go-name: Name
+        values_github:
+          $ref: '#/components/schemas/CreateModuleValuesRequestGithub'
+        values_raw:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+          x-go-name: ValuesRaw
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     finalizeModuleRun_request:
       required:

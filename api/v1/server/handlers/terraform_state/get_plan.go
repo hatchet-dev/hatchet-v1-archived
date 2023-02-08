@@ -32,7 +32,7 @@ func (t *TerraformPlanGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	path := getPlanPrettyPath(team.ID, module.ID, run.ID)
+	path := GetPlanPrettyPath(team.ID, module.ID, run.ID)
 
 	fileBytes, err := t.Config().DefaultFileStore.ReadFile(path, true)
 

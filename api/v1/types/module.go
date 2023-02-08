@@ -53,11 +53,42 @@ type ModuleDeploymentConfig struct {
 type CreateModuleRequest struct {
 	Name string `json:"name" form:"required,max=255"`
 
+	ValuesRaw map[string]interface{} `json:"values_raw"`
+
+	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"dive"`
+
 	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"dive"`
 }
 
 type CreateModuleRequestGithub struct {
 	// path to the module in the github repository
+	// required: true
+	// example: ./staging/eks
+	Path string `json:"path" form:"required"`
+
+	// this refers to the Hatchet app installation id, **not** the installation id stored on Github
+	// required: true
+	// example: bb214807-246e-43a5-a25d-41761d1cff9e
+	GithubAppInstallationID string `json:"github_app_installation_id" form:"required,uuid"`
+
+	// the repository owner on Github
+	// required: true
+	// example: hatchet-dev
+	GithubRepositoryOwner string `json:"github_repository_owner" form:"required"`
+
+	// the repository name on Github
+	// required: true
+	// example: infra
+	GithubRepositoryName string `json:"github_repository_name" form:"required"`
+
+	// the repository branch on Github
+	// required: true
+	// example: main
+	GithubRepositoryBranch string `json:"github_repository_branch" form:"required"`
+}
+
+type CreateModuleValuesRequestGithub struct {
+	// path to the module values in the github repository (including file name)
 	// required: true
 	// example: ./staging/eks
 	Path string `json:"path" form:"required"`
@@ -176,6 +207,18 @@ type FinalizeModuleRunResponse ModuleRun
 // swagger:parameters getModuleTarballURL
 type GetModuleTarballURLRequest struct {
 	// the SHA to get the tarball from
+	// name: github_sha
 	// in: query
-	GithubSHA string `schema:"github_sha"`
+	GithubSHA string `schema:"github_sha" json:"github_sha"`
 }
+
+// swagger:parameters getModuleValues
+type GetModuleValuesRequest struct {
+	// the SHA to get the module values file from
+	// name: github_sha
+	// in: query
+	GithubSHA string `schema:"github_sha" json:"github_sha"`
+}
+
+// swagger:model
+type GetModuleValuesResponse map[string]interface{}
