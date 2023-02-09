@@ -32,7 +32,7 @@ func (repo *ModuleRepository) CreateModule(mod *models.Module) (*models.Module, 
 func (repo *ModuleRepository) ReadModuleByID(teamID, moduleID string) (*models.Module, repository.RepositoryError) {
 	mod := &models.Module{}
 
-	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Where("team_id = ? AND modules.id = ?", teamID, moduleID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("DeploymentConfig").Preload("Runs").Joins("CurrentModuleValuesVersion").Joins("CurrentModuleEnvVarsVersion").Where("team_id = ? AND modules.id = ?", teamID, moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

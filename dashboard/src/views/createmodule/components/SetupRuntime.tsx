@@ -20,6 +20,7 @@ import { CreateModuleRequest } from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
 import CodeBlock from "components/codeblock";
+import EnvVars from "components/envvars";
 
 const variableOptions = [
   {
@@ -46,6 +47,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
   const [jsonValues, setJSONValues] = useState("{\n  \n}");
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const [jsonParseErr, setJSONParseErr] = useState("");
+  const [envVars, setEnvVars] = useState<string[]>([]);
 
   const breadcrumbs = [
     {
@@ -127,15 +129,27 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
           const values = JSON.parse(jsonValues);
 
           req.values_raw = values;
-
-          submit(req);
         } catch (e) {
           setJSONParseErr("Could not parse JSON");
+          return;
         }
 
         break;
       default:
     }
+
+    let mappedEnvVars: Record<string, string> = {};
+
+    envVars.forEach((envVar) => {
+      const strArr = envVar.split("~~=~~");
+      if (strArr.length == 2) {
+        mappedEnvVars[strArr[0]] = strArr[1];
+      }
+    });
+
+    req.env_vars = mappedEnvVars;
+
+    submit(req);
   };
 
   return (
@@ -172,6 +186,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
           Terraform variables) below.
         </P>
         <HorizontalSpacer spacepixels={24} />
+        <EnvVars envVars={envVars} setEnvVars={setEnvVars} />
       </SectionArea>
       <HorizontalSpacer spacepixels={20} />
       {err && <ErrorBar text={err} />}

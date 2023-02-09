@@ -37,6 +37,9 @@ type Module struct {
 	CurrentModuleValuesVersionID string
 	CurrentModuleValuesVersion   ModuleValuesVersion `gorm:"foreignKey:CurrentModuleValuesVersionID"`
 
+	CurrentModuleEnvVarsVersionID string
+	CurrentModuleEnvVarsVersion   ModuleEnvVarsVersion `gorm:"foreignKey:CurrentModuleEnvVarsVersionID"`
+
 	// LockID represents a unique lock ID for the module. This operates at a higher level than the
 	// Terraform state lock. For a LockKind of type "github," this corresponds to a commit SHA.
 	LockID string

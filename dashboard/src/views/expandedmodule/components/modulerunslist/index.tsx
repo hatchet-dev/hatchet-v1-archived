@@ -12,6 +12,7 @@ import {
   Placeholder,
   FlexColScroll,
   Paginator,
+  SmallSpan,
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -57,6 +58,17 @@ const ModuleRunsList: React.FunctionComponent<Props> = ({
       <Placeholder>
         <Spinner />
       </Placeholder>
+    );
+  }
+
+  if (data.data.rows.length == 0) {
+    return (
+      <FlexCol height="calc(100% - 200px)">
+        <HorizontalSpacer spacepixels={20} />
+        <Placeholder>
+          <SmallSpan>No runs found.</SmallSpan>
+        </Placeholder>
+      </FlexCol>
     );
   }
 

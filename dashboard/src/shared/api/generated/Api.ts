@@ -412,10 +412,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/organizations/{org_id}/teams
    * @secure
    */
-  listTeams = (orgId: string, params: RequestParams = {}) =>
+  listTeams = (
+    orgId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      org_id?: number;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<ListTeamsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/teams`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -500,10 +511,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/teams/{team_id}/members
    * @secure
    */
-  listTeamMembers = (teamId: string, params: RequestParams = {}) =>
+  listTeamMembers = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      team_id?: number;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<ListTeamMembersResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/members`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -716,8 +738,11 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     teamId: string,
     moduleId: string,
     query?: {
-      /** the SHA to get the tarball from */
-      GithubSHA?: string;
+      /**
+       * the SHA to get the tarball from
+       * name: github_sha
+       */
+      github_sha?: string;
     },
     params: RequestParams = {},
   ) =>
@@ -738,10 +763,22 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/values
    * @secure
    */
-  getModuleValues = (teamId: string, moduleId: string, params: RequestParams = {}) =>
+  getModuleValues = (
+    teamId: string,
+    moduleId: string,
+    query?: {
+      /**
+       * the SHA to get the module values file from
+       * name: github_sha
+       */
+      github_sha?: string;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<GetModuleValuesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/values`,
       method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,

@@ -12,7 +12,7 @@ type ProvisionOpts struct {
 	Team      *models.Team
 	Module    *models.Module
 	ModuleRun *models.ModuleRun
-	Values    map[string]interface{}
+	EnvVars   map[string]string
 
 	TokenOpts  token.TokenOpts
 	Repository repository.Repository
@@ -49,6 +49,10 @@ func GetHatchetRunnerEnv(opts *ProvisionOpts, currEnv []string) ([]string, error
 	currEnv = append(currEnv, fmt.Sprintf("GITHUB_SHA=%s", opts.ModuleRun.ModuleRunConfig.GithubCommitSHA))
 	currEnv = append(currEnv, fmt.Sprintf("GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GithubRepoName))
 	currEnv = append(currEnv, fmt.Sprintf("GITHUB_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
+
+	for key, val := range opts.EnvVars {
+		currEnv = append(currEnv, fmt.Sprintf("%s=%s", key, val))
+	}
 
 	return currEnv, nil
 }

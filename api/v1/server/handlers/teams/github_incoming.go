@@ -14,7 +14,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/provisioner"
+	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/runmanager"
 
@@ -398,9 +398,10 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		}
 
 		run := &models.ModuleRun{
-			ModuleID: mod.ID,
-			Status:   models.ModuleRunStatusInProgress,
-			Kind:     models.ModuleRunKindApply,
+			ModuleID:          mod.ID,
+			Status:            models.ModuleRunStatusInProgress,
+			StatusDescription: fmt.Sprintf("Apply in progress"),
+			Kind:              models.ModuleRunKindApply,
 			ModuleRunConfig: models.ModuleRunConfig{
 				TriggerKind:     models.ModuleRunTriggerKindGithub,
 				GithubCommitSHA: headSHA,
@@ -413,14 +414,13 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			return err
 		}
 
-		err = g.Config().DefaultProvisioner.RunApply(&provisioner.ProvisionOpts{
-			Team:       team,
-			Module:     mod,
-			ModuleRun:  run,
-			TokenOpts:  *g.Config().TokenOpts,
-			Repository: g.Repo(),
-			ServerURL:  g.Config().ServerRuntimeConfig.ServerURL,
-		})
+		opts, err := provisionerutils.GetProvisionerOpts(team, mod, run, g.Config())
+
+		if err != nil {
+			return err
+		}
+
+		err = g.Config().DefaultProvisioner.RunApply(opts)
 
 		if err != nil {
 			return err
@@ -537,10 +537,17 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		status = models.ModuleRunStatusInProgress
 	}
 
+	desc := fmt.Sprintf("Plan queued")
+
+	if !locked {
+		desc = fmt.Sprintf("Plan in progress")
+	}
+
 	run := &models.ModuleRun{
-		ModuleID: mod.ID,
-		Status:   status,
-		Kind:     models.ModuleRunKindPlan,
+		ModuleID:          mod.ID,
+		Status:            status,
+		StatusDescription: desc,
+		Kind:              models.ModuleRunKindPlan,
 		ModuleRunConfig: models.ModuleRunConfig{
 			TriggerKind:     models.ModuleRunTriggerKindGithub,
 			GithubCheckID:   checkResp.GetID(),
@@ -556,14 +563,13 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	}
 
 	if !locked {
-		err = g.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
-			Team:       team,
-			Module:     mod,
-			ModuleRun:  run,
-			TokenOpts:  *g.Config().TokenOpts,
-			Repository: g.Repo(),
-			ServerURL:  g.Config().ServerRuntimeConfig.ServerURL,
-		})
+		opts, err := provisionerutils.GetProvisionerOpts(team, mod, run, g.Config())
+
+		if err != nil {
+			return err
+		}
+
+		err = g.Config().DefaultProvisioner.RunPlan(opts)
 
 		if err != nil {
 			return err

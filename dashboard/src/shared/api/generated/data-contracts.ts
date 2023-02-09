@@ -120,8 +120,9 @@ export interface APIServerMetadataAuth {
   require_email_verification?: boolean;
 }
 
-/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"}} */
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"env_vars":{"key":"env_vars"}} */
 export interface CreateModuleRequest {
+  env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
@@ -1094,6 +1095,7 @@ export interface AddTeamMemberRequest {
 }
 
 export interface CreateModuleRequest {
+  env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;

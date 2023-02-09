@@ -90,7 +90,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
         breadcrumbs={[
           {
             label: "Modules",
-            link: "/modules",
+            link: `/team/${currTeam.id}/modules`,
           },
           {
             label: "Staging: team-1-gke",

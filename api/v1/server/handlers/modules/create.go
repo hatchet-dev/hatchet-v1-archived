@@ -148,7 +148,25 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		mvv, err = createModuleValuesRaw(m.Config(), mod, request.ValuesRaw)
 	}
 
+	// set values version, this is updated later to reduce DB queries
 	mod.CurrentModuleValuesVersionID = mvv.ID
+
+	// create env vars
+	mev, err := models.NewModuleEnvVarsVersion(mod.ID, 0, request.EnvVars)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	mev, err = m.Repo().ModuleEnvVars().CreateModuleEnvVarsVersion(mev)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	mod.CurrentModuleEnvVarsVersionID = mev.ID
 
 	mod, err = m.Repo().Module().UpdateModule(mod)
 
@@ -159,7 +177,6 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusCreated)
 	m.WriteResult(w, r, mod.ToAPIType())
-
 }
 
 func createGithubWebhookIfNotExists(config *server.Config, gai *models.GithubAppInstallation, teamID, repoOwner, repoName string) (*models.GithubWebhook, error) {

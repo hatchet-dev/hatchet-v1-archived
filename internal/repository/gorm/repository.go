@@ -24,6 +24,7 @@ type GormRepository struct {
 	gpr         repository.GithubPullRequestRepository
 	mod         repository.ModuleRepository
 	mv          repository.ModuleValuesRepository
+	mev         repository.ModuleEnvVarsRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -78,6 +79,10 @@ func (t *GormRepository) ModuleValues() repository.ModuleValuesRepository {
 	return t.mv
 }
 
+func (t *GormRepository) ModuleEnvVars() repository.ModuleEnvVarsRepository {
+	return t.mev
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -95,6 +100,7 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		gpr:         NewGithubPullRequestRepository(db),
 		mod:         NewModuleRepository(db),
 		mv:          NewModuleValuesRepository(db, key),
+		mev:         NewModuleEnvVarsRepository(db, key),
 	}
 }
 

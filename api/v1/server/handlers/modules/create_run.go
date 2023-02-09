@@ -9,7 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/provisioner"
+	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
 )
 
 type RunCreateHandler struct {
@@ -53,14 +53,14 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO(abelanger5): queue, don't run plan
-	err = m.Config().DefaultProvisioner.RunPlan(&provisioner.ProvisionOpts{
-		Team:       team,
-		Module:     module,
-		ModuleRun:  run,
-		TokenOpts:  *m.Config().TokenOpts,
-		Repository: m.Repo(),
-		ServerURL:  m.Config().ServerRuntimeConfig.ServerURL,
-	})
+	opts, err := provisionerutils.GetProvisionerOpts(team, module, run, m.Config())
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	err = m.Config().DefaultProvisioner.RunPlan(opts)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

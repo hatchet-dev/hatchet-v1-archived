@@ -139,13 +139,17 @@ const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
   const branches = branchesQuery.data?.data;
 
   const branchOptions =
-    branches?.map((branch) => {
-      return {
-        icon: github,
-        label: branch.branch_name,
-        value: branch.branch_name,
-      };
-    }) || [];
+    branches
+      ?.sort((a) => {
+        return a.is_default ? -1 : 1;
+      })
+      .map((branch) => {
+        return {
+          icon: github,
+          label: branch.branch_name,
+          value: branch.branch_name,
+        };
+      }) || [];
 
   const submitEnabled =
     !!selectedGAI && !!selectedRepo && !!selectedBranch && path != "";

@@ -18,6 +18,7 @@ type Repository interface {
 	GithubPullRequest() GithubPullRequestRepository
 	Module() ModuleRepository
 	ModuleValues() ModuleValuesRepository
+	ModuleEnvVars() ModuleEnvVarsRepository
 }
 
 var (

@@ -53,6 +53,8 @@ type ModuleDeploymentConfig struct {
 type CreateModuleRequest struct {
 	Name string `json:"name" form:"required,max=255"`
 
+	EnvVars map[string]string `json:"env_vars"`
+
 	ValuesRaw map[string]interface{} `json:"values_raw,omitempty" form:"required_without=ValuesGithub,omitempty"`
 
 	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"required_without=ValuesRaw,omitempty"`
