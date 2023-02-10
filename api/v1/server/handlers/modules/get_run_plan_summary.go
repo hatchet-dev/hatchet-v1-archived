@@ -31,7 +31,48 @@ func (m *ModuleGetPlanSummaryHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	jsonBytes, err := m.Config().DefaultFileStore.ReadFile(terraform_state.GetPlanJSONPath(module.TeamID, module.ID, run.ID), true)
+	var path string
+
+	// if this is an apply, get the corresponding plan by the SHA, if it exists
+	if run.Kind == models.ModuleRunKindApply {
+		if run.ModuleRunConfig.GithubCommitSHA == "" {
+			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: "cannot request plan summary for run that doesn't have a commit SHA",
+			}, http.StatusBadRequest))
+
+			return
+		}
+
+		// find the corresponding run for that SHA
+		planKind := models.ModuleRunKindPlan
+		planRuns, err := m.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GithubCommitSHA, &planKind)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		} else if planRuns == nil || len(planRuns) == 0 {
+			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+				Code:        types.ErrCodeNotFound,
+				Description: "a corresponding plan was not found",
+			}, http.StatusNotFound))
+
+			return
+		}
+
+		path = terraform_state.GetPlanJSONPath(module.TeamID, module.ID, planRuns[0].ID)
+	} else if run.Kind == models.ModuleRunKindPlan {
+		path = terraform_state.GetPlanJSONPath(module.TeamID, module.ID, run.ID)
+	} else {
+		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: "plan summaries not valid for this plan type",
+		}, http.StatusBadRequest))
+
+		return
+	}
+
+	jsonBytes, err := m.Config().DefaultFileStore.ReadFile(path, true)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

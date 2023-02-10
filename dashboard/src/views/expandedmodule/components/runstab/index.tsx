@@ -7,16 +7,17 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "shared/api";
-import { ModuleRun } from "shared/api/generated/data-contracts";
+import { Module, ModuleRun } from "shared/api/generated/data-contracts";
 import ExpandedRun from "../expandedrun";
 import ModuleRunsList from "../modulerunslist";
 
 type Props = {
   team_id: string;
-  module_id: string;
+  module: Module;
 };
 
-const RunsTab: React.FC<Props> = ({ team_id, module_id }) => {
+const RunsTab: React.FC<Props> = ({ team_id, module }) => {
+  const module_id = module.id;
   const [selectedRun, setSelectedRun] = useState<ModuleRun>(null);
   const [err, setErr] = useState("");
 
@@ -42,7 +43,7 @@ const RunsTab: React.FC<Props> = ({ team_id, module_id }) => {
       <ExpandedRun
         back={() => setSelectedRun(null)}
         team_id={team_id}
-        module_id={module_id}
+        module={module}
         module_run_id={selectedRun.id}
       />
     );

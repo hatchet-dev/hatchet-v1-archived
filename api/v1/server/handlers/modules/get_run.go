@@ -47,6 +47,8 @@ func (m *ModuleRunGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 
 		res = run.ToAPIType(pr)
+	} else {
+		res = run.ToAPIType(nil)
 	}
 
 	m.WriteResult(w, r, res)

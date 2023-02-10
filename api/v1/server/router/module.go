@@ -806,6 +806,61 @@ func GetModuleRoutes(
 		Router:   r,
 	})
 
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/values/current -> modules.NewModuleValuesGetCurrentHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values/current getCurrentModuleValues
+	//
+	// ### Description
+	//
+	// Gets the current module values for the given module, by github reference or SHA.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Current Module Values
+	// tags:
+	// - Modules
+	// responses:
+	//   '200':
+	//     description: Successfully got module values
+	//     schema:
+	//       $ref: '#/definitions/GetModuleValuesCurrentResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getCurrentModuleValuesEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/values/current", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	getCurrentModuleValuesHandler := modules.NewModuleValuesCurrentGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getCurrentModuleValuesEndpoint,
+		Handler:  getCurrentModuleValuesHandler,
+		Router:   r,
+	})
+
 	// GET /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} -> modules.NewModuleValuesGetHandler
 	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} getModuleValues
 	//
@@ -858,61 +913,6 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getModuleValuesEndpoint,
 		Handler:  getModuleValuesHandler,
-		Router:   r,
-	})
-
-	// GET /api/v1/teams/{team_id}/modules/{module_id}/values/current -> modules.NewModuleValuesGetCurrentHandler
-	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values/current getCurrentModuleValues
-	//
-	// ### Description
-	//
-	// Gets the current module values for the given module, by github reference or SHA.
-	//
-	// ---
-	// produces:
-	// - application/json
-	// summary: Get Current Module Values
-	// tags:
-	// - Modules
-	// responses:
-	//   '200':
-	//     description: Successfully got module values
-	//     schema:
-	//       $ref: '#/definitions/GetModuleValuesCurrentResponse'
-	//   '400':
-	//     description: A malformed or bad request
-	//     schema:
-	//       $ref: '#/definitions/APIErrorBadRequestExample'
-	//   '403':
-	//     description: Forbidden
-	//     schema:
-	//       $ref: '#/definitions/APIErrorForbiddenExample'
-	getCurrentModuleValuesEndpoint := factory.NewAPIEndpoint(
-		&endpoint.EndpointMetadata{
-			Verb:   types.APIVerbGet,
-			Method: types.HTTPVerbGet,
-			Path: &endpoint.Path{
-				Parent:       basePath,
-				RelativePath: fmt.Sprintf("/modules/{%s}/values", types.URLParamModuleID),
-			},
-			Scopes: []types.PermissionScope{
-				types.UserScope,
-				types.TeamScope,
-				types.ModuleScope,
-				types.ModuleServiceAccountScope,
-			},
-		},
-	)
-
-	getCurrentModuleValuesHandler := modules.NewModuleValuesCurrentGetHandler(
-		config,
-		factory.GetDecoderValidator(),
-		factory.GetResultWriter(),
-	)
-
-	routes = append(routes, &router.Route{
-		Endpoint: getCurrentModuleValuesEndpoint,
-		Handler:  getCurrentModuleValuesHandler,
 		Router:   r,
 	})
 

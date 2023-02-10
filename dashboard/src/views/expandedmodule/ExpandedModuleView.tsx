@@ -55,7 +55,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
   const renderTabContents = () => {
     switch (selectedTab) {
       case "Runs":
-        return <RunsTab team_id={currTeam.id} module_id={params?.module} />;
+        return <RunsTab team_id={currTeam.id} module={data?.data} />;
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;
       case "Monitors":

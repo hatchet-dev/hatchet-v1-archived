@@ -2,18 +2,14 @@ import {
   H4,
   HorizontalSpacer,
   BackText,
-  SectionCard,
   FlexRow,
   SmallSpan,
   FlexColScroll,
-  P,
   MaterialIcon,
-  FlexRowLeft,
   Placeholder,
   Spinner,
   CodeLine,
   FlexCol,
-  FlexRowRight,
 } from "@hatchet-dev/hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import CodeBlock from "components/codeblock";
@@ -33,20 +29,23 @@ import {
   StatusAndCommitContainer,
 } from "./styles";
 import github from "assets/github.png";
+import { Module } from "shared/api/generated/data-contracts";
 
 type Props = {
   back: () => void;
   team_id: string;
-  module_id: string;
+  module: Module;
   module_run_id: string;
 };
 
 const ExpandedRun: React.FC<Props> = ({
   back,
   team_id,
-  module_id,
+  module,
   module_run_id,
 }) => {
+  const module_id = module.id;
+
   const moduleRunQuery = useQuery({
     queryKey: ["module_run", team_id, module_id, module_run_id],
     queryFn: async () => {
@@ -56,10 +55,14 @@ const ExpandedRun: React.FC<Props> = ({
     retry: false,
   });
 
-  const status = moduleRunQuery.data?.data.status;
-  const kind = moduleRunQuery.data?.data.kind;
+  const status = moduleRunQuery?.data?.data?.status;
+  const kind = moduleRunQuery?.data?.data?.kind;
+  const triggerKind = moduleRunQuery?.data?.data?.config?.trigger_kind;
 
-  // TODO(abelanger5): only enable if run is a planned change
+  const planSummaryEnabled =
+    (kind == "plan" && status == "completed") ||
+    (kind == "apply" && triggerKind == "github");
+
   const planSummaryQuery = useQuery({
     queryKey: ["module_run_plan_summary", team_id, module_id, module_run_id],
     queryFn: async () => {
@@ -71,7 +74,7 @@ const ExpandedRun: React.FC<Props> = ({
       return res;
     },
     retry: false,
-    enabled: kind == "plan" && status == "completed",
+    enabled: planSummaryEnabled,
   });
 
   const envVarsQuery = useQuery({
@@ -130,6 +133,15 @@ const ExpandedRun: React.FC<Props> = ({
     );
   };
 
+  const selectCommit = () => {
+    const gh = module.deployment;
+    const sha = moduleRunQuery.data.data?.config.github_commit_sha;
+
+    window.open(
+      `https://github.com/${gh.github_repo_owner}/${gh.github_repo_name}/commit/${sha}`
+    );
+  };
+
   const selectGithubFileRef = () => {
     const gh = valuesQuery.data.data?.github;
     const sha = moduleRunQuery.data.data?.config.github_commit_sha;
@@ -143,8 +155,7 @@ const ExpandedRun: React.FC<Props> = ({
 
   if (
     moduleRunQuery.isLoading ||
-    planSummaryQuery.isLoading ||
-    valuesQuery.isLoading
+    (planSummaryEnabled && planSummaryQuery.isLoading)
   ) {
     return (
       <Placeholder>
@@ -154,6 +165,14 @@ const ExpandedRun: React.FC<Props> = ({
   }
 
   const renderValuesSection = () => {
+    if (valuesQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
     if (valuesQuery.data.data.github) {
       return (
         <GithubRefContainer onClick={selectGithubFileRef}>
@@ -174,11 +193,30 @@ const ExpandedRun: React.FC<Props> = ({
     );
   };
 
+  const renderEnvVarsSection = () => {
+    if (envVarsQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
+    return (
+      <EnvVars
+        envVars={envVarsQuery.data?.data?.env_vars.map((envVar) => {
+          return `${envVar.key}~~=~~${envVar.val}`;
+        })}
+        read_only={true}
+      />
+    );
+  };
+
   const renderStatusContainer = () => {
     let materialIcon = "";
     let text = "";
 
-    switch (moduleRunQuery.data.data.status) {
+    switch (moduleRunQuery?.data?.data?.status) {
       case "completed":
         materialIcon = "check";
         text = "Completed";
@@ -228,7 +266,7 @@ const ExpandedRun: React.FC<Props> = ({
   const renderPlanOverview = () => {
     return (
       <FlexCol>
-        <SmallSpan>{moduleRunQuery.data.data?.status_description} </SmallSpan>
+        <SmallSpan>{moduleRunQuery?.data?.data?.status_description} </SmallSpan>
         <HorizontalSpacer spacepixels={8} />
         <TriggerContainer>
           <SmallSpan>Triggered by </SmallSpan>
@@ -259,22 +297,26 @@ const ExpandedRun: React.FC<Props> = ({
         </TriggerContainer>
         <HorizontalSpacer spacepixels={8} />
         {status == "completed" && renderPlannedChanges()}
-        {status == "in_progress" && (
-          <SmallSpan>Plan is in progress...</SmallSpan>
-        )}
-        {status == "failed" && (
-          <SmallSpan>Plan failed. View the logs for more details.</SmallSpan>
-        )}
+      </FlexCol>
+    );
+  };
+
+  const renderApplyOverview = () => {
+    return (
+      <FlexCol>
+        <SmallSpan>{moduleRunQuery?.data?.data?.status_description} </SmallSpan>
+        <HorizontalSpacer spacepixels={8} />
+        {renderPlannedChanges()}
       </FlexCol>
     );
   };
 
   const renderOverview = () => {
-    switch (moduleRunQuery.data.data.kind) {
+    switch (moduleRunQuery?.data?.data?.kind) {
       case "plan":
         return renderPlanOverview();
       case "apply":
-        return <div>Unimplemented</div>;
+        return renderApplyOverview();
     }
   };
 
@@ -287,7 +329,9 @@ const ExpandedRun: React.FC<Props> = ({
         <FlexRow>
           <H4>Overview</H4>
           <StatusAndCommitContainer>
-            <GithubRefContainer onClick={selectPRCommit}>
+            <GithubRefContainer
+              onClick={kind == "plan" ? selectPRCommit : selectCommit}
+            >
               <GithubImg src={github} />
               <StatusText>
                 {moduleRunQuery.data.data?.config.github_commit_sha.substr(
@@ -314,12 +358,7 @@ const ExpandedRun: React.FC<Props> = ({
           <HorizontalSpacer spacepixels={12} />
           <SmallSpan>Environment variables:</SmallSpan>
           <HorizontalSpacer spacepixels={12} />
-          <EnvVars
-            envVars={envVarsQuery.data?.data?.env_vars.map((envVar) => {
-              return `${envVar.key}~~=~~${envVar.val}`;
-            })}
-            read_only={true}
-          />
+          {renderEnvVarsSection()}
         </FlexColScroll>
       </RunSectionCard>
       <HorizontalSpacer spacepixels={24} />

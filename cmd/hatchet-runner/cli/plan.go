@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -40,12 +41,14 @@ func runPlan() error {
 	err = downloadGithubRepoContents(rc)
 
 	if err != nil {
-		return err
+		return errorHandler(rc, fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
 	}
 
 	writer, err := getWriter(rc)
 
 	if err != nil {
+		errorHandler(rc, fmt.Sprintf("Could not upload plan file to server"))
+
 		return err
 	}
 
@@ -65,6 +68,8 @@ func runPlan() error {
 	)
 
 	if err != nil {
+		errorHandler(rc, fmt.Sprintf("Could not upload plan file to server"))
+
 		return err
 	}
 
@@ -80,6 +85,8 @@ func runPlan() error {
 	)
 
 	if err != nil {
+		errorHandler(rc, fmt.Sprintf("Could not create terraform plan file on server"))
+
 		return err
 	}
 

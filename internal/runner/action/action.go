@@ -50,18 +50,24 @@ func (r *RunnerAction) Apply(
 		}
 
 		if err != nil {
+			r.errHandler(config, fmt.Sprintf("Could not get plan to apply"))
+
 			return nil, err
 		}
 
 		fileBytes, err := ioutil.ReadAll(resp)
 
 		if err != nil {
+			r.errHandler(config, "")
+
 			return nil, err
 		}
 
 		err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, "./plan.tfplan"), fileBytes, 0666)
 
 		if err != nil {
+			r.errHandler(config, "")
+
 			return nil, err
 		}
 
@@ -71,6 +77,8 @@ func (r *RunnerAction) Apply(
 	err := r.downloadModuleValues(config, "./tfvars.json")
 
 	if err != nil {
+		r.errHandler(config, fmt.Sprintf("Could not download module values"))
+
 		return nil, err
 	}
 
@@ -78,13 +86,13 @@ func (r *RunnerAction) Apply(
 	err = r.reInit(config)
 
 	if err != nil {
-		return nil, err
+		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
 	}
 
 	err = r.apply(config, planPath, "./tfvars.json")
 
 	if err != nil {
-		return nil, err
+		return nil, r.errHandler(config, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
 	}
 
 	// get the output
@@ -102,6 +110,7 @@ func (r *RunnerAction) Plan(
 	err := r.downloadModuleValues(config, "./tfvars.json")
 
 	if err != nil {
+		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
 		return nil, nil, nil, err
 	}
 
@@ -214,12 +223,12 @@ func (r *RunnerAction) apply(
 ) error {
 	args := []string{"apply", "-json", "-auto-approve"}
 
-	if planPath != "" {
-		args = append(args, fmt.Sprintf("%s", planPath))
-	}
-
 	if valsFilePath != "" {
 		args = append(args, fmt.Sprintf("-var-file=%s", valsFilePath))
+	}
+
+	if planPath != "" {
+		args = append(args, fmt.Sprintf("%s", planPath))
 	}
 
 	fmt.Printf("running apply with args: [%v]", args)
