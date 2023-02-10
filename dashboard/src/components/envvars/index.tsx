@@ -11,10 +11,15 @@ import { EnvVarRow, EnvVarRemoveButton } from "./styles";
 
 type Props = {
   envVars: string[];
-  setEnvVars: (vars: string[]) => void;
+  setEnvVars?: (vars: string[]) => void;
+  read_only?: boolean;
 };
 
-const EnvVars: React.FC<Props> = ({ envVars, setEnvVars }) => {
+const EnvVars: React.FC<Props> = ({
+  envVars,
+  setEnvVars,
+  read_only = false,
+}) => {
   const renderEnvVars = () => {
     return envVars.map((envVar, i) => {
       const splArr = envVar.split("~~=~~");
@@ -25,15 +30,19 @@ const EnvVars: React.FC<Props> = ({ envVars, setEnvVars }) => {
               placeholder="KEY"
               initial_value={splArr[0]}
               on_change={(newKey) => updateEnvVarKey(i, newKey)}
+              disabled={read_only}
             />
             <TextInput
               placeholder="VALUE"
               initial_value={splArr[1]}
               on_change={(newVal) => updateEnvVarVal(i, newVal)}
+              disabled={read_only}
             />
-            <EnvVarRemoveButton onClick={() => removeEnvVar(i)}>
-              <MaterialIcon className="material-icons">close</MaterialIcon>
-            </EnvVarRemoveButton>
+            {!read_only && (
+              <EnvVarRemoveButton onClick={() => removeEnvVar(i)}>
+                <MaterialIcon className="material-icons">close</MaterialIcon>
+              </EnvVarRemoveButton>
+            )}
           </EnvVarRow>
         );
 
@@ -88,16 +97,18 @@ const EnvVars: React.FC<Props> = ({ envVars, setEnvVars }) => {
   return (
     <FlexColScroll>
       {renderEnvVars()}
-      <HorizontalSpacer spacepixels={10} />
-      <FlexRowLeft>
-        <StandardButton
-          material_icon="add"
-          style_kind="muted"
-          label="Add environment variable"
-          margin="0"
-          on_click={addNewEnvVar}
-        />
-      </FlexRowLeft>
+      {!read_only && <HorizontalSpacer spacepixels={10} />}
+      {!read_only && (
+        <FlexRowLeft>
+          <StandardButton
+            material_icon="add"
+            style_kind="muted"
+            label="Add environment variable"
+            margin="0"
+            on_click={addNewEnvVar}
+          />
+        </FlexRowLeft>
+      )}
     </FlexColScroll>
   );
 };

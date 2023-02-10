@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
 )
 
@@ -79,4 +80,27 @@ func (m *ModuleEnvVarsVersion) Decrypt(key *[32]byte) error {
 	}
 
 	return nil
+}
+
+func (m *ModuleEnvVarsVersion) ToAPIType(key *[32]byte) (*types.ModuleEnvVarsVersion, error) {
+	vars, err := m.GetEnvVars(key)
+
+	if err != nil {
+		return nil, err
+	}
+
+	envVars := make([]types.ModuleEnvVar, 0)
+
+	for key, val := range vars {
+		envVars = append(envVars, types.ModuleEnvVar{
+			Key: key,
+			Val: val,
+		})
+	}
+
+	return &types.ModuleEnvVarsVersion{
+		APIResourceMeta: m.ToAPITypeMetadata(),
+		Version:         m.Version,
+		EnvVars:         envVars,
+	}, nil
 }

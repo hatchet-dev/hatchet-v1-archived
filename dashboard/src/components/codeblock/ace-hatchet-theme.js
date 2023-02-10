@@ -48,8 +48,8 @@ ace["define"](
     background: rgb(102, 82, 0);
     }
     .ace-hatchet .ace_marker-layer .ace_bracket {
-    margin: -1px 0 0 -1px;
-    border: 1px solid #BFBFBF;
+    # margin: -1px 0 0 -1px;
+    # border: 1px solid #BFBFBF;
     }
     .ace-hatchet .ace_marker-layer .ace_active-line {
     background: rgba(215, 215, 215, 0.031);

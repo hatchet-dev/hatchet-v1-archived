@@ -1,8 +1,10 @@
 package types
 
 const (
-	URLParamModuleID    URLParam = "module_id"
-	URLParamModuleRunID URLParam = "module_run_id"
+	URLParamModuleID        URLParam = "module_id"
+	URLParamModuleRunID     URLParam = "module_run_id"
+	URLParamModuleEnvVarsID URLParam = "module_env_vars_id"
+	URLParamModuleValuesID  URLParam = "module_values_id"
 )
 
 // swagger:model
@@ -32,12 +34,48 @@ const (
 )
 
 // swagger:model
-type ModuleRun struct {
+type ModuleRunOverview struct {
 	*APIResourceMeta
 
 	Status            ModuleRunStatus `json:"status"`
 	StatusDescription string          `json:"status_description"`
 	Kind              ModuleRunKind   `json:"kind"`
+}
+
+// swagger:model
+type ModuleRun struct {
+	*ModuleRunOverview
+
+	ModuleRunConfig *ModuleRunConfig `json:"config,omitempty"`
+
+	ModuleRunPullRequest *GithubPullRequest `json:"github_pull_request,omitempty"`
+}
+
+type ModuleRunTriggerKind string
+
+const (
+	ModuleRunTriggerKindGithub ModuleRunTriggerKind = "github"
+	ModuleRunTriggerKindManual ModuleRunTriggerKind = "manual"
+)
+
+// swagger:model
+type ModuleRunConfig struct {
+	TriggerKind     ModuleRunTriggerKind `json:"trigger_kind"`
+	GithubCommitSHA string               `json:"github_commit_sha"`
+	EnvVarVersionID string               `json:"env_var_version_id"`
+	ValuesVersionID string               `json:"values_version_id"`
+}
+
+// swagger:model
+type GithubPullRequest struct {
+	GithubRepositoryOwner       string `json:"github_repository_owner"`
+	GithubRepositoryName        string `json:"github_repository_name"`
+	GithubPullRequestID         int64  `json:"github_pull_request_id"`
+	GithubPullRequestTitle      string `json:"github_pull_request_title"`
+	GithubPullRequestNumber     int64  `json:"github_pull_request_number"`
+	GithubPullRequestHeadBranch string `json:"github_pull_request_head_branch"`
+	GithubPullRequestBaseBranch string `json:"github_pull_request_base_branch"`
+	GithubPullRequestState      string `json:"github_pull_request_state"`
 }
 
 // swagger:model
@@ -119,6 +157,9 @@ type CreateModuleValuesRequestGithub struct {
 // swagger:model
 type CreateModuleResponse Module
 
+// swagger:model
+type GetModuleResponse Module
+
 // swagger:parameters listModules
 type ListModulesRequest struct {
 	*PaginationRequest
@@ -141,8 +182,8 @@ type ListModuleRunsRequest struct {
 
 // swagger:model
 type ListModuleRunsResponse struct {
-	Pagination *PaginationResponse `json:"pagination"`
-	Rows       []*ModuleRun        `json:"rows"`
+	Pagination *PaginationResponse  `json:"pagination"`
+	Rows       []*ModuleRunOverview `json:"rows"`
 }
 
 // swagger:model
@@ -204,7 +245,10 @@ type FinalizeModuleRunRequest struct {
 }
 
 // swagger:model
-type FinalizeModuleRunResponse ModuleRun
+type FinalizeModuleRunResponse ModuleRunOverview
+
+// swagger:model
+type GetModuleRunResponse ModuleRun
 
 // swagger:parameters getModuleTarballURL
 type GetModuleTarballURLRequest struct {
@@ -214,7 +258,7 @@ type GetModuleTarballURLRequest struct {
 	GithubSHA string `schema:"github_sha" json:"github_sha"`
 }
 
-// swagger:parameters getModuleValues
+// swagger:parameters getCurrentModuleValues
 type GetModuleValuesRequest struct {
 	// the SHA to get the module values file from
 	// name: github_sha
@@ -223,4 +267,58 @@ type GetModuleValuesRequest struct {
 }
 
 // swagger:model
-type GetModuleValuesResponse map[string]interface{}
+type GetModuleValuesCurrentResponse map[string]interface{}
+
+// swagger:model
+type ModulePlanSummary []ModulePlannedChangeSummary
+
+// swagger:model
+type ModulePlannedChangeSummary struct {
+	Address string   `json:"address"`
+	Actions []string `json:"actions"`
+}
+
+// swagger:model
+type GetModulePlanSummaryResponse []ModulePlannedChangeSummary
+
+// swagger:model
+type ModuleEnvVarsVersion struct {
+	*APIResourceMeta
+
+	Version uint `json:"version"`
+
+	EnvVars []ModuleEnvVar `json:"env_vars"`
+}
+
+type ModuleEnvVar struct {
+	Key string `json:"key"`
+	Val string `json:"val"`
+}
+
+// swagger:model
+type GetModuleEnvVarsVersionResponse ModuleEnvVarsVersion
+
+// swagger:model
+type ModuleValues struct {
+	*APIResourceMeta
+
+	Version uint `json:"version"`
+
+	// Github-based values
+	Github *ModuleValuesGithubConfig `json:"github,omitempty"`
+
+	// Raw values (may be omitted)
+	Values map[string]interface{} `json:"raw_values,omitempty"`
+}
+
+// swagger:model
+type ModuleValuesGithubConfig struct {
+	Path                    string `json:"path"`
+	GithubRepoName          string `json:"github_repo_name"`
+	GithubRepoOwner         string `json:"github_repo_owner"`
+	GithubRepoBranch        string `json:"github_repo_branch"`
+	GithubAppInstallationID string `json:"github_app_installation_id"`
+}
+
+// swagger:model
+type GetModuleValuesResponse ModuleValues

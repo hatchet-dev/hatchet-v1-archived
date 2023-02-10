@@ -11,5 +11,5 @@ package swagger
 
 type ListModuleRunsResponse struct {
 	Pagination *PaginationResponse `json:"pagination,omitempty"`
-	Rows []ModuleRun `json:"rows,omitempty"`
+	Rows []ModuleRunOverview `json:"rows,omitempty"`
 }

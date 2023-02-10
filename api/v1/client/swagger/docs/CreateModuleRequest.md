@@ -3,6 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**EnvVars** | **map[string]string** |  | [optional] [default to null]
 **Github** | [***CreateModuleRequestGithub**](CreateModuleRequestGithub.md) |  | [optional] [default to null]
 **Name** | **string** |  | [optional] [default to null]
 **ValuesGithub** | [***CreateModuleValuesRequestGithub**](CreateModuleValuesRequestGithub.md) |  | [optional] [default to null]

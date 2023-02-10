@@ -81,7 +81,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	m.WriteResult(w, r, run.ToAPIType())
+	m.WriteResult(w, r, run.ToAPITypeOverview())
 
 	// write github comment
 	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {

@@ -56,11 +56,11 @@ func (m *ModuleRunsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	resp := &types.ListModuleRunsResponse{
 		Pagination: paginate.ToAPIType(),
-		Rows:       make([]*types.ModuleRun, 0),
+		Rows:       make([]*types.ModuleRunOverview, 0),
 	}
 
 	for _, modRun := range modRuns {
-		resp.Rows = append(resp.Rows, modRun.ToAPIType())
+		resp.Rows = append(resp.Rows, modRun.ToAPITypeOverview())
 	}
 
 	m.WriteResult(w, r, resp)

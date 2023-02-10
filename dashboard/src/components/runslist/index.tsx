@@ -13,19 +13,10 @@ import {
 
 export type Props = {
   runs: ModuleRun[];
+  select_run: (run: ModuleRun) => void;
 };
 
-const RunsList: React.FC<Props> = ({ runs }) => {
-  const [selectedRun, setSelectedRun] = useState(null);
-
-  if (selectedRun) {
-    return (
-      <RunListWrapper>
-        <ExpandedRun back={() => setSelectedRun(null)} />
-      </RunListWrapper>
-    );
-  }
-
+const RunsList: React.FC<Props> = ({ runs, select_run }) => {
   const renderIcon = (run: ModuleRun) => {
     switch (run.status) {
       case "completed":
@@ -41,7 +32,7 @@ const RunsList: React.FC<Props> = ({ runs }) => {
     <RunListWrapper>
       {runs.map((val, i) => {
         return (
-          <RunWrapper onClick={() => setSelectedRun(val)}>
+          <RunWrapper onClick={() => select_run(val)}>
             <RunStatusWrapper>
               {renderIcon(val)}
               <div>{val.status_description}</div>

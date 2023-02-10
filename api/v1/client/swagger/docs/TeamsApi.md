@@ -171,7 +171,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ListTeamMembers**
-> ListTeamMembersResponse ListTeamMembers(ctx, optional)
+> ListTeamMembersResponse ListTeamMembers(ctx, teamId)
 List team members
 
 Lists team members for a team.
@@ -181,13 +181,7 @@ Lists team members for a team.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***TeamsApiListTeamMembersOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a TeamsApiListTeamMembersOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **teamId** | **optional.Int64**| The page to query for | 
+  **teamId** | **string**| The team id | 
 
 ### Return type
 
@@ -205,7 +199,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ListTeams**
-> ListTeamsResponse ListTeams(ctx, optional)
+> ListTeamsResponse ListTeams(ctx, orgId)
 List teams.
 
 Lists teams for an organization.
@@ -215,13 +209,7 @@ Lists teams for an organization.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
- **optional** | ***TeamsApiListTeamsOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a TeamsApiListTeamsOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **orgId** | **optional.Int64**| The page to query for | 
+  **orgId** | **string**| The org id | 
 
 ### Return type
 

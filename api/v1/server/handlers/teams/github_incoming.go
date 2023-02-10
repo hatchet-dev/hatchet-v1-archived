@@ -403,8 +403,10 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			StatusDescription: fmt.Sprintf("Apply in progress"),
 			Kind:              models.ModuleRunKindApply,
 			ModuleRunConfig: models.ModuleRunConfig{
-				TriggerKind:     models.ModuleRunTriggerKindGithub,
-				GithubCommitSHA: headSHA,
+				TriggerKind:            models.ModuleRunTriggerKindGithub,
+				GithubCommitSHA:        headSHA,
+				ModuleValuesVersionID:  mod.CurrentModuleValuesVersionID,
+				ModuleEnvVarsVersionID: mod.CurrentModuleEnvVarsVersionID,
 			},
 		}
 
@@ -549,10 +551,12 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		StatusDescription: desc,
 		Kind:              models.ModuleRunKindPlan,
 		ModuleRunConfig: models.ModuleRunConfig{
-			TriggerKind:     models.ModuleRunTriggerKindGithub,
-			GithubCheckID:   checkResp.GetID(),
-			GithubCommentID: commentResp.GetID(),
-			GithubCommitSHA: eventData.headSHA,
+			TriggerKind:            models.ModuleRunTriggerKindGithub,
+			GithubCheckID:          checkResp.GetID(),
+			GithubCommentID:        commentResp.GetID(),
+			GithubCommitSHA:        eventData.headSHA,
+			ModuleValuesVersionID:  mod.CurrentModuleValuesVersionID,
+			ModuleEnvVarsVersionID: mod.CurrentModuleEnvVarsVersionID,
 		},
 	}
 

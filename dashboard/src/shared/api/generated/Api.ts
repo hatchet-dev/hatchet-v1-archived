@@ -34,7 +34,12 @@ import {
   EmptyResponse,
   FinalizeModuleRunRequest,
   FinalizeModuleRunResponse,
+  GetModuleEnvVarsVersionResponse,
+  GetModulePlanSummaryResponse,
+  GetModuleResponse,
+  GetModuleRunResponse,
   GetModuleTarballURLResponse,
+  GetModuleValuesCurrentResponse,
   GetModuleValuesResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
@@ -412,21 +417,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/organizations/{org_id}/teams
    * @secure
    */
-  listTeams = (
-    orgId: string,
-    query?: {
-      /**
-       * The page to query for
-       * @format int64
-       */
-      org_id?: number;
-    },
-    params: RequestParams = {},
-  ) =>
+  listTeams = (orgId: string, params: RequestParams = {}) =>
     this.request<ListTeamsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/teams`,
       method: "GET",
-      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -511,21 +505,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request GET:/api/v1/teams/{team_id}/members
    * @secure
    */
-  listTeamMembers = (
-    teamId: string,
-    query?: {
-      /**
-       * The page to query for
-       * @format int64
-       */
-      team_id?: number;
-    },
-    params: RequestParams = {},
-  ) =>
+  listTeamMembers = (teamId: string, params: RequestParams = {}) =>
     this.request<ListTeamMembersResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/members`,
       method: "GET",
-      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -614,6 +597,40 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Gets a module by module id.
+   *
+   * @tags Modules
+   * @name GetModule
+   * @summary Get module
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}
+   * @secure
+   */
+  getModule = (teamId: string, moduleId: string, params: RequestParams = {}) =>
+    this.request<GetModuleResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets the module env vars version by id.
+   *
+   * @tags Modules
+   * @name GetModuleEnvVars
+   * @summary Get Module Env Vars
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id}
+   * @secure
+   */
+  getModuleEnvVars = (teamId: string, moduleId: string, moduleEnvVarsId: string, params: RequestParams = {}) =>
+    this.request<GetModuleEnvVarsVersionResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/env_vars/${moduleEnvVarsId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Lists module runs for a given module id.
    *
    * @tags Modules
@@ -658,6 +675,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs`,
       method: "POST",
       secure: true,
+      ...params,
+    });
+  /**
+   * @description Gets a module run.
+   *
+   * @tags Modules
+   * @name GetModuleRun
+   * @summary Get module run
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}
+   * @secure
+   */
+  getModuleRun = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
+    this.request<GetModuleRunResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**
@@ -710,6 +744,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Gets the plan summary for a module run.
+   *
+   * @tags Modules
+   * @name GetModuleRunPlanSummary
+   * @summary Get plan summary
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary
+   * @secure
+   */
+  getModuleRunPlanSummary = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
+    this.request<GetModulePlanSummaryResponse, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/plan_summary`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Creates a `GET` request for Terraform state. **Should only be called by Terraform in automation.**
    *
    * @tags Modules
@@ -755,15 +806,32 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Gets the current module values for the given module.
+   * @description Gets the current module values by ID.
    *
    * @tags Modules
    * @name GetModuleValues
    * @summary Get Module Values
-   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/values
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id}
    * @secure
    */
-  getModuleValues = (
+  getModuleValues = (teamId: string, moduleId: string, moduleValuesId: string, params: RequestParams = {}) =>
+    this.request<GetModuleValuesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/values/${moduleValuesId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets the current module values for the given module, by github reference or SHA.
+   *
+   * @tags Modules
+   * @name GetCurrentModuleValues
+   * @summary Get Current Module Values
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/values/current
+   * @secure
+   */
+  getCurrentModuleValues = (
     teamId: string,
     moduleId: string,
     query?: {
@@ -775,8 +843,8 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     },
     params: RequestParams = {},
   ) =>
-    this.request<GetModuleValuesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
-      path: `/api/v1/teams/${teamId}/modules/${moduleId}/values`,
+    this.request<GetModuleValuesCurrentResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/values/current`,
       method: "GET",
       query: query,
       secure: true,

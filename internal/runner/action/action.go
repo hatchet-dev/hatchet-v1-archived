@@ -141,11 +141,11 @@ func (r *RunnerAction) Plan(
 
 func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath string) error {
 	// download values
-	vals, _, err := config.APIClient.ModulesApi.GetModuleValues(
+	vals, _, err := config.APIClient.ModulesApi.GetCurrentModuleValues(
 		context.Background(),
 		config.ConfigFile.TeamID,
 		config.ConfigFile.ModuleID,
-		&swagger.ModulesApiGetModuleValuesOpts{
+		&swagger.ModulesApiGetCurrentModuleValuesOpts{
 			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
 		},
 	)

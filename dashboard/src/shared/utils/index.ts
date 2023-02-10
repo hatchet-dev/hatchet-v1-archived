@@ -1,3 +1,5 @@
+import { ModulePlanSummary } from "shared/api/generated/data-contracts";
+
 export const capitalize = (s: string) => {
   if (!s) {
     return "";
@@ -90,4 +92,28 @@ export const timeFrom = (
 
   // Return time from now data
   return tfn;
+};
+
+export const parseTerraformPlanSummary = (
+  summary: ModulePlanSummary
+): [number, number, number] => {
+  let numToCreate = 0;
+  let numToDelete = 0;
+  let numToUpdate = 0;
+
+  summary.forEach((change) => {
+    if (change.actions.includes("create")) {
+      numToCreate++;
+    }
+
+    if (change.actions.includes("update")) {
+      numToUpdate++;
+    }
+
+    if (change.actions.includes("delete")) {
+      numToDelete++;
+    }
+  });
+
+  return [numToCreate, numToUpdate, numToDelete];
 };

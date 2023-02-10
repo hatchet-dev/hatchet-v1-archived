@@ -32,8 +32,13 @@ Class | Method | HTTP request | Description
 *ModulesApi* | [**CreateModuleRun**](docs/ModulesApi.md#createmodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs | Create Module Run
 *ModulesApi* | [**CreateTerraformPlan**](docs/ModulesApi.md#createterraformplan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 *ModulesApi* | [**FinalizeModuleRun**](docs/ModulesApi.md#finalizemodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
+*ModulesApi* | [**GetCurrentModuleValues**](docs/ModulesApi.md#getcurrentmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/current | Get Current Module Values
+*ModulesApi* | [**GetModule**](docs/ModulesApi.md#getmodule) | **Get** /api/v1/teams/{team_id}/modules/{module_id} | Get module
+*ModulesApi* | [**GetModuleEnvVars**](docs/ModulesApi.md#getmoduleenvvars) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} | Get Module Env Vars
+*ModulesApi* | [**GetModuleRun**](docs/ModulesApi.md#getmodulerun) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} | Get module run
+*ModulesApi* | [**GetModuleRunPlanSummary**](docs/ModulesApi.md#getmodulerunplansummary) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary | Get plan summary
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
-*ModulesApi* | [**GetModuleValues**](docs/ModulesApi.md#getmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values | Get Module Values
+*ModulesApi* | [**GetModuleValues**](docs/ModulesApi.md#getmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} | Get Module Values
 *ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 *ModulesApi* | [**ListModuleRuns**](docs/ModulesApi.md#listmoduleruns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 *ModulesApi* | [**ListModules**](docs/ModulesApi.md#listmodules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
@@ -112,13 +117,18 @@ Class | Method | HTTP request | Description
  - [EmptyResponse](docs/EmptyResponse.md)
  - [FinalizeModuleRunRequest](docs/FinalizeModuleRunRequest.md)
  - [FinalizeModuleRunResponse](docs/FinalizeModuleRunResponse.md)
+ - [GetModuleEnvVarsVersionResponse](docs/GetModuleEnvVarsVersionResponse.md)
+ - [GetModuleResponse](docs/GetModuleResponse.md)
+ - [GetModuleRunResponse](docs/GetModuleRunResponse.md)
  - [GetModuleTarballUrlResponse](docs/GetModuleTarballUrlResponse.md)
+ - [GetModuleValuesResponse](docs/GetModuleValuesResponse.md)
  - [GetOrgMemberResponse](docs/GetOrgMemberResponse.md)
  - [GetOrganizationResponse](docs/GetOrganizationResponse.md)
  - [GetPatResponse](docs/GetPatResponse.md)
  - [GetUserResponse](docs/GetUserResponse.md)
  - [GithubAppInstallation](docs/GithubAppInstallation.md)
  - [GithubBranch](docs/GithubBranch.md)
+ - [GithubPullRequest](docs/GithubPullRequest.md)
  - [GithubRepo](docs/GithubRepo.md)
  - [ListGithubAppInstallationsResponse](docs/ListGithubAppInstallationsResponse.md)
  - [ListModuleRunsResponse](docs/ListModuleRunsResponse.md)
@@ -135,7 +145,13 @@ Class | Method | HTTP request | Description
  - [LoginUserResponse](docs/LoginUserResponse.md)
  - [Module](docs/Module.md)
  - [ModuleDeploymentConfig](docs/ModuleDeploymentConfig.md)
+ - [ModuleEnvVar](docs/ModuleEnvVar.md)
+ - [ModuleEnvVarsVersion](docs/ModuleEnvVarsVersion.md)
+ - [ModulePlannedChangeSummary](docs/ModulePlannedChangeSummary.md)
  - [ModuleRun](docs/ModuleRun.md)
+ - [ModuleRunConfig](docs/ModuleRunConfig.md)
+ - [ModuleRunOverview](docs/ModuleRunOverview.md)
+ - [ModuleValues](docs/ModuleValues.md)
  - [Organization](docs/Organization.md)
  - [OrganizationInvite](docs/OrganizationInvite.md)
  - [OrganizationInviteSanitized](docs/OrganizationInviteSanitized.md)

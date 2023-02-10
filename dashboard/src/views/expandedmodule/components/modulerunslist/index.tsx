@@ -20,15 +20,18 @@ import api from "shared/api";
 import { relativeDate } from "shared/utils";
 import RunsList from "components/runslist";
 import usePagination from "shared/hooks/usepagination";
+import { ModuleRun } from "shared/api/generated/data-contracts";
 
 type Props = {
   team_id: string;
   module_id: string;
+  select_run: (run: ModuleRun) => void;
 };
 
 const ModuleRunsList: React.FunctionComponent<Props> = ({
   team_id,
   module_id,
+  select_run,
 }) => {
   const {
     currentPage,
@@ -75,7 +78,7 @@ const ModuleRunsList: React.FunctionComponent<Props> = ({
   return (
     <FlexCol height="calc(100% - 200px)">
       <FlexColScroll maxHeight="100%">
-        <RunsList runs={data.data.rows} />
+        <RunsList runs={data.data.rows} select_run={select_run} />
       </FlexColScroll>
       <FlexRowRight>
         <Paginator

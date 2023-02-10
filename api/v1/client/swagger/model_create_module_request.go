@@ -10,6 +10,7 @@
 package swagger
 
 type CreateModuleRequest struct {
+	EnvVars map[string]string `json:"env_vars,omitempty"`
 	Github *CreateModuleRequestGithub `json:"github,omitempty"`
 	Name string `json:"name,omitempty"`
 	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty"`

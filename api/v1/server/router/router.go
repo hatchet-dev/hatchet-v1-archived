@@ -137,6 +137,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 
 	moduleFactory := authz.NewModuleScopedFactory(config)
 	moduleRunFactory := authz.NewRunScopedFactory(config)
+	moduleEnvVarsFactory := authz.NewModuleEnvVarsScopedFactory(config)
+	moduleValuesFactory := authz.NewModuleValuesScopedFactory(config)
 
 	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
 
@@ -187,6 +189,10 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(moduleFactory.Middleware)
 			case types.ModuleRunScope:
 				atomicGroup.Use(moduleRunFactory.Middleware)
+			case types.ModuleEnvVarScope:
+				atomicGroup.Use(moduleEnvVarsFactory.Middleware)
+			case types.ModuleValuesScope:
+				atomicGroup.Use(moduleValuesFactory.Middleware)
 			}
 		}
 

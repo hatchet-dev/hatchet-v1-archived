@@ -9,8 +9,10 @@ import {
   StandardButton,
   FlexRowRight,
   FlexCol,
+  Placeholder,
+  Spinner,
 } from "@hatchet-dev/hatchet-components";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
@@ -19,6 +21,7 @@ import { currTeamAtom } from "shared/atoms/atoms";
 import RunsList from "../../components/runslist";
 import ModuleRunsList from "./components/modulerunslist";
 import ExpandedModuleMonitors from "./components/monitors";
+import RunsTab from "./components/runstab";
 
 const TabOptions = [
   "Runs",
@@ -32,7 +35,6 @@ const ExpandedModuleView: React.FunctionComponent = () => {
   const history = useHistory();
   const [selectedTab, setSelectedTab] = useState(TabOptions[0]);
   const [currTeam] = useAtom(currTeamAtom);
-  const [err, setErr] = useState("");
   const params: any = useParams();
 
   useEffect(() => {
@@ -41,40 +43,19 @@ const ExpandedModuleView: React.FunctionComponent = () => {
     }
   }, [params]);
 
-  const mutation = useMutation({
-    mutationKey: ["create_module_run", currTeam?.id, params?.module],
-    mutationFn: () => {
-      return api.createModuleRun(currTeam?.id, params?.module);
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["module", currTeam.id, params?.module],
+    queryFn: async () => {
+      const res = await api.getModule(currTeam.id, params?.module);
+      return res;
     },
-    onSuccess: (data) => {
-      setErr("");
-    },
-    onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
-        setErr("An unexpected error occurred. Please try again.");
-      }
-
-      setErr(err.error.errors[0].description);
-    },
+    retry: false,
   });
 
   const renderTabContents = () => {
     switch (selectedTab) {
       case "Runs":
-        return (
-          <FlexCol height="100%">
-            <FlexRowRight>
-              <StandardButton
-                label="New Run"
-                on_click={() => {
-                  mutation.mutate();
-                }}
-              />
-            </FlexRowRight>
-
-            <ModuleRunsList team_id={currTeam.id} module_id={params?.module} />
-          </FlexCol>
-        );
+        return <RunsTab team_id={currTeam.id} module_id={params?.module} />;
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;
       case "Monitors":
@@ -83,6 +64,14 @@ const ExpandedModuleView: React.FunctionComponent = () => {
         return <Span>Settings</Span>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <Placeholder>
+        <Spinner />
+      </Placeholder>
+    );
+  }
 
   return (
     <>
@@ -93,18 +82,15 @@ const ExpandedModuleView: React.FunctionComponent = () => {
             link: `/team/${currTeam.id}/modules`,
           },
           {
-            label: "Staging: team-1-gke",
+            label: `${data.data.name}`,
             link: "",
           },
         ]}
       />
       <HorizontalSpacer spacepixels={12} />
-      <H1>Staging: team-1-gke</H1>
+      <H1>{data.data.name}</H1>
       <HorizontalSpacer spacepixels={20} />
-      <P>
-        This page contains information about the team-1-gke workspace in the
-        Staging environment.
-      </P>
+      <P>This page contains information about the {data.data.name} module.</P>
       <HorizontalSpacer spacepixels={20} />
       <TabList tabs={TabOptions} selectTab={setSelectedTab} />
       {renderTabContents()}

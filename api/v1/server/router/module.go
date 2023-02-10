@@ -12,7 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getModuleValues
+// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getCurrentModuleValues getModule
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -27,7 +27,7 @@ type modulePathParams struct {
 	Module string `json:"module_id"`
 }
 
-// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun
+// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun getModuleRun
 type moduleRunPathParams struct {
 	// The team id
 	// in: path
@@ -46,6 +46,27 @@ type moduleRunPathParams struct {
 	// required: true
 	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
 	Run string `json:"module_run_id"`
+}
+
+// swagger:parameters getModuleEnvVars
+type moduleEnvVarsPathParams struct {
+	// The team id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Team string `json:"team_id"`
+
+	// The module id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Module string `json:"module_id"`
+
+	// The module env vars version id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	ModuleEnvVar string `json:"module_env_vars_id"`
 }
 
 func NewModuleRouteRegisterer(children ...*router.Registerer) *router.Registerer {
@@ -229,6 +250,60 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: runCreateEndpoint,
 		Handler:  runCreateHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id} -> modules.NewModuleGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id} getModule
+	//
+	// ### Description
+	//
+	// Gets a module by module id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get module
+	// tags:
+	// - Modules
+	// responses:
+	//   '200':
+	//     description: Successfully got the module
+	//     schema:
+	//       $ref: '#/definitions/GetModuleResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getModuleEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+			},
+		},
+	)
+
+	getModuleHandler := modules.NewModuleGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getModuleEndpoint,
+		Handler:  getModuleHandler,
 		Router:   r,
 	})
 
@@ -731,12 +806,12 @@ func GetModuleRoutes(
 		Router:   r,
 	})
 
-	// GET /api/v1/teams/{team_id}/modules/{module_id}/values -> modules.NewModuleValuesGetHandler
-	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values getModuleValues
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} -> modules.NewModuleValuesGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} getModuleValues
 	//
 	// ### Description
 	//
-	// Gets the current module values for the given module.
+	// Gets the current module values by ID.
 	//
 	// ---
 	// produces:
@@ -763,13 +838,13 @@ func GetModuleRoutes(
 			Method: types.HTTPVerbGet,
 			Path: &endpoint.Path{
 				Parent:       basePath,
-				RelativePath: fmt.Sprintf("/modules/{%s}/values", types.URLParamModuleID),
+				RelativePath: fmt.Sprintf("/modules/{%s}/values/{%s}", types.URLParamModuleID, types.URLParamModuleValuesID),
 			},
 			Scopes: []types.PermissionScope{
 				types.UserScope,
 				types.TeamScope,
 				types.ModuleScope,
-				types.ModuleServiceAccountScope,
+				types.ModuleValuesScope,
 			},
 		},
 	)
@@ -783,6 +858,116 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getModuleValuesEndpoint,
 		Handler:  getModuleValuesHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/values/current -> modules.NewModuleValuesGetCurrentHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/values/current getCurrentModuleValues
+	//
+	// ### Description
+	//
+	// Gets the current module values for the given module, by github reference or SHA.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Current Module Values
+	// tags:
+	// - Modules
+	// responses:
+	//   '200':
+	//     description: Successfully got module values
+	//     schema:
+	//       $ref: '#/definitions/GetModuleValuesCurrentResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getCurrentModuleValuesEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/values", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleServiceAccountScope,
+			},
+		},
+	)
+
+	getCurrentModuleValuesHandler := modules.NewModuleValuesCurrentGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getCurrentModuleValuesEndpoint,
+		Handler:  getCurrentModuleValuesHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} -> modules.NewModuleEnvVarsGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} getModuleEnvVars
+	//
+	// ### Description
+	//
+	// Gets the module env vars version by id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Module Env Vars
+	// tags:
+	// - Modules
+	// responses:
+	//   '200':
+	//     description: Successfully got module env vars
+	//     schema:
+	//       $ref: '#/definitions/GetModuleEnvVarsVersionResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getModuleEnvVarsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/env_vars/{%s}", types.URLParamModuleID, types.URLParamModuleEnvVarsID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleEnvVarScope,
+			},
+		},
+	)
+
+	getModuleEnvVarsHandler := modules.NewModuleEnvVarsGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getModuleEnvVarsEndpoint,
+		Handler:  getModuleEnvVarsHandler,
 		Router:   r,
 	})
 
@@ -851,6 +1036,128 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: finalizeRunEndpoint,
 		Handler:  finalizeRunHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} -> modules.NewModuleRunGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} getModuleRun
+	//
+	// ### Description
+	//
+	// Gets a module run.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get module run
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - name: module_run_id
+	// responses:
+	//   '200':
+	//     description: Successfully got the module run
+	//     schema:
+	//       $ref: '#/definitions/GetModuleRunResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '423':
+	//     description: Locked
+	getRunEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+			},
+		},
+	)
+
+	getRunHandler := modules.NewModuleRunGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getRunEndpoint,
+		Handler:  getRunHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary -> modules.NewModuleGetPlanSummaryHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary getModuleRunPlanSummary
+	//
+	// ### Description
+	//
+	// Gets the plan summary for a module run.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get plan summary
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - name: module_run_id
+	// responses:
+	//   '200':
+	//     description: Successfully got the plan summary
+	//     schema:
+	//       $ref: '#/definitions/GetModulePlanSummaryResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '423':
+	//     description: Locked
+	getRunPlanSummaryEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/plan_summary", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+			},
+		},
+	)
+
+	getRunPlanSummaryHandler := modules.NewModuleGetPlanSummaryHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getRunPlanSummaryEndpoint,
+		Handler:  getRunPlanSummaryHandler,
 		Router:   r,
 	})
 

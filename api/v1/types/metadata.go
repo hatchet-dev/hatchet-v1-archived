@@ -51,6 +51,8 @@ const (
 	TeamMemberScope            PermissionScope = "team_member_scope"
 	GithubAppInstallationScope PermissionScope = "github_app_installation_scope"
 	ModuleScope                PermissionScope = "module_scope"
+	ModuleEnvVarScope          PermissionScope = "module_env_var_scope"
+	ModuleValuesScope          PermissionScope = "module_values_scope"
 	ModuleRunScope             PermissionScope = "module_run_scope"
 
 	// ModuleServiceAccountScope restricts the scope to service account types only. This is enforced

@@ -290,14 +290,24 @@ export interface FinalizeModuleRunRequest {
   status: string;
 }
 
-export type FinalizeModuleRunResponse = ModuleRun;
+export type FinalizeModuleRunResponse = ModuleRunOverview;
+
+export type GetModuleEnvVarsVersionResponse = ModuleEnvVarsVersion;
+
+export type GetModulePlanSummaryResponse = ModulePlannedChangeSummary[];
+
+export type GetModuleResponse = Module;
+
+export type GetModuleRunResponse = ModuleRun;
 
 /** @example {"url":"url"} */
 export interface GetModuleTarballURLResponse {
   url?: string;
 }
 
-export type GetModuleValuesResponse = Record<string, object>;
+export type GetModuleValuesCurrentResponse = Record<string, object>;
+
+export type GetModuleValuesResponse = ModuleValues;
 
 export type GetOrgMemberResponse = OrganizationMember;
 
@@ -339,6 +349,20 @@ export interface GithubBranch {
   is_default?: boolean;
 }
 
+/** @example {"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"} */
+export interface GithubPullRequest {
+  github_pull_request_base_branch?: string;
+  github_pull_request_head_branch?: string;
+  /** @format int64 */
+  github_pull_request_id?: number;
+  /** @format int64 */
+  github_pull_request_number?: number;
+  github_pull_request_state?: string;
+  github_pull_request_title?: string;
+  github_repository_name?: string;
+  github_repository_owner?: string;
+}
+
 /** @example {"repo_name":"repo_name","repo_owner":"repo_owner"} */
 export interface GithubRepo {
   repo_name?: string;
@@ -358,7 +382,7 @@ export type ListGithubReposResponse = GithubRepo[];
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"},{"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"}]} */
 export interface ListModuleRunsResponse {
   pagination?: PaginationResponse;
-  rows?: ModuleRun[];
+  rows?: ModuleRunOverview[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}},{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}}]} */
@@ -475,8 +499,82 @@ export interface ModuleDeploymentConfig {
   path?: string;
 }
 
-/** @example {"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"} */
+/** @example {"val":"val","key":"key"} */
+export interface ModuleEnvVar {
+  key?: string;
+  val?: string;
+}
+
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","version":0,"env_vars":[{"val":"val","key":"key"},{"val":"val","key":"key"}]} */
+export interface ModuleEnvVarsVersion {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  env_vars?: ModuleEnvVar[];
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+  /** @format uint64 */
+  version?: number;
+}
+
+export type ModulePlanSummary = ModulePlannedChangeSummary[];
+
+/** @example {"address":"address","actions":["actions","actions"]} */
+export interface ModulePlannedChangeSummary {
+  actions?: string[];
+  address?: string;
+}
+
+/** @example {"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"status":"status"} */
 export interface ModuleRun {
+  config?: ModuleRunConfig;
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  github_pull_request?: GithubPullRequest;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  kind?: string;
+  status?: string;
+  status_description?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"} */
+export interface ModuleRunConfig {
+  env_var_version_id?: string;
+  github_commit_sha?: string;
+  trigger_kind?: string;
+  values_version_id?: string;
+}
+
+export type ModuleRunKind = string;
+
+/** @example {"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","status":"status"} */
+export interface ModuleRunOverview {
   /**
    * the time that this resource was created
    * @format date-time
@@ -499,9 +597,44 @@ export interface ModuleRun {
   updated_at?: string;
 }
 
-export type ModuleRunKind = string;
-
 export type ModuleRunStatus = string;
+
+export type ModuleRunTriggerKind = string;
+
+/** @example {"github":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","raw_values":{"key":"{}"},"id":"bb214807-246e-43a5-a25d-41761d1cff9e","version":0} */
+export interface ModuleValues {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  github?: ModuleValuesGithubConfig;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** Raw values (may be omitted) */
+  raw_values?: Record<string, object>;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+  /** @format uint64 */
+  version?: number;
+}
+
+/** @example {"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"} */
+export interface ModuleValuesGithubConfig {
+  github_app_installation_id?: string;
+  github_repo_branch?: string;
+  github_repo_name?: string;
+  github_repo_owner?: string;
+  path?: string;
+}
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {

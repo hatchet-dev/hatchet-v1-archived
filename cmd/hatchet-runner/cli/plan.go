@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -31,8 +30,6 @@ func init() {
 }
 
 func runPlan() error {
-	fmt.Println("ENV VARS ARE", os.Environ())
-
 	configLoader := &loader.EnvConfigLoader{}
 	rc, err := configLoader.LoadRunnerConfigFromEnv()
 

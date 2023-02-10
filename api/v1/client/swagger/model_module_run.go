@@ -13,8 +13,10 @@ import (
 )
 
 type ModuleRun struct {
+	Config *ModuleRunConfig `json:"config,omitempty"`
 	// the time that this resource was created
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	GithubPullRequest *GithubPullRequest `json:"github_pull_request,omitempty"`
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
 	Kind string `json:"kind,omitempty"`

@@ -1,5 +1,7 @@
 package models
 
+import "github.com/hatchet-dev/hatchet/api/v1/types"
+
 // GithubPullRequest contains data about a Github PR
 type GithubPullRequest struct {
 	Base
@@ -16,6 +18,19 @@ type GithubPullRequest struct {
 	GithubPullRequestState      string
 
 	GithubPullRequestComments []GithubPullRequestComment
+}
+
+func (g *GithubPullRequest) ToAPIType() *types.GithubPullRequest {
+	return &types.GithubPullRequest{
+		GithubRepositoryOwner:       g.GithubRepositoryOwner,
+		GithubRepositoryName:        g.GithubRepositoryName,
+		GithubPullRequestID:         g.GithubPullRequestID,
+		GithubPullRequestTitle:      g.GithubPullRequestTitle,
+		GithubPullRequestNumber:     g.GithubPullRequestNumber,
+		GithubPullRequestHeadBranch: g.GithubPullRequestHeadBranch,
+		GithubPullRequestBaseBranch: g.GithubPullRequestBaseBranch,
+		GithubPullRequestState:      g.GithubPullRequestState,
+	}
 }
 
 // GithubPullRequestComment are identified by their parent pull request along with

@@ -135,13 +135,34 @@ func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
 	}
 }
 
-func (m *ModuleRun) ToAPIType() *types.ModuleRun {
-	return &types.ModuleRun{
+func (m *ModuleRun) ToAPITypeOverview() *types.ModuleRunOverview {
+	return &types.ModuleRunOverview{
 		APIResourceMeta:   m.ToAPITypeMetadata(),
 		Status:            types.ModuleRunStatus(m.Status),
 		StatusDescription: m.StatusDescription,
 		Kind:              types.ModuleRunKind(m.Kind),
 	}
+}
+
+func (m *ModuleRun) ToAPIType(pr *GithubPullRequest) *types.ModuleRun {
+	res := &types.ModuleRun{
+		ModuleRunOverview: m.ToAPITypeOverview(),
+	}
+
+	if pr != nil {
+		res.ModuleRunPullRequest = pr.ToAPIType()
+	}
+
+	if mc := m.ModuleRunConfig; mc.ID != "" {
+		res.ModuleRunConfig = &types.ModuleRunConfig{
+			TriggerKind:     types.ModuleRunTriggerKind(mc.TriggerKind),
+			GithubCommitSHA: mc.GithubCommitSHA,
+			EnvVarVersionID: mc.ModuleEnvVarsVersionID,
+			ValuesVersionID: mc.ModuleValuesVersionID,
+		}
+	}
+
+	return res
 }
 
 type ModuleRunToken struct {
@@ -244,4 +265,10 @@ type ModuleRunConfig struct {
 	GithubCheckID   int64
 	GithubCommentID int64
 	GithubCommitSHA string
+
+	ModuleValuesVersionID string
+	ModuleValuesVersion   ModuleValuesVersion `gorm:"foreignKey:ModuleValuesVersionID"`
+
+	ModuleEnvVarsVersionID string
+	ModuleEnvVarsVersion   ModuleEnvVarsVersion `gorm:"foreignKey:ModuleEnvVarsVersionID"`
 }

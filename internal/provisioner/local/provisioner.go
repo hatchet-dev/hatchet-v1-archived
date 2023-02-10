@@ -32,7 +32,9 @@ func (l *LocalProvisioner) RunPlan(opts *provisioner.ProvisionOpts) error {
 
 		err = cmdProv.Run()
 
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}()
 
 	return nil
@@ -55,7 +57,9 @@ func (l *LocalProvisioner) RunApply(opts *provisioner.ProvisionOpts) error {
 
 		err = cmdProv.Run()
 
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}()
 
 	return nil

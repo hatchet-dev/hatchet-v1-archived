@@ -1,0 +1,72 @@
+import {
+  StandardButton,
+  FlexRowRight,
+  FlexCol,
+  HorizontalSpacer,
+} from "@hatchet-dev/hatchet-components";
+import { useMutation } from "@tanstack/react-query";
+import React, { useState } from "react";
+import api from "shared/api";
+import { ModuleRun } from "shared/api/generated/data-contracts";
+import ExpandedRun from "../expandedrun";
+import ModuleRunsList from "../modulerunslist";
+
+type Props = {
+  team_id: string;
+  module_id: string;
+};
+
+const RunsTab: React.FC<Props> = ({ team_id, module_id }) => {
+  const [selectedRun, setSelectedRun] = useState<ModuleRun>(null);
+  const [err, setErr] = useState("");
+
+  const mutation = useMutation({
+    mutationKey: ["create_module_run", team_id, module_id],
+    mutationFn: () => {
+      return api.createModuleRun(team_id, module_id);
+    },
+    onSuccess: (data) => {
+      setErr("");
+    },
+    onError: (err: any) => {
+      if (!err.error.errors || err.error.errors.length == 0) {
+        setErr("An unexpected error occurred. Please try again.");
+      }
+
+      setErr(err.error.errors[0].description);
+    },
+  });
+
+  if (selectedRun) {
+    return (
+      <ExpandedRun
+        back={() => setSelectedRun(null)}
+        team_id={team_id}
+        module_id={module_id}
+        module_run_id={selectedRun.id}
+      />
+    );
+  }
+
+  return (
+    <FlexCol height="100%">
+      <HorizontalSpacer spacepixels={20} />
+      <FlexRowRight>
+        <StandardButton
+          label="New Run"
+          material_icon="cached"
+          on_click={() => {
+            mutation.mutate();
+          }}
+        />
+      </FlexRowRight>
+      <ModuleRunsList
+        team_id={team_id}
+        module_id={module_id}
+        select_run={setSelectedRun}
+      />
+    </FlexCol>
+  );
+};
+
+export default RunsTab;

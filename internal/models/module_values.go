@@ -1,6 +1,11 @@
 package models
 
-import "github.com/hatchet-dev/hatchet/internal/encryption"
+import (
+	"encoding/json"
+
+	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/encryption"
+)
 
 type ModuleValuesVersionKind string
 
@@ -24,6 +29,40 @@ type ModuleValuesVersion struct {
 	GithubRepoBranch        string
 	GithubAppInstallationID string
 	GithubAppInstallation   GithubAppInstallation `gorm:"foreignKey:GithubAppInstallationID"`
+}
+
+func (m *ModuleValuesVersion) ToAPIType(mv *ModuleValues) (*types.ModuleValues, error) {
+	res := &types.ModuleValues{
+		APIResourceMeta: m.ToAPITypeMetadata(),
+		Version:         m.Version,
+	}
+
+	if m.Kind == ModuleValuesVersionKindDatabase {
+		if mv != nil {
+			jsonVal := make(map[string]interface{})
+
+			err := json.Unmarshal(mv.Values, &jsonVal)
+
+			if err != nil {
+				return nil, err
+			}
+
+			res.Values = jsonVal
+		}
+	} else {
+		gh := &types.ModuleValuesGithubConfig{}
+
+		gh.Path = m.GithubValuesPath
+		gh.GithubRepoOwner = m.GithubRepoOwner
+		gh.GithubRepoName = m.GithubRepoName
+		gh.GithubAppInstallationID = m.GithubAppInstallationID
+		gh.GithubRepoBranch = m.GithubRepoBranch
+
+		res.Github = gh
+	}
+
+	return res, nil
+
 }
 
 type ModuleValues struct {

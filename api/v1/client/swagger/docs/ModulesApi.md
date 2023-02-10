@@ -8,8 +8,13 @@ Method | HTTP request | Description
 [**CreateModuleRun**](ModulesApi.md#CreateModuleRun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs | Create Module Run
 [**CreateTerraformPlan**](ModulesApi.md#CreateTerraformPlan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
 [**FinalizeModuleRun**](ModulesApi.md#FinalizeModuleRun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
+[**GetCurrentModuleValues**](ModulesApi.md#GetCurrentModuleValues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/current | Get Current Module Values
+[**GetModule**](ModulesApi.md#GetModule) | **Get** /api/v1/teams/{team_id}/modules/{module_id} | Get module
+[**GetModuleEnvVars**](ModulesApi.md#GetModuleEnvVars) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} | Get Module Env Vars
+[**GetModuleRun**](ModulesApi.md#GetModuleRun) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} | Get module run
+[**GetModuleRunPlanSummary**](ModulesApi.md#GetModuleRunPlanSummary) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary | Get plan summary
 [**GetModuleTarballURL**](ModulesApi.md#GetModuleTarballURL) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
-[**GetModuleValues**](ModulesApi.md#GetModuleValues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values | Get Module Values
+[**GetModuleValues**](ModulesApi.md#GetModuleValues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} | Get Module Values
 [**GetTerraformState**](ModulesApi.md#GetTerraformState) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 [**ListModuleRuns**](ModulesApi.md#ListModuleRuns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 [**ListModules**](ModulesApi.md#ListModules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
@@ -141,6 +146,157 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **GetCurrentModuleValues**
+> map[string]interface{} GetCurrentModuleValues(ctx, teamId, moduleId, optional)
+Get Current Module Values
+
+Gets the current module values for the given module, by github reference or SHA.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+ **optional** | ***ModulesApiGetCurrentModuleValuesOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiGetCurrentModuleValuesOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+ **githubSha** | **optional.String**| the SHA to get the module values file from name: github_sha | 
+
+### Return type
+
+[**map[string]interface{}**](map.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModule**
+> GetModuleResponse GetModule(ctx, teamId, moduleId)
+Get module
+
+Gets a module by module id.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+
+### Return type
+
+[**GetModuleResponse**](GetModuleResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModuleEnvVars**
+> GetModuleEnvVarsVersionResponse GetModuleEnvVars(ctx, teamId, moduleId, moduleEnvVarsId)
+Get Module Env Vars
+
+Gets the module env vars version by id.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+  **moduleEnvVarsId** | **string**| The module env vars version id | 
+
+### Return type
+
+[**GetModuleEnvVarsVersionResponse**](GetModuleEnvVarsVersionResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModuleRun**
+> GetModuleRunResponse GetModuleRun(ctx, teamId, moduleId, moduleRunId)
+Get module run
+
+Gets a module run.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+  **moduleRunId** | **string**| The module run id | 
+
+### Return type
+
+[**GetModuleRunResponse**](GetModuleRunResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetModuleRunPlanSummary**
+> []ModulePlannedChangeSummary GetModuleRunPlanSummary(ctx, )
+Get plan summary
+
+Gets the plan summary for a module run.
+
+### Required Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**[]ModulePlannedChangeSummary**](array.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **GetModuleTarballURL**
 > GetModuleTarballUrlResponse GetModuleTarballURL(ctx, teamId, moduleId, optional)
 Get Module Tarball URL
@@ -180,31 +336,17 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetModuleValues**
-> map[string]interface{} GetModuleValues(ctx, teamId, moduleId, optional)
+> GetModuleValuesResponse GetModuleValues(ctx, )
 Get Module Values
 
-Gets the current module values for the given module.
+Gets the current module values by ID.
 
 ### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **teamId** | **string**| The team id | 
-  **moduleId** | **string**| The module id | 
- **optional** | ***ModulesApiGetModuleValuesOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a ModulesApiGetModuleValuesOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
-
- **githubSha** | **optional.String**| the SHA to get the module values file from name: github_sha | 
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**map[string]interface{}**](map.md)
+[**GetModuleValuesResponse**](GetModuleValuesResponse.md)
 
 ### Authorization
 
