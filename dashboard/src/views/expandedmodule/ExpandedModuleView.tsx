@@ -25,6 +25,7 @@ import { currTeamAtom } from "shared/atoms/atoms";
 import { relativeDate } from "shared/utils";
 import RunsList from "../../components/runslist";
 import ModuleRunsList from "./components/modulerunslist";
+import ModuleSettings from "./components/modulesettings";
 import ExpandedModuleMonitors from "./components/monitors";
 import RunsTab from "./components/runstab";
 
@@ -66,7 +67,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
       case "Monitors":
         return <ExpandedModuleMonitors />;
       default:
-        return <Span>Settings</Span>;
+        return <ModuleSettings team_id={currTeam.id} module={data?.data} />;
     }
   };
 

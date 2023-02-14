@@ -52,11 +52,13 @@ type Module struct {
 
 func (m *Module) ToAPIType() *types.Module {
 	return &types.Module{
-		APIResourceMeta:  m.ToAPITypeMetadata(),
-		Name:             m.Name,
-		DeploymentConfig: *m.DeploymentConfig.ToAPIType(),
-		LockID:           m.LockID,
-		LockKind:         types.ModuleLockKind(m.LockKind),
+		APIResourceMeta:         m.ToAPITypeMetadata(),
+		Name:                    m.Name,
+		DeploymentConfig:        *m.DeploymentConfig.ToAPIType(),
+		LockID:                  m.LockID,
+		LockKind:                types.ModuleLockKind(m.LockKind),
+		CurrentValuesVersionID:  m.CurrentModuleValuesVersionID,
+		CurrentEnvVarsVersionID: m.CurrentModuleEnvVarsVersionID,
 	}
 }
 

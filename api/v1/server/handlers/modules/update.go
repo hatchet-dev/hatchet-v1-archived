@@ -128,5 +128,5 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	m.WriteResult(w, r, module.ToAPIType())
 }

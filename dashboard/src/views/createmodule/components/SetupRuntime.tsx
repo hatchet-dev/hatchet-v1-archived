@@ -2,38 +2,24 @@ import {
   H2,
   HorizontalSpacer,
   P,
-  TextInput,
-  Selector,
-  Selection,
   SectionArea,
   FlexRowRight,
   StandardButton,
   H1,
   Breadcrumbs,
-  FlexColScroll,
   ErrorBar,
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { css } from "styled-components";
 import theme from "shared/theme";
-import { CreateModuleRequest } from "shared/api/generated/data-contracts";
+import {
+  CreateModuleRequest,
+  CreateModuleValuesRequestGithub,
+} from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
-import CodeBlock from "components/codeblock";
 import EnvVars from "components/envvars";
-
-const variableOptions = [
-  {
-    label: "Filesystem",
-    value: "filesystem",
-    material_icon: "folder_open",
-  },
-  {
-    label: "Manual import",
-    value: "manual",
-    material_icon: "data_object",
-  },
-];
+import SetModuleValues from "components/module/setmodulevalues";
 
 type Props = {
   req: CreateModuleRequest;
@@ -42,11 +28,19 @@ type Props = {
 };
 
 const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
-  const [varOption, setSelectedVarOption] = useState<string>();
-  const [filePath, setFilePath] = useState("");
-  const [jsonValues, setJSONValues] = useState("{\n  \n}");
-  const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
-  const [jsonParseErr, setJSONParseErr] = useState("");
+  const [jsonValues, setJSONValues] = useState<Record<string, object>>();
+  const [
+    githubValues,
+    setGithubValues,
+  ] = useState<CreateModuleValuesRequestGithub>({
+    github_app_installation_id: req?.github.github_app_installation_id,
+    github_repository_branch: req?.github.github_repository_branch,
+    github_repository_name: req?.github.github_repository_name,
+    github_repository_owner: req?.github.github_repository_owner,
+    path: "",
+  });
+  const [valuesSource, setValuesSource] = useState<string>();
+  const [currTeam] = useAtom(currTeamAtom);
   const [envVars, setEnvVars] = useState<string[]>([]);
 
   const breadcrumbs = [
@@ -64,78 +58,11 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
     },
   ];
 
-  const selectVariableOption = (option: Selection) => {
-    setSelectedVarOption(option.value);
-  };
-
-  const renderFilesystemOptions = () => {
-    return [
-      <HorizontalSpacer spacepixels={24} />,
-      <P>
-        Add the path to your tfvars file, relative to the root folder of the
-        Github repository.
-      </P>,
-      <HorizontalSpacer spacepixels={24} />,
-      <TextInput
-        placeholder="./env1.tfvars"
-        on_change={(p) => setFilePath(p)}
-      />,
-    ];
-  };
-
-  const renderManualImportOptions = () => {
-    return [
-      <HorizontalSpacer spacepixels={24} />,
-      <P>Upload your JSON variables here.</P>,
-      <HorizontalSpacer spacepixels={24} />,
-      <FlexColScroll height="200px" width="100%">
-        <CodeBlock
-          value={jsonValues}
-          height="200px"
-          onChange={(e) => setJSONValues(e)}
-        />
-      </FlexColScroll>,
-      jsonParseErr && <HorizontalSpacer spacepixels={20} />,
-      jsonParseErr && <ErrorBar text={jsonParseErr} />,
-    ];
-  };
-
-  const renderAdditionalFormOptions = () => {
-    switch (varOption) {
-      case "filesystem":
-        return renderFilesystemOptions();
-      case "manual":
-        return renderManualImportOptions();
-      default:
-        return [];
-    }
-  };
-
   const onSubmit = () => {
-    switch (varOption) {
-      case "filesystem":
-        req.values_github = {
-          path: filePath,
-          github_app_installation_id: req.github.github_app_installation_id,
-          github_repository_branch: req.github.github_repository_branch,
-          github_repository_name: req.github.github_repository_name,
-          github_repository_owner: req.github.github_repository_owner,
-        };
-
-        submit(req);
-        break;
-      case "manual":
-        try {
-          const values = JSON.parse(jsonValues);
-
-          req.values_raw = values;
-        } catch (e) {
-          setJSONParseErr("Could not parse JSON");
-          return;
-        }
-
-        break;
-      default:
+    if (valuesSource == "github") {
+      req.values_github = githubValues;
+    } else {
+      req.values_raw = jsonValues;
     }
 
     let mappedEnvVars: Record<string, string> = {};
@@ -167,20 +94,12 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
           }).toString()}
         />
         <HorizontalSpacer spacepixels={16} />
-        <P>
-          Choose how you would like to link your Terraform variables. You can
-          link variables from your Git repository, via a variable file, or set
-          them in your CI pipeline as environment variables.
-        </P>
-        <HorizontalSpacer spacepixels={24} />
-        <Selector
-          placeholder="Variable Source"
-          placeholder_material_icon="edit_note"
-          options={variableOptions}
-          select={selectVariableOption}
+        <SetModuleValues
+          set_github_values={setGithubValues}
+          current_github_params={githubValues}
+          set_raw_values={setJSONValues}
+          set_values_source={setValuesSource}
         />
-        {renderAdditionalFormOptions()}
-        <HorizontalSpacer spacepixels={24} />
         <P>
           Add any additional environment variables (for example, credentials or
           Terraform variables) below.
@@ -197,7 +116,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
           material_icon="chevron_right"
           icon_side="right"
           on_click={onSubmit}
-          disabled={!varOption}
+          disabled={!valuesSource}
         />
       </FlexRowRight>
     </>

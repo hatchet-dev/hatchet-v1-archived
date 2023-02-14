@@ -390,7 +390,7 @@ export interface ListModuleRunsResponse {
   rows?: ModuleRunOverview[];
 }
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"}]} */
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
   rows?: Module[];
@@ -468,7 +468,7 @@ export interface LoginUserRequest {
 
 export type LoginUserResponse = User;
 
-/** @example {"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
 export interface Module {
   /**
    * the time that this resource was created
@@ -476,6 +476,8 @@ export interface Module {
    * @example "2022-12-13T20:06:48.888Z"
    */
   created_at?: string;
+  current_env_vars_version_id?: string;
+  current_values_version_id?: string;
   deployment?: ModuleDeploymentConfig;
   /**
    * the id of this resource, in UUID format
@@ -1094,6 +1096,8 @@ export interface UpdateModuleRequest {
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
 }
+
+export type UpdateModuleResponse = Module;
 
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */

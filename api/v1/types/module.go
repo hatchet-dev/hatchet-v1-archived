@@ -26,6 +26,9 @@ type Module struct {
 
 	LockID   string         `json:"lock_id"`
 	LockKind ModuleLockKind `json:"lock_kind"`
+
+	CurrentValuesVersionID  string `json:"current_values_version_id"`
+	CurrentEnvVarsVersionID string `json:"current_env_vars_version_id"`
 }
 
 type ModuleRunStatus string
@@ -182,6 +185,9 @@ type UpdateModuleRequest struct {
 
 	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"omitempty"`
 }
+
+// swagger:model
+type UpdateModuleResponse Module
 
 // swagger:parameters listModules
 type ListModulesRequest struct {
