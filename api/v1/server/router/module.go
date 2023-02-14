@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/logs"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/modules"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/terraform_state"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
@@ -27,7 +28,7 @@ type modulePathParams struct {
 	Module string `json:"module_id"`
 }
 
-// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun getModuleRun
+// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun getModuleRun getModuleRunLogs
 type moduleRunPathParams struct {
 	// The team id
 	// in: path
@@ -1158,6 +1159,67 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getRunPlanSummaryEndpoint,
 		Handler:  getRunPlanSummaryHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs -> logs.NewLogGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs getModuleRunLogs
+	//
+	// ### Description
+	//
+	// Gets the logs for a module run.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get logs
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - name: module_run_id
+	// responses:
+	//   '200':
+	//     description: Successfully got the logs
+	//     schema:
+	//       $ref: '#/definitions/GetLogsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	//   '423':
+	//     description: Locked
+	getLogsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/logs", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+			},
+		},
+	)
+
+	getLogsHandler := logs.NewLogGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getLogsEndpoint,
+		Handler:  getLogsHandler,
 		Router:   r,
 	})
 

@@ -31,9 +31,10 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
 	run := &models.ModuleRun{
-		ModuleID: module.ID,
-		Status:   models.ModuleRunStatusInProgress,
-		Kind:     models.ModuleRunKindPlan,
+		ModuleID:    module.ID,
+		Status:      models.ModuleRunStatusInProgress,
+		Kind:        models.ModuleRunKindPlan,
+		LogLocation: m.Config().DefaultLogStore.GetID(),
 	}
 
 	desc, err := generateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)

@@ -57,7 +57,7 @@ func (t *TerraformPlanGetBySHAHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	path := GetPlanZIPPath(team.ID, module.ID, planRuns[0].ID)
+	path := filestorage.GetPlanZIPPath(team.ID, module.ID, planRuns[0].ID)
 
 	fileBytes, err := t.Config().DefaultFileStore.ReadFile(path, true)
 

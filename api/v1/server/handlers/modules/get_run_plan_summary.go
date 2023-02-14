@@ -6,9 +6,9 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
-	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/terraform_state"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/terraform"
 )
@@ -60,9 +60,9 @@ func (m *ModuleGetPlanSummaryHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		path = terraform_state.GetPlanJSONPath(module.TeamID, module.ID, planRuns[0].ID)
+		path = filestorage.GetPlanJSONPath(module.TeamID, module.ID, planRuns[0].ID)
 	} else if run.Kind == models.ModuleRunKindPlan {
-		path = terraform_state.GetPlanJSONPath(module.TeamID, module.ID, run.ID)
+		path = filestorage.GetPlanJSONPath(module.TeamID, module.ID, run.ID)
 	} else {
 		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 			Code:        types.ErrCodeBadRequest,

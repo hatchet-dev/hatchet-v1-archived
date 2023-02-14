@@ -206,6 +206,7 @@ func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error
 		rc.ModuleRunID)
 
 	cmd.Env = append(cmd.Environ(), []string{
+		fmt.Sprintf("TF_LOG=JSON"),
 		fmt.Sprintf("TF_HTTP_USERNAME=mrt"),
 		fmt.Sprintf("TF_HTTP_PASSWORD=%s", rc.APIToken),
 		fmt.Sprintf("TF_HTTP_ADDRESS=%s", tfStateAddress),
@@ -261,8 +262,8 @@ func (r *RunnerAction) plan(
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = r.writer
+	cmd.Stderr = r.writer
 
 	err := r.setBackendEnv(config, cmd)
 

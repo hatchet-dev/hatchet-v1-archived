@@ -115,7 +115,7 @@ func downloadGithubRepoContents(config *runner.Config) error {
 func getWriter(config *runner.Config) (io.Writer, error) {
 	provClient := config.GRPCClient
 
-	grpcStream, err := grpcstreamer.NewGRPCStreamer(provClient, "")
+	grpcStream, err := grpcstreamer.NewGRPCStreamer(provClient)
 
 	if err != nil {
 		return nil, err

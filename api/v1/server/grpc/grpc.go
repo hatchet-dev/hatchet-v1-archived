@@ -7,6 +7,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/pb"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"google.golang.org/grpc/metadata"
 )
@@ -96,5 +97,5 @@ func verifyModuleRunToken(config *server.Config, ctx context.Context) (res *veri
 }
 
 func getLogPathFromResult(res *verifyResult) string {
-	return fmt.Sprintf("%s/%s/%s", res.teamID, res.moduleID, res.moduleRunID)
+	return logstorage.GetLogStoragePath(res.teamID, res.moduleID, res.moduleRunID)
 }

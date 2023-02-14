@@ -292,6 +292,11 @@ export interface FinalizeModuleRunRequest {
 
 export type FinalizeModuleRunResponse = ModuleRunOverview;
 
+/** @example {"logs":["logs","logs"]} */
+export interface GetLogsResponse {
+  logs?: string[];
+}
+
 export type GetModuleEnvVarsVersionResponse = ModuleEnvVarsVersion;
 
 export type GetModulePlanSummaryResponse = ModulePlannedChangeSummary[];

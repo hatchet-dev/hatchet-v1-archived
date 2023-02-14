@@ -12,6 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/pb"
 	"github.com/hatchet-dev/hatchet/api/v1/server/router"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
+	"github.com/hatchet-dev/hatchet/internal/temporal/worker"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -47,13 +48,21 @@ func main() {
 
 	sc.Logger.Info().Msgf("Starting server %v", address)
 
-	// s := &http.Server{
-	// 	Addr:    address,
-	// 	Handler: appRouter,
-	// 	// ReadTimeout:  config.ServerConf.TimeoutRead,
-	// 	// WriteTimeout: config.ServerConf.TimeoutWrite,
-	// 	// IdleTimeout:  config.ServerConf.TimeoutIdle,
-	// }
+	if sc.ServerRuntimeConfig.RunWorkers {
+		err = worker.NewWorker(sc)
+
+		if err != nil {
+			fmt.Printf("Fatal: could not load temporal: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	err = sc.TemporalClient.StartBackgroundTasks()
+
+	if err != nil {
+		fmt.Printf("Fatal: could not dispatch test workflow: %v", err)
+		os.Exit(1)
+	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterProvisionerServer(grpcServer, pgrpc.NewProvisionerServer(sc))

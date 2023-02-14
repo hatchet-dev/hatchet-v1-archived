@@ -27,6 +27,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/provisioner/local"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm"
+	"github.com/hatchet-dev/hatchet/internal/temporal"
 	"github.com/joeshaw/envdecode"
 )
 
@@ -209,6 +210,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		Port:       sc.Port,
 		ServerURL:  sc.ServerURL,
 		CookieName: sc.CookieName,
+		RunWorkers: sc.TemporalRunWorkers,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
@@ -313,6 +315,17 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		provisioner = local.NewLocalProvisioner()
 	}
 
+	temporalClient, err := temporal.NewTemporalClient(&temporal.ClientOpts{
+		HostPort:      sc.TemporalHostPort,
+		Namespace:     sc.TemporalNamespace,
+		AuthHeaderKey: sc.TemporalAuthHeaderKey,
+		AuthHeaderVal: sc.TemporalAuthHeaderVal,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &server.Config{
 		DB:                  *dbConfig,
 		Config:              *sharedConfig,
@@ -325,6 +338,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		DefaultFileStore:    storageManager,
 		DefaultLogStore:     logManager,
 		DefaultProvisioner:  provisioner,
+		TemporalClient:      temporalClient,
 	}, nil
 }
 

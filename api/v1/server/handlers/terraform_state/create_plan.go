@@ -1,7 +1,6 @@
 package terraform_state
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -9,6 +8,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
@@ -37,8 +37,8 @@ func (t *TerraformPlanCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	jsonPlanPath := GetPlanJSONPath(team.ID, module.ID, run.ID)
-	prettyPlanPath := GetPlanPrettyPath(team.ID, module.ID, run.ID)
+	jsonPlanPath := filestorage.GetPlanJSONPath(team.ID, module.ID, run.ID)
+	prettyPlanPath := filestorage.GetPlanPrettyPath(team.ID, module.ID, run.ID)
 
 	err := t.Config().DefaultFileStore.WriteFile(jsonPlanPath, []byte(req.PlanJSON), true)
 
@@ -57,16 +57,4 @@ func (t *TerraformPlanCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	t.WriteResult(w, r, nil)
-}
-
-func GetPlanJSONPath(teamID, moduleID, runID string) string {
-	return fmt.Sprintf("%s/%s/%s/plan.json", teamID, moduleID, runID)
-}
-
-func GetPlanPrettyPath(teamID, moduleID, runID string) string {
-	return fmt.Sprintf("%s/%s/%s/plan.txt", teamID, moduleID, runID)
-}
-
-func GetPlanZIPPath(teamID, moduleID, runID string) string {
-	return fmt.Sprintf("%s/%s/%s/plan.zip", teamID, moduleID, runID)
 }

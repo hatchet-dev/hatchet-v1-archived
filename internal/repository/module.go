@@ -36,6 +36,9 @@ type ModuleRepository interface {
 	// ReadModuleRunByGithubSHA finds a run by its Github SHA
 	ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, RepositoryError)
 
+	// ListCompletedModuleRunsByLogLocation lists all module runs with a given log location
+	ListCompletedModuleRunsByLogLocation(location string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
+
 	// ReadModuleRunWithStateLock returns a module run that has a lock on the module state
 	ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, RepositoryError)
 

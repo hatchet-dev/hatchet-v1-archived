@@ -30,6 +30,8 @@ import {
 } from "./styles";
 import github from "assets/github.png";
 import { Module } from "shared/api/generated/data-contracts";
+import styled from "styled-components";
+import Logs from "components/logs";
 
 type Props = {
   back: () => void;
@@ -75,6 +77,15 @@ const ExpandedRun: React.FC<Props> = ({
     },
     retry: false,
     enabled: planSummaryEnabled,
+  });
+
+  const logsQuery = useQuery({
+    queryKey: ["module_run_logs", team_id, module_id, module_run_id],
+    queryFn: async () => {
+      const res = await api.getModuleRunLogs(team_id, module_id, module_run_id);
+      return res;
+    },
+    retry: false,
   });
 
   const envVarsQuery = useQuery({
@@ -320,6 +331,26 @@ const ExpandedRun: React.FC<Props> = ({
     }
   };
 
+  const renderLogsSection = () => {
+    if (logsQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
+    if (logsQuery.isError) {
+      return (
+        <Placeholder>
+          <SmallSpan>Could not load logs: an error occurred.</SmallSpan>
+        </Placeholder>
+      );
+    }
+
+    return <Logs logs={logsQuery.data?.data.logs} />;
+  };
+
   return (
     <ExpandedRunContainer>
       <HorizontalSpacer spacepixels={24} />
@@ -364,6 +395,7 @@ const ExpandedRun: React.FC<Props> = ({
       <HorizontalSpacer spacepixels={24} />
       <RunSectionCard>
         <H4>Logs</H4>
+        {renderLogsSection()}
       </RunSectionCard>
     </ExpandedRunContainer>
   );

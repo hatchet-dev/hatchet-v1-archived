@@ -8,9 +8,9 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
-	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/terraform_state"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
 
@@ -97,7 +97,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 		// if the run was successful, write the prettified plan to github
 		if run.Status == models.ModuleRunStatusCompleted {
-			fileBytes, err := m.Config().DefaultFileStore.ReadFile(terraform_state.GetPlanPrettyPath(module.TeamID, module.ID, run.ID), true)
+			fileBytes, err := m.Config().DefaultFileStore.ReadFile(filestorage.GetPlanPrettyPath(module.TeamID, module.ID, run.ID), true)
 
 			if err != nil {
 				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))

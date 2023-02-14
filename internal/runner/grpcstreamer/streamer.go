@@ -19,14 +19,13 @@ type GRPCStreamer struct {
 	workspaceID string
 }
 
-func NewGRPCStreamer(client *grpc.GRPCClient, workspaceID string) (*GRPCStreamer, error) {
+func NewGRPCStreamer(client *grpc.GRPCClient) (*GRPCStreamer, error) {
 	ctx, cancel := client.NewGRPCContext()
 
 	res := &GRPCStreamer{
-		cancel:      cancel,
-		ctx:         ctx,
-		client:      client,
-		workspaceID: workspaceID,
+		cancel: cancel,
+		ctx:    ctx,
+		client: client,
 	}
 
 	err := res.setStream()

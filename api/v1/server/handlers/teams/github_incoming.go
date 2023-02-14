@@ -389,6 +389,19 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			return err
 		} else if !shouldTrigger {
 			g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
+
+			if mod.LockID == headBranch {
+				// if module run is skipped, remove the lock
+				mod.LockID = ""
+				mod.LockKind = models.ModuleLockKind("")
+
+				mod, err = g.Repo().Module().UpdateModule(mod)
+
+				if err != nil {
+					continue
+				}
+			}
+
 			continue
 		}
 
@@ -408,6 +421,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 				ModuleValuesVersionID:  mod.CurrentModuleValuesVersionID,
 				ModuleEnvVarsVersionID: mod.CurrentModuleEnvVarsVersionID,
 			},
+			LogLocation: g.Config().DefaultLogStore.GetID(),
 		}
 
 		run, err = g.Repo().Module().CreateModuleRun(run)
@@ -550,6 +564,7 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		Status:            status,
 		StatusDescription: desc,
 		Kind:              models.ModuleRunKindPlan,
+		LogLocation:       g.Config().DefaultLogStore.GetID(),
 		ModuleRunConfig: models.ModuleRunConfig{
 			TriggerKind:            models.ModuleRunTriggerKindGithub,
 			GithubCheckID:          checkResp.GetID(),

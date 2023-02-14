@@ -13,6 +13,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
+	"github.com/hatchet-dev/hatchet/internal/temporal"
 )
 
 type ConfigFile struct {
@@ -84,6 +85,13 @@ type ConfigFile struct {
 	// Provisioner config options
 	ProvisionerRunnerMethod string `env:"PROVISIONER_RUNNER_METHOD,default=local"`
 	RunnerGRPCServerAddress string `env:"RUNNER_GRPC_SERVER_ADDRESS,default=http://localhost:8080"`
+
+	// Temporal config options
+	TemporalRunWorkers    bool   `env:"TEMPORAL_RUN_WORKERS,default=true"`
+	TemporalHostPort      string `env:"TEMPORAL_HOST_PORT,default=127.0.0.1:7233"`
+	TemporalNamespace     string `env:"TEMPORAL_NAMESPACE,default=default"`
+	TemporalAuthHeaderKey string `env:"TEMPORAL_AUTH_HEADER_KEY"`
+	TemporalAuthHeaderVal string `env:"TEMPORAL_AUTH_HEADER_VAL"`
 }
 
 type AuthConfig struct {
@@ -113,6 +121,7 @@ type ServerRuntimeConfig struct {
 	ServerURL  string
 	Port       int
 	CookieName string
+	RunWorkers bool
 }
 
 type Config struct {
@@ -137,6 +146,8 @@ type Config struct {
 	DefaultLogStore logstorage.LogStorageBackend
 
 	DefaultProvisioner provisioner.Provisioner
+
+	TemporalClient *temporal.Client
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

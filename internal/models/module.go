@@ -100,8 +100,14 @@ const (
 	ModuleRunKindDestroy ModuleRunKind = "destroy"
 )
 
+const LogLocationFileStorage string = "file"
+
 type ModuleRun struct {
 	Base
+
+	// TeamID is only used by some queries where the team id is not implicit. This is not
+	// written to the module run table.
+	TeamID string `gorm:"-"`
 
 	ModuleID string
 
@@ -121,6 +127,8 @@ type ModuleRun struct {
 	Tokens []ModuleRunToken
 
 	ModuleRunConfig ModuleRunConfig
+
+	LogLocation string
 }
 
 func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {

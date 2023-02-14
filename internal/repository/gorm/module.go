@@ -153,6 +153,49 @@ func (repo *ModuleRepository) DeleteModuleRun(run *models.ModuleRun) (*models.Mo
 	return run, nil
 }
 
+func (repo *ModuleRepository) ListCompletedModuleRunsByLogLocation(location string, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
+	var runs []*models.ModuleRun
+
+	db := repo.db.Model(&models.ModuleRun{}).Where("status = ? AND log_location = ?", models.ModuleRunStatusCompleted, location)
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
+
+	if err := db.Find(&runs).Error; err != nil {
+		return nil, nil, err
+	}
+
+	// populate the team ids in the runs as the team IDs are not implicit
+	moduleToTeamID := make(map[string]string)
+
+	for _, run := range runs {
+		moduleToTeamID[run.ModuleID] = ""
+	}
+
+	moduleIDs := make([]string, 0)
+
+	for moduleID, _ := range moduleToTeamID {
+		moduleIDs = append(moduleIDs, moduleID)
+	}
+
+	var mods []*models.Module
+
+	if err := repo.db.Where("id IN (?)", moduleIDs).Find(&mods).Error; err != nil {
+		return nil, nil, err
+	}
+
+	for _, mod := range mods {
+		moduleToTeamID[mod.ID] = mod.TeamID
+	}
+
+	for _, run := range runs {
+		run.TeamID = moduleToTeamID[run.ModuleID]
+	}
+
+	return runs, paginatedResult, nil
+}
+
 func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, status *models.ModuleRunStatus, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
 	var runs []*models.ModuleRun
 

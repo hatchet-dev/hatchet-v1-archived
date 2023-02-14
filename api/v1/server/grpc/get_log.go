@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hatchet-dev/hatchet/api/v1/server/pb"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
 )
 
 func (s *ProvisionerServer) GetLog(moduleRun *pb.ModuleRun, server pb.Provisioner_GetLogServer) error {
@@ -17,7 +18,10 @@ func (s *ProvisionerServer) GetLog(moduleRun *pb.ModuleRun, server pb.Provisione
 		return fmt.Errorf("unauthorized")
 	}
 
-	return s.config.DefaultLogStore.StreamLogs(server.Context(), getLogPathFromResult(res), &pbWriteCloser{server})
+	return s.config.DefaultLogStore.StreamLogs(server.Context(), &logstorage.LogGetOpts{
+		Path:  getLogPathFromResult(res),
+		Count: 0,
+	}, &pbWriteCloser{server})
 }
 
 type pbWriteCloser struct {

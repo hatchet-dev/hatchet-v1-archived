@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
@@ -49,7 +50,7 @@ func (t *TerraformPlanUploadZIPHandler) ServeHTTP(w http.ResponseWriter, r *http
 
 	fileBytes, err := ioutil.ReadAll(file)
 
-	zipPlanPath := GetPlanZIPPath(team.ID, module.ID, run.ID)
+	zipPlanPath := filestorage.GetPlanZIPPath(team.ID, module.ID, run.ID)
 
 	err = t.Config().DefaultFileStore.WriteFile(zipPlanPath, fileBytes, true)
 
