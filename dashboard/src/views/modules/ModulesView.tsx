@@ -50,8 +50,14 @@ const ModulesView: React.FunctionComponent = () => {
 
   const columns = [
     {
+      Header: "Name",
+      accessor: "name",
+      width: 200,
+    },
+    {
       Header: "Repo Name",
       accessor: "repo_name",
+      width: 150,
       Cell: ({ row }: any) => {
         return (
           <GithubAvatarAndName
@@ -65,14 +71,17 @@ const ModulesView: React.FunctionComponent = () => {
     {
       Header: "Last Deployed",
       accessor: "last_deployed",
+      width: 100,
     },
     {
       Header: "Branch",
       accessor: "repo_branch",
+      width: 70,
     },
     {
       Header: "Source",
       accessor: "source",
+      width: 70,
     },
     {
       Header: "Module Path",

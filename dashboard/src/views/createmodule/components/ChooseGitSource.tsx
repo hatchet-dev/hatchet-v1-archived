@@ -36,6 +36,7 @@ type Props = {
 };
 
 const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
+  const [moduleName, setModuleName] = useState("");
   const [selectedGAI, setSelectedGAI] = useState<GithubAppInstallation>(null);
   const [selectedGAIReset, setSelectedGAIReset] = useState(0);
   const [selectedRepo, setSelectedRepo] = useState<GithubRepo>(null);
@@ -152,7 +153,11 @@ const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
       }) || [];
 
   const submitEnabled =
-    !!selectedGAI && !!selectedRepo && !!selectedBranch && path != "";
+    !!moduleName &&
+    !!selectedGAI &&
+    !!selectedRepo &&
+    !!selectedBranch &&
+    path != "";
 
   return (
     <>
@@ -161,12 +166,19 @@ const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
       <H1>Create a new module</H1>
       <HorizontalSpacer spacepixels={20} />
       <SectionArea>
-        <H2>Step 1: Choose Git Source</H2>
+        <H2>Step 1: Name and Source Configuration</H2>
         <HorizontalSpacer
           spacepixels={14}
           overrides={css({
             borderBottom: theme.line.thick,
           }).toString()}
+        />
+        <HorizontalSpacer spacepixels={16} />
+        <P>Give the module a name.</P>
+        <HorizontalSpacer spacepixels={12} />
+        <TextInput
+          placeholder="ex. my-module"
+          on_change={(val) => setModuleName(val)}
         />
         <HorizontalSpacer spacepixels={16} />
         <P>Choose the Github account to deploy this module from.</P>
@@ -257,7 +269,9 @@ const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
             }
 
             submit({
-              name: `${selectedRepo.repo_owner}-${selectedRepo.repo_name}-${selectedBranch.branch_name}`,
+              name:
+                moduleName ||
+                `${selectedRepo.repo_owner}-${selectedRepo.repo_name}-${selectedBranch.branch_name}`,
               github: {
                 path: path,
                 github_app_installation_id: selectedGAI.id,
