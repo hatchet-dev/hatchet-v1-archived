@@ -76,7 +76,7 @@ const ModuleRunsList: React.FunctionComponent<Props> = ({
   }
 
   return (
-    <FlexCol height="calc(100% - 200px)">
+    <FlexCol height="calc(100% - 250px)">
       <FlexColScroll maxHeight="100%">
         <RunsList runs={data.data.rows} select_run={select_run} />
       </FlexColScroll>

@@ -390,7 +390,7 @@ export interface ListModuleRunsResponse {
   rows?: ModuleRunOverview[];
 }
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}},{"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"}]} */
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
   rows?: Module[];
@@ -468,7 +468,7 @@ export interface LoginUserRequest {
 
 export type LoginUserResponse = User;
 
-/** @example {"updated_at":"2022-12-13T20:06:48.888Z","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"}} */
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
 export interface Module {
   /**
    * the time that this resource was created
@@ -482,6 +482,8 @@ export interface Module {
    * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
    */
   id?: string;
+  lock_id?: string;
+  lock_kind?: string;
   /**
    * the name for the module
    * @example "eks"
@@ -533,6 +535,8 @@ export interface ModuleEnvVarsVersion {
   /** @format uint64 */
   version?: number;
 }
+
+export type ModuleLockKind = string;
 
 export type ModulePlanSummary = ModulePlannedChangeSummary[];
 

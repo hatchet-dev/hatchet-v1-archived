@@ -7,6 +7,13 @@ const (
 	URLParamModuleValuesID  URLParam = "module_values_id"
 )
 
+type ModuleLockKind string
+
+const (
+	ModuleLockKindGithubBranch ModuleLockKind = "github_branch"
+	ModuleLockKindManual       ModuleLockKind = "manual"
+)
+
 // swagger:model
 type Module struct {
 	*APIResourceMeta
@@ -16,6 +23,9 @@ type Module struct {
 	Name string `json:"name"`
 
 	DeploymentConfig ModuleDeploymentConfig `json:"deployment"`
+
+	LockID   string         `json:"lock_id"`
+	LockKind ModuleLockKind `json:"lock_kind"`
 }
 
 type ModuleRunStatus string

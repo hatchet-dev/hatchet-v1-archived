@@ -10,6 +10,8 @@ import {
   Spinner,
   CodeLine,
   FlexCol,
+  FlexRowRight,
+  FlexRowLeft,
 } from "@hatchet-dev/hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import CodeBlock from "components/codeblock";
@@ -19,19 +21,16 @@ import api from "shared/api";
 import { parseTerraformPlanSummary, relativeDate } from "shared/utils";
 import {
   ExpandedRunContainer,
-  GithubRefContainer,
-  GithubImg,
   RunSectionCard,
-  StatusContainer,
-  StatusText,
-  TriggerContainer,
   TriggerPRContainer,
-  StatusAndCommitContainer,
 } from "./styles";
-import github from "assets/github.png";
 import { Module } from "shared/api/generated/data-contracts";
 import styled from "styled-components";
 import Logs from "components/logs";
+import StatusContainer from "components/status";
+import Status from "components/status";
+import GithubRef from "components/githubref";
+import { StatusText } from "components/status/styles";
 
 type Props = {
   back: () => void;
@@ -135,33 +134,27 @@ const ExpandedRun: React.FC<Props> = ({
     );
   };
 
-  const selectPRCommit = () => {
+  const getPRCommitLink = () => {
     const pr = moduleRunQuery.data.data?.github_pull_request;
     const sha = moduleRunQuery.data.data?.config.github_commit_sha;
 
-    window.open(
-      `https://github.com/${pr.github_repository_owner}/${pr.github_repository_name}/pull/${pr.github_pull_request_number}/commits/${sha}`
-    );
+    return `https://github.com/${pr.github_repository_owner}/${pr.github_repository_name}/pull/${pr.github_pull_request_number}/commits/${sha}`;
   };
 
-  const selectCommit = () => {
+  const getCommitLink = () => {
     const gh = module.deployment;
     const sha = moduleRunQuery.data.data?.config.github_commit_sha;
 
-    window.open(
-      `https://github.com/${gh.github_repo_owner}/${gh.github_repo_name}/commit/${sha}`
-    );
+    return `https://github.com/${gh.github_repo_owner}/${gh.github_repo_name}/commit/${sha}`;
   };
 
-  const selectGithubFileRef = () => {
+  const getGithubFileRefLink = () => {
     const gh = valuesQuery.data.data?.github;
     const sha = moduleRunQuery.data.data?.config.github_commit_sha;
 
-    window.open(
-      `https://github.com/${gh.github_repo_owner}/${
-        gh.github_repo_name
-      }/blob/${sha}${gh.path.replace(/^(\.)/, "")}`
-    );
+    return `https://github.com/${gh.github_repo_owner}/${
+      gh.github_repo_name
+    }/blob/${sha}${gh.path.replace(/^(\.)/, "")}`;
   };
 
   if (
@@ -186,10 +179,10 @@ const ExpandedRun: React.FC<Props> = ({
 
     if (valuesQuery.data.data.github) {
       return (
-        <GithubRefContainer onClick={selectGithubFileRef}>
-          <GithubImg src={github} />
-          <StatusText>./envs/alexander-test/variables.json</StatusText>
-        </GithubRefContainer>
+        <GithubRef
+          text={valuesQuery.data.data.github.path}
+          link={getGithubFileRefLink()}
+        />
       );
     }
 
@@ -242,22 +235,15 @@ const ExpandedRun: React.FC<Props> = ({
         break;
     }
 
-    return (
-      <StatusContainer>
-        <MaterialIcon className="material-icons">{materialIcon}</MaterialIcon>
-        <StatusText>{text}</StatusText>
-      </StatusContainer>
-    );
+    return <Status material_icon={materialIcon} status_text={text} />;
   };
 
   const renderTimeContainer = () => {
     return (
-      <StatusContainer>
-        <MaterialIcon className="material-icons">schedule</MaterialIcon>
-        <StatusText>
-          {relativeDate(moduleRunQuery.data.data?.updated_at)}
-        </StatusText>
-      </StatusContainer>
+      <Status
+        status_text={relativeDate(moduleRunQuery.data.data?.updated_at)}
+        material_icon="schedule"
+      />
     );
   };
 
@@ -279,7 +265,7 @@ const ExpandedRun: React.FC<Props> = ({
       <FlexCol>
         <SmallSpan>{moduleRunQuery?.data?.data?.status_description} </SmallSpan>
         <HorizontalSpacer spacepixels={8} />
-        <TriggerContainer>
+        <FlexRowLeft gap="4px">
           <SmallSpan>Triggered by </SmallSpan>
           <TriggerPRContainer onClick={selectPR}>
             <MaterialIcon className="fa-solid fa-code-pull-request" />
@@ -305,7 +291,7 @@ const ExpandedRun: React.FC<Props> = ({
                 .github_pull_request_head_branch
             }
           </CodeLine>
-        </TriggerContainer>
+        </FlexRowLeft>
         <HorizontalSpacer spacepixels={8} />
         {status == "completed" && renderPlannedChanges()}
       </FlexCol>
@@ -359,21 +345,17 @@ const ExpandedRun: React.FC<Props> = ({
       <RunSectionCard>
         <FlexRow>
           <H4>Overview</H4>
-          <StatusAndCommitContainer>
-            <GithubRefContainer
-              onClick={kind == "plan" ? selectPRCommit : selectCommit}
-            >
-              <GithubImg src={github} />
-              <StatusText>
-                {moduleRunQuery.data.data?.config.github_commit_sha.substr(
-                  0,
-                  7
-                )}
-              </StatusText>
-            </GithubRefContainer>
+          <FlexRowRight gap="8px">
+            <GithubRef
+              text={moduleRunQuery.data.data?.config.github_commit_sha.substr(
+                0,
+                7
+              )}
+              link={kind == "plan" ? getPRCommitLink() : getCommitLink()}
+            />
             {renderStatusContainer()}
             {renderTimeContainer()}
-          </StatusAndCommitContainer>
+          </FlexRowRight>
         </FlexRow>
         <HorizontalSpacer spacepixels={20} />
         {renderOverview()}
