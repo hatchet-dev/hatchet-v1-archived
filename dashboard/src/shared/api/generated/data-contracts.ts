@@ -1087,6 +1087,14 @@ export interface TerraformLock {
   Who?: string;
 }
 
+export interface UpdateModuleRequest {
+  env_vars?: Record<string, string>;
+  github?: CreateModuleRequestGithub;
+  name?: string;
+  values_github?: CreateModuleValuesRequestGithub;
+  values_raw?: Record<string, object>;
+}
+
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
   policies: OrganizationPolicyReference[];

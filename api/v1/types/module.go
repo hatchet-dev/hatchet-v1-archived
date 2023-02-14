@@ -170,6 +170,19 @@ type CreateModuleResponse Module
 // swagger:model
 type GetModuleResponse Module
 
+// swagger:model
+type UpdateModuleRequest struct {
+	Name string `json:"name" form:"max=255"`
+
+	EnvVars map[string]string `json:"env_vars,omitempty" form:"omitempty"`
+
+	ValuesRaw map[string]interface{} `json:"values_raw,omitempty" form:"omitempty"`
+
+	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"omitempty"`
+
+	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"omitempty"`
+}
+
 // swagger:parameters listModules
 type ListModulesRequest struct {
 	*PaginationRequest

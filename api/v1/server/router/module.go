@@ -13,7 +13,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getCurrentModuleValues getModule
+// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getCurrentModuleValues getModule updateModule
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -196,6 +196,66 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: modulesListEndpoint,
 		Handler:  modulesListHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/teams/{team_id}/modules/{module_id} -> modules.NewModuleUpdateHandler
+	// swagger:operation POST /api/v1/teams/{team_id}/modules/{module_id} updateModule
+	//
+	// ### Description
+	//
+	// Updates a module.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Update Module Run
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - in: body
+	//     name: UpdateModuleRequest
+	//     description: The module params to update
+	//     schema:
+	//       $ref: '#/definitions/UpdateModuleRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully updated the module
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	updateModuleEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+			},
+		},
+	)
+
+	updateModuleHandler := modules.NewModuleUpdateHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: updateModuleEndpoint,
+		Handler:  updateModuleHandler,
 		Router:   r,
 	})
 
