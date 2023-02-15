@@ -13,7 +13,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getCurrentModuleValues getModule updateModule
+// swagger:parameters createModuleRun getModuleTarballURL listModuleRuns getCurrentModuleValues getModule updateModule deleteModule
 type modulePathParams struct {
 	// The team id
 	// in: path
@@ -256,6 +256,66 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: updateModuleEndpoint,
 		Handler:  updateModuleHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/teams/{team_id}/modules/{module_id} -> modules.NewModuleDeleteHandler
+	// swagger:operation DELETE /api/v1/teams/{team_id}/modules/{module_id} deleteModule
+	//
+	// ### Description
+	//
+	// Updates a module.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Update Module Run
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - in: body
+	//     name: UpdateModuleRequest
+	//     description: The module params to update
+	//     schema:
+	//       $ref: '#/definitions/UpdateModuleRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully updated the module
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	deleteModuleEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbDelete,
+			Method: types.HTTPVerbDelete,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+			},
+		},
+	)
+
+	deleteModuleHandler := modules.NewModuleDeleteHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: deleteModuleEndpoint,
+		Handler:  deleteModuleHandler,
 		Router:   r,
 	})
 
