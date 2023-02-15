@@ -20,6 +20,7 @@ import {
   Module,
   UpdateModuleRequest,
 } from "shared/api/generated/data-contracts";
+import DeleteModuleForm from "./components/DeleteModuleForm";
 import ModuleSettingsCard from "./components/ModuleSettingsCard";
 import ModuleSettingsContainer from "./components/ModuleSettingsContainer";
 import UpdateModuleName from "./components/UpdateModuleName";
@@ -185,6 +186,7 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
       <SectionArea>
         <H4>Delete Module</H4>
         <HorizontalSpacer spacepixels={20} />
+        <DeleteModuleForm team_id={team_id} module={module} />
       </SectionArea>
     </ModuleSettingsContainer>
   );
