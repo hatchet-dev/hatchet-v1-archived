@@ -23,6 +23,7 @@ import {
 import DeleteModuleForm from "./components/DeleteModuleForm";
 import ModuleSettingsCard from "./components/ModuleSettingsCard";
 import ModuleSettingsContainer from "./components/ModuleSettingsContainer";
+import UnlockModuleForm from "./components/UnlockModuleForm";
 import UpdateModuleName from "./components/UpdateModuleName";
 
 type Props = {
@@ -181,6 +182,7 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
       <SectionArea>
         <H4>Locks</H4>
         <HorizontalSpacer spacepixels={20} />
+        <UnlockModuleForm team_id={team_id} module={module} />
       </SectionArea>
       <HorizontalSpacer spacepixels={20} />
       <SectionArea>
