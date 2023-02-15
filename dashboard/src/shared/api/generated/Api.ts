@@ -28,12 +28,14 @@ import {
   CreateTerraformPlanRequest,
   CreateUserRequest,
   CreateUserResponse,
+  DeleteModuleResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
   DeleteTeamResponse,
   EmptyResponse,
   FinalizeModuleRunRequest,
   FinalizeModuleRunResponse,
+  ForceUnlockModuleResponse,
   GetLogsResponse,
   GetModuleEnvVarsVersionResponse,
   GetModulePlanSummaryResponse,
@@ -66,6 +68,7 @@ import {
   RevokePATResponseExample,
   TeamAddMemberResponse,
   TeamUpdateResponse,
+  UpdateModuleResponse,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
@@ -620,21 +623,20 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description Updates a module.
+   * @description Deletes a module.
    *
    * @tags Modules
    * @name DeleteModule
-   * @summary Update Module Run
+   * @summary Delete Module
    * @request DELETE:/api/v1/teams/{team_id}/modules/{module_id}
    * @secure
    */
-  deleteModule = (teamId: string, moduleId: string, data?: CreateModuleRequest, params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+  deleteModule = (teamId: string, moduleId: string, params: RequestParams = {}) =>
+    this.request<DeleteModuleResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}`,
       method: "DELETE",
-      body: data,
       secure: true,
-      type: ContentType.Json,
+      format: "json",
       ...params,
     });
   /**
@@ -664,12 +666,13 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @secure
    */
   updateModule = (teamId: string, moduleId: string, data?: CreateModuleRequest, params: RequestParams = {}) =>
-    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+    this.request<UpdateModuleResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}`,
       method: "POST",
       body: data,
       secure: true,
       type: ContentType.Json,
+      format: "json",
       ...params,
     });
   /**
@@ -685,6 +688,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     this.request<GetModuleEnvVarsVersionResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/env_vars/${moduleEnvVarsId}`,
       method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Force unlocks a module.
+   *
+   * @tags Modules
+   * @name ForceUnlockModule
+   * @summary Unlock Module
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/force_unlock
+   * @secure
+   */
+  forceUnlockModule = (teamId: string, moduleId: string, params: RequestParams = {}) =>
+    this.request<ForceUnlockModuleResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/force_unlock`,
+      method: "POST",
       secure: true,
       format: "json",
       ...params,

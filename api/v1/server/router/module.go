@@ -223,6 +223,8 @@ func GetModuleRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully updated the module
+	//     schema:
+	//       $ref: '#/definitions/UpdateModuleResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:
@@ -259,30 +261,84 @@ func GetModuleRoutes(
 		Router:   r,
 	})
 
-	// DELETE /api/v1/teams/{team_id}/modules/{module_id} -> modules.NewModuleDeleteHandler
-	// swagger:operation DELETE /api/v1/teams/{team_id}/modules/{module_id} deleteModule
+	// POST /api/v1/teams/{team_id}/modules/{module_id}/force_unlock -> modules.NewModuleForceUnlockHandler
+	// swagger:operation POST /api/v1/teams/{team_id}/modules/{module_id}/force_unlock forceUnlockModule
 	//
 	// ### Description
 	//
-	// Updates a module.
+	// Force unlocks a module.
 	//
 	// ---
 	// produces:
 	// - application/json
-	// summary: Update Module Run
+	// summary: Unlock Module
 	// tags:
 	// - Modules
 	// parameters:
 	//   - name: team_id
 	//   - name: module_id
-	//   - in: body
-	//     name: UpdateModuleRequest
-	//     description: The module params to update
-	//     schema:
-	//       $ref: '#/definitions/UpdateModuleRequest'
 	// responses:
 	//   '200':
-	//     description: Successfully updated the module
+	//     description: Successfully unlocked the module
+	//     schema:
+	//       $ref: '#/definitions/ForceUnlockModuleResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	forceUnlockModuleEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/force_unlock", types.URLParamModuleID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+			},
+		},
+	)
+
+	forceUnlockModuleHandler := modules.NewModuleForceUnlockHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: forceUnlockModuleEndpoint,
+		Handler:  forceUnlockModuleHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/teams/{team_id}/modules/{module_id} -> modules.NewModuleDeleteHandler
+	// swagger:operation DELETE /api/v1/teams/{team_id}/modules/{module_id} deleteModule
+	//
+	// ### Description
+	//
+	// Deletes a module.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Delete Module
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	// responses:
+	//   '200':
+	//     description: Successfully deleted the module
+	//     schema:
+	//       $ref: '#/definitions/DeleteModuleResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:

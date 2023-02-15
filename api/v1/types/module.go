@@ -189,6 +189,12 @@ type UpdateModuleRequest struct {
 // swagger:model
 type UpdateModuleResponse Module
 
+// swagger:model
+type ForceUnlockModuleResponse Module
+
+// swagger:model
+type DeleteModuleResponse Module
+
 // swagger:parameters listModules
 type ListModulesRequest struct {
 	*PaginationRequest

@@ -275,6 +275,8 @@ export interface CreateUserRequest {
 
 export type CreateUserResponse = User;
 
+export type DeleteModuleResponse = Module;
+
 export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
@@ -291,6 +293,8 @@ export interface FinalizeModuleRunRequest {
 }
 
 export type FinalizeModuleRunResponse = ModuleRunOverview;
+
+export type ForceUnlockModuleResponse = Module;
 
 /** @example {"logs":["logs","logs"]} */
 export interface GetLogsResponse {
