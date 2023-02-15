@@ -66,10 +66,11 @@ const UnlockModuleForm: React.FC<Props> = ({ team_id, module }) => {
   if (prompt) {
     return (
       <Confirmation
-        prompt={`Type ${module.lock_id} to force unlock the module`}
-        confirm_text={module.name}
+        prompt={`Type ${module.lock_id} to force unlock the module.`}
+        confirm_text={module.lock_id}
         confirm_text_example={module.lock_id}
         button_label="Unlock Module"
+        button_material_icon="lock_open"
         confirmed={() => {
           mutate();
         }}
@@ -88,7 +89,7 @@ const UnlockModuleForm: React.FC<Props> = ({ team_id, module }) => {
       <FlexRowRight>
         <StandardButton
           label="Unlock Module"
-          material_icon="unlock"
+          material_icon="lock_open"
           icon_side="right"
           on_click={() => {
             setPrompt(true);
