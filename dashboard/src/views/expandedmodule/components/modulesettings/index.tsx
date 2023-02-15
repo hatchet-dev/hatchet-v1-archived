@@ -5,9 +5,11 @@ import {
   H4,
   Placeholder,
   Spinner,
+  SectionArea,
 } from "@hatchet-dev/hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import EnvVars from "components/envvars";
+import ExpandableSettings from "components/expandablesettings";
 import SelectGitSource from "components/module/selectgitpath";
 import SetModuleValues from "components/module/setmodulevalues";
 import React, { useMemo, useState } from "react";
@@ -121,39 +123,46 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
 
   return (
     <ModuleSettingsContainer>
-      <ModuleSettingsCard>
+      <SectionArea>
         <H4>Configuration</H4>
         <HorizontalSpacer spacepixels={20} />
         <UpdateModuleName module={module} setModuleName={setName} />
-        <HorizontalSpacer spacepixels={60} />
-        <SelectGitSource
-          set_request={setGithubParams}
-          current_params={{
-            github_app_installation_id:
-              module.deployment.github_app_installation_id,
-            github_repository_owner: module.deployment.github_repo_owner,
-            github_repository_name: module.deployment.github_repo_name,
-            github_repository_branch: module.deployment.github_repo_branch,
-            path: module.deployment.path,
-          }}
-        />
-        <HorizontalSpacer spacepixels={60} />
-        <SetModuleValues
-          set_github_values={setGithubValueParams}
-          current_github_params={{
-            github_app_installation_id: gh?.github_app_installation_id,
-            github_repository_branch: gh?.github_repo_branch,
-            github_repository_owner: gh?.github_repo_owner,
-            github_repository_name: gh?.github_repo_name,
-            path: gh?.path,
-          }}
-          set_raw_values={setRawValues}
-          current_raw_values={valuesQuery.data?.data.raw_values}
-          set_values_source={setValuesSource}
-          current_values_source={gh ? "github" : "raw"}
-        />
         <HorizontalSpacer spacepixels={24} />
-        <EnvVars envVars={envVars} setEnvVars={setEnvVars} />
+        <ExpandableSettings text="Github settings">
+          <SelectGitSource
+            set_request={setGithubParams}
+            current_params={{
+              github_app_installation_id:
+                module.deployment.github_app_installation_id,
+              github_repository_owner: module.deployment.github_repo_owner,
+              github_repository_name: module.deployment.github_repo_name,
+              github_repository_branch: module.deployment.github_repo_branch,
+              path: module.deployment.path,
+            }}
+          />
+        </ExpandableSettings>
+        <HorizontalSpacer spacepixels={8} />
+        <ExpandableSettings text="Values configuration">
+          <SetModuleValues
+            set_github_values={setGithubValueParams}
+            current_github_params={{
+              github_app_installation_id: gh?.github_app_installation_id,
+              github_repository_branch: gh?.github_repo_branch,
+              github_repository_owner: gh?.github_repo_owner,
+              github_repository_name: gh?.github_repo_name,
+              path: gh?.path,
+            }}
+            set_raw_values={setRawValues}
+            current_raw_values={valuesQuery.data?.data.raw_values}
+            set_values_source={setValuesSource}
+            current_values_source={gh ? "github" : "raw"}
+          />
+        </ExpandableSettings>
+        <HorizontalSpacer spacepixels={8} />
+        <ExpandableSettings text="Environment variables">
+          <EnvVars envVars={envVars} setEnvVars={setEnvVars} />
+        </ExpandableSettings>
+        <HorizontalSpacer spacepixels={24} />
         <FlexRowRight>
           <StandardButton
             label="Update"
@@ -166,17 +175,17 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
             is_loading={mutation.isLoading}
           />
         </FlexRowRight>
-      </ModuleSettingsCard>
+      </SectionArea>
       <HorizontalSpacer spacepixels={20} />
-      <ModuleSettingsCard>
+      <SectionArea>
         <H4>Locks</H4>
         <HorizontalSpacer spacepixels={20} />
-      </ModuleSettingsCard>
+      </SectionArea>
       <HorizontalSpacer spacepixels={20} />
-      <ModuleSettingsCard>
+      <SectionArea>
         <H4>Delete Module</H4>
         <HorizontalSpacer spacepixels={20} />
-      </ModuleSettingsCard>
+      </SectionArea>
     </ModuleSettingsContainer>
   );
 };
