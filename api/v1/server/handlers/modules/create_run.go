@@ -10,6 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 )
 
 type RunCreateHandler struct {
@@ -32,7 +33,7 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	run := &models.ModuleRun{
 		ModuleID:    module.ID,
-		Status:      models.ModuleRunStatusInProgress,
+		Status:      models.ModuleRunStatusQueued,
 		Kind:        models.ModuleRunKindPlan,
 		LogLocation: m.Config().DefaultLogStore.GetID(),
 	}
@@ -53,7 +54,6 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO(abelanger5): queue, don't run plan
 	opts, err := provisionerutils.GetProvisionerOpts(team, module, run, m.Config())
 
 	if err != nil {
@@ -61,7 +61,19 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = m.Config().DefaultProvisioner.RunPlan(opts)
+	err = m.Config().ModuleRunQueueManager.Enqueue(module, run)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	err = m.Config().TemporalClient.TriggerModuleRunQueueChecker(&modulequeuechecker.CheckQueueInput{
+		TeamID:   opts.Team.ID,
+		ModuleID: opts.Module.ID,
+	})
+
+	// err = m.Config().DefaultProvisioner.RunPlan(opts)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

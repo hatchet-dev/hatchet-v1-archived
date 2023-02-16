@@ -49,10 +49,17 @@ func main() {
 	sc.Logger.Info().Msgf("Starting server %v", address)
 
 	if sc.ServerRuntimeConfig.RunWorkers {
-		err = worker.NewWorker(sc)
+		err = worker.NewBackgroundWorker(sc)
 
 		if err != nil {
-			fmt.Printf("Fatal: could not load temporal: %v", err)
+			fmt.Printf("Fatal: could not start background worker: %v", err)
+			os.Exit(1)
+		}
+
+		err = worker.NewModuleRunWorker(sc)
+
+		if err != nil {
+			fmt.Printf("Fatal: could not start module run worker: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -60,7 +67,7 @@ func main() {
 	err = sc.TemporalClient.StartBackgroundTasks()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not dispatch test workflow: %v", err)
+		fmt.Printf("Fatal: could not dispatch background workflows: %v", err)
 		os.Exit(1)
 	}
 

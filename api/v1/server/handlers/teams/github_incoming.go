@@ -17,6 +17,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/runmanager"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 
 	githubsdk "github.com/google/go-github/v49/github"
 )
@@ -588,7 +589,13 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 			return err
 		}
 
-		err = g.Config().DefaultProvisioner.RunPlan(opts)
+		// TODO: replace properly
+		err = g.Config().TemporalClient.TriggerModuleRunQueueChecker(&modulequeuechecker.CheckQueueInput{
+			TeamID:   opts.Team.ID,
+			ModuleID: opts.Module.ID,
+		})
+
+		// err = g.Config().DefaultProvisioner.RunPlan(opts)
 
 		if err != nil {
 			return err

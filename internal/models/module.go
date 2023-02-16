@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
+	"gorm.io/gorm"
 )
 
 type DeploymentMechanism string
@@ -63,6 +64,12 @@ func (m *Module) ToAPIType() *types.Module {
 		CurrentValuesVersionID:  m.CurrentModuleValuesVersionID,
 		CurrentEnvVarsVersionID: m.CurrentModuleEnvVarsVersionID,
 	}
+}
+
+func (m *Module) AfterFind(tx *gorm.DB) (err error) {
+	// this ensures that AfterFind is called on the invite link even if called with a
+	// Joins method, instead of just Preload
+	return m.CurrentModuleEnvVarsVersion.AfterFind(tx)
 }
 
 type ModuleDeploymentConfig struct {
@@ -136,6 +143,12 @@ type ModuleRun struct {
 	ModuleRunConfig ModuleRunConfig
 
 	LogLocation string
+}
+
+func (m *ModuleRun) AfterFind(tx *gorm.DB) (err error) {
+	// this ensures that AfterFind is called on the invite link even if called with a
+	// Joins method, instead of just Preload
+	return m.ModuleRunConfig.AfterFind(tx)
 }
 
 func (m *ModuleRun) ToTerraformLockType() *types.TerraformLock {
@@ -286,4 +299,10 @@ type ModuleRunConfig struct {
 
 	ModuleEnvVarsVersionID string
 	ModuleEnvVarsVersion   ModuleEnvVarsVersion `gorm:"foreignKey:ModuleEnvVarsVersionID"`
+}
+
+func (m *ModuleRunConfig) AfterFind(tx *gorm.DB) (err error) {
+	// this ensures that AfterFind is called on the invite link even if called with a
+	// Joins method, instead of just Preload
+	return m.ModuleEnvVarsVersion.AfterFind(tx)
 }

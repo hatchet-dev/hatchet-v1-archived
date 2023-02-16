@@ -1,7 +1,6 @@
 package queryutils
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/hatchet-dev/hatchet/internal/repository"
@@ -9,21 +8,7 @@ import (
 )
 
 func Paginate(opts []repository.QueryOption, db *gorm.DB, pagination *repository.PaginatedResult) func(db *gorm.DB) *gorm.DB {
-	q := repository.Query{
-		Limit:  0,
-		Offset: 0,
-		Order:  repository.OrderDesc,
-		SortBy: "updated_at",
-	}
-
-	for _, opt := range opts {
-		opt.Apply(&q)
-	}
-
-	if q.Limit == 0 {
-		// default to returing 50 results per page
-		q.Limit = 50
-	}
+	q := ComputeQuery(opts...)
 
 	var totalRows int64
 
@@ -42,9 +27,6 @@ func Paginate(opts []repository.QueryOption, db *gorm.DB, pagination *repository
 	}
 
 	return func(db *gorm.DB) *gorm.DB {
-		return db.
-			Offset(q.Offset).
-			Limit(q.Limit).
-			Order(fmt.Sprintf("%s %s", q.SortBy, q.Order))
+		return ApplyOpts(db, q)
 	}
 }
