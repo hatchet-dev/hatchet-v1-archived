@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
@@ -97,6 +98,11 @@ func (m *ModuleEnvVarsVersion) ToAPIType(key *[32]byte) (*types.ModuleEnvVarsVer
 			Val: val,
 		})
 	}
+
+	// sort by stable alphanumeric ordering
+	sort.SliceStable(envVars, func(i, j int) bool {
+		return envVars[i].Key > envVars[j].Key
+	})
 
 	return &types.ModuleEnvVarsVersion{
 		APIResourceMeta: m.ToAPITypeMetadata(),

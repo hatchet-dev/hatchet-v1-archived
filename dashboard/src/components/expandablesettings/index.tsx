@@ -28,7 +28,9 @@ const ExpandableSettings: React.FC<Props> = ({ text, children }) => {
           {expanded ? "expand_less" : "expand_more"}
         </MaterialIcon>
       </ExpandableSettingsHeader>
-      {expanded && <ExpandableSettingsBody>{children}</ExpandableSettingsBody>}
+      <ExpandableSettingsBody hidden={!expanded}>
+        {children}
+      </ExpandableSettingsBody>
     </ExpandableSettingsContainer>
   );
 };

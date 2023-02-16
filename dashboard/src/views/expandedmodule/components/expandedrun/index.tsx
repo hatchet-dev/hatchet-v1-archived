@@ -15,8 +15,8 @@ import {
 } from "@hatchet-dev/hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import CodeBlock from "components/codeblock";
-import EnvVars from "components/envvars";
-import React from "react";
+import EnvVars, { getInternalEnvVars, newEnvVarAtom } from "components/envvars";
+import React, { useMemo } from "react";
 import api from "shared/api";
 import { parseTerraformPlanSummary, relativeDate } from "shared/utils";
 import {
@@ -31,6 +31,7 @@ import StatusContainer from "components/status";
 import Status from "components/status";
 import GithubRef from "components/githubref";
 import { StatusText } from "components/status/styles";
+import { useAtom } from "jotai";
 
 type Props = {
   back: () => void;
@@ -55,6 +56,12 @@ const ExpandedRun: React.FC<Props> = ({
     },
     retry: false,
   });
+
+  const envVarAtom = useMemo(() => {
+    return newEnvVarAtom([]);
+  }, []);
+
+  const [envVars, setEnvVars] = useAtom(envVarAtom);
 
   const status = moduleRunQuery?.data?.data?.status;
   const kind = moduleRunQuery?.data?.data?.kind;
@@ -102,6 +109,15 @@ const ExpandedRun: React.FC<Props> = ({
       );
 
       return res;
+    },
+    onSuccess: (res) => {
+      const newVars = getInternalEnvVars(
+        res.data.env_vars.map((envVar) => {
+          return `${envVar.key}~~=~~${envVar.val}`;
+        })
+      );
+
+      setEnvVars(newVars);
     },
     retry: false,
     enabled: !!moduleRunQuery?.data?.data?.config?.env_var_version_id,
@@ -206,14 +222,7 @@ const ExpandedRun: React.FC<Props> = ({
       );
     }
 
-    return (
-      <EnvVars
-        envVars={envVarsQuery.data?.data?.env_vars.map((envVar) => {
-          return `${envVar.key}~~=~~${envVar.val}`;
-        })}
-        read_only={true}
-      />
-    );
+    return <EnvVars envVarAtom={envVarAtom} read_only={true} />;
   };
 
   const renderStatusContainer = () => {

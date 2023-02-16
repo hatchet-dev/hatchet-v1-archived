@@ -9,7 +9,7 @@ import {
   Breadcrumbs,
   ErrorBar,
 } from "@hatchet-dev/hatchet-components";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { css } from "styled-components";
 import theme from "shared/theme";
 import {
@@ -18,7 +18,7 @@ import {
 } from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
-import EnvVars from "components/envvars";
+import EnvVars, { newEnvVarAtom } from "components/envvars";
 import SetModuleValues from "components/module/setmodulevalues";
 
 type Props = {
@@ -41,7 +41,11 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
   });
   const [valuesSource, setValuesSource] = useState<string>();
   const [currTeam] = useAtom(currTeamAtom);
-  const [envVars, setEnvVars] = useState<string[]>([]);
+  const envVarAtom = useMemo(() => {
+    return newEnvVarAtom([]);
+  }, []);
+
+  const [envVars, setEnvVars] = useAtom(envVarAtom);
 
   const breadcrumbs = [
     {
@@ -68,7 +72,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
     let mappedEnvVars: Record<string, string> = {};
 
     envVars.forEach((envVar) => {
-      const strArr = envVar.split("~~=~~");
+      const strArr = envVar.value.split("~~=~~");
       if (strArr.length == 2) {
         mappedEnvVars[strArr[0]] = strArr[1];
       }
@@ -105,7 +109,7 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
           Terraform variables) below.
         </P>
         <HorizontalSpacer spacepixels={24} />
-        <EnvVars envVars={envVars} setEnvVars={setEnvVars} />
+        <EnvVars envVarAtom={envVarAtom} />
       </SectionArea>
       <HorizontalSpacer spacepixels={20} />
       {err && <ErrorBar text={err} />}

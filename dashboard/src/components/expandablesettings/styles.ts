@@ -24,8 +24,9 @@ export const ExpandableSettingsHeader = styled(FlexRow)`
   }
 `;
 
-export const ExpandableSettingsBody = styled(FlexCol)`
+export const ExpandableSettingsBody = styled(FlexCol)<{ hidden?: boolean }>`
   padding: 20px;
+  ${(props) => props.hidden && "display: none;"}
 `;
 
 export const ExpandableSettingsText = styled(SmallSpan)`
