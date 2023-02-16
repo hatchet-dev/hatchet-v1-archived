@@ -33,7 +33,7 @@ func (repo *ModuleRunQueueRepository) ReadModuleRunQueueByID(moduleID, moduleRun
 		return db.Order("module_run_queue_items.priority DESC").Order("module_run_queue_items.created_at DESC")
 	})
 
-	if err := query.Where("module_id = ? AND module_run_queue_id = ?", moduleID, moduleRunQueueID).First(&queue).Error; err != nil {
+	if err := query.Where("module_id = ? AND id = ?", moduleID, moduleRunQueueID).First(&queue).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

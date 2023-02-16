@@ -86,6 +86,14 @@ var OrgInviteLinks []*models.OrganizationInviteLink = declaredOrgInviteLinks
 
 var OrgInviteLinksUnencryptedTok map[string]string = make(map[string]string)
 
+var declaredModules = []*models.Module{
+	{
+		Name: "test-module-1",
+	},
+}
+
+var ModuleModels []*models.Module = declaredModules
+
 func InitAll() {
 	UserModels = copyVals(declaredUserModels)
 	PATModels = copyVals(declaredPATModels)
@@ -94,6 +102,7 @@ func InitAll() {
 	OrgAdditionalMembers = copyVals(declaredOrgAdditionalMembers)
 	OrgInviteLinks = copyVals(declaredOrgInviteLinks)
 	TeamModels = copyVals(declaredTeamModels)
+	ModuleModels = copyVals(declaredModules)
 }
 
 func copyVals[
@@ -103,7 +112,8 @@ func copyVals[
 		models.Organization |
 		models.OrganizationMember |
 		models.OrganizationInviteLink |
-		models.Team](oldArr []*V) []*V {
+		models.Team |
+		models.Module](oldArr []*V) []*V {
 	c := make([]*V, len(oldArr))
 
 	for i, p := range oldArr {
@@ -344,6 +354,27 @@ func InitTeams(t *testing.T, conf *database.Config) error {
 		}
 
 		TeamModels[i] = team
+	}
+
+	return nil
+}
+
+// Note that the declared modules are assigned to the teams in a round-robin fashion
+func InitModules(t *testing.T, conf *database.Config) error {
+	for i, declaredModule := range ModuleModels {
+		moduleCp := declaredModule
+
+		parentTeam := TeamModels[i%len(TeamModels)]
+
+		moduleCp.TeamID = parentTeam.ID
+
+		module, err := conf.Repository.Module().CreateModule(moduleCp)
+
+		if err != nil {
+			return err
+		}
+
+		ModuleModels[i] = module
 	}
 
 	return nil
