@@ -210,7 +210,7 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		Port:       sc.Port,
 		ServerURL:  sc.ServerURL,
 		CookieName: sc.CookieName,
-		RunWorkers: sc.TemporalRunWorkers,
+		RunWorkers: sc.TemporalEnabled && sc.TemporalRunWorkers,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
@@ -315,15 +315,19 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		provisioner = local.NewLocalProvisioner()
 	}
 
-	temporalClient, err := temporal.NewTemporalClient(&temporal.ClientOpts{
-		HostPort:      sc.TemporalHostPort,
-		Namespace:     sc.TemporalNamespace,
-		AuthHeaderKey: sc.TemporalAuthHeaderKey,
-		AuthHeaderVal: sc.TemporalAuthHeaderVal,
-	})
+	var temporalClient *temporal.Client
 
-	if err != nil {
-		return nil, err
+	if sc.TemporalEnabled {
+		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
+			HostPort:      sc.TemporalHostPort,
+			Namespace:     sc.TemporalNamespace,
+			AuthHeaderKey: sc.TemporalAuthHeaderKey,
+			AuthHeaderVal: sc.TemporalAuthHeaderVal,
+		})
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &server.Config{

@@ -87,6 +87,7 @@ type ConfigFile struct {
 	RunnerGRPCServerAddress string `env:"RUNNER_GRPC_SERVER_ADDRESS,default=http://localhost:8080"`
 
 	// Temporal config options
+	TemporalEnabled       bool   `env:"TEMPORAL_ENABLED,default=true"`
 	TemporalRunWorkers    bool   `env:"TEMPORAL_RUN_WORKERS,default=true"`
 	TemporalHostPort      string `env:"TEMPORAL_HOST_PORT,default=127.0.0.1:7233"`
 	TemporalNamespace     string `env:"TEMPORAL_NAMESPACE,default=default"`

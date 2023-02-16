@@ -63,6 +63,7 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 				"random_hash_key_",
 				"random_block_key",
 			},
+			TemporalEnabled: false,
 		}, conf, sharedConfig)
 
 		if err != nil {
