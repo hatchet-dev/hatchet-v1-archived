@@ -14,6 +14,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/config/worker"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage/s3"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
@@ -34,6 +35,7 @@ import (
 
 type EnvDecoderConf struct {
 	ServerConfigFile   server.ConfigFile
+	WorkerConfigFile   worker.ConfigFile
 	RunnerConfigFile   runner.ConfigFile
 	DatabaseConfigFile database.ConfigFile
 	SharedConfigFile   shared.ConfigFile
@@ -48,6 +50,17 @@ func ServerConfigFromEnv() (*server.ConfigFile, error) {
 	}
 
 	return &envDecoderConf.ServerConfigFile, nil
+}
+
+// WorkerConfigFromEnv loads the worker config file from environment variables
+func WorkerConfigFromEnv() (*worker.ConfigFile, error) {
+	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
+
+	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
+		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
+	}
+
+	return &envDecoderConf.WorkerConfigFile, nil
 }
 
 // RunnerConfigFromEnv loads the runner config file from environment variables
@@ -176,6 +189,58 @@ func (e *EnvConfigLoader) LoadRunnerConfigFromConfigFile(rc *runner.ConfigFile, 
 		GRPCClient: grpcClient,
 		APIClient:  c,
 		FileClient: fileClient,
+	}, nil
+}
+
+func (e *EnvConfigLoader) LoadWorkerConfigFromEnv() (res *worker.Config, err error) {
+	sharedConfig, err := e.loadSharedConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load shared config: %v", err)
+	}
+
+	dbConfig, err := e.LoadDatabaseConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load database config: %v", err)
+	}
+
+	wc, err := WorkerConfigFromEnv()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load server config from env: %v", err)
+	}
+
+	return e.LoadWorkerConfigFromConfigFile(wc, dbConfig, sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadWorkerConfigFromConfigFile(wc *worker.ConfigFile, dbConfig *database.Config, sharedConfig *shared.Config) (res *worker.Config, err error) {
+	var provisioner provisioner.Provisioner
+
+	if wc.ProvisionerRunnerMethod == "local" {
+		provisioner = local.NewLocalProvisioner()
+	}
+
+	var temporalClient *temporal.Client
+
+	if wc.TemporalEnabled {
+		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
+			HostPort:      wc.TemporalHostPort,
+			Namespace:     wc.TemporalNamespace,
+			AuthHeaderKey: wc.TemporalAuthHeaderKey,
+			AuthHeaderVal: wc.TemporalAuthHeaderVal,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &worker.Config{
+		DB:                 *dbConfig,
+		Config:             *sharedConfig,
+		DefaultProvisioner: provisioner,
+		TemporalClient:     temporalClient,
 	}, nil
 }
 

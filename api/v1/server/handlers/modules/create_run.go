@@ -9,7 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 )
 
@@ -28,7 +28,6 @@ func NewRunCreateHandler(
 }
 
 func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
 	run := &models.ModuleRun{
@@ -54,13 +53,6 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	opts, err := provisionerutils.GetProvisionerOpts(team, module, run, m.Config())
-
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-		return
-	}
-
 	err = m.Config().ModuleRunQueueManager.Enqueue(module, run)
 
 	if err != nil {
@@ -68,9 +60,9 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = m.Config().TemporalClient.TriggerModuleRunQueueChecker(&modulequeuechecker.CheckQueueInput{
-		TeamID:   opts.Team.ID,
-		ModuleID: opts.Module.ID,
+	err = dispatcher.DispatchModuleRunQueueChecker(m.Config().TemporalClient.GetClient(), &modulequeuechecker.CheckQueueInput{
+		TeamID:   module.TeamID,
+		ModuleID: module.ID,
 	})
 
 	// err = m.Config().DefaultProvisioner.RunPlan(opts)

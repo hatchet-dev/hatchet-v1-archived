@@ -14,9 +14,9 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/runmanager"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 
 	githubsdk "github.com/google/go-github/v49/github"
@@ -431,17 +431,12 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			return err
 		}
 
-		opts, err := provisionerutils.GetProvisionerOpts(team, mod, run, g.Config())
+		// TODO: run apply
+		// err = g.Config().DefaultProvisioner.RunApply(opts)
 
-		if err != nil {
-			return err
-		}
-
-		err = g.Config().DefaultProvisioner.RunApply(opts)
-
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 	}
 
 	return nil
@@ -583,19 +578,10 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	}
 
 	if !locked {
-		opts, err := provisionerutils.GetProvisionerOpts(team, mod, run, g.Config())
-
-		if err != nil {
-			return err
-		}
-
-		// TODO: replace properly
-		err = g.Config().TemporalClient.TriggerModuleRunQueueChecker(&modulequeuechecker.CheckQueueInput{
-			TeamID:   opts.Team.ID,
-			ModuleID: opts.Module.ID,
+		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient.GetClient(), &modulequeuechecker.CheckQueueInput{
+			TeamID:   mod.TeamID,
+			ModuleID: mod.ID,
 		})
-
-		// err = g.Config().DefaultProvisioner.RunPlan(opts)
 
 		if err != nil {
 			return err
