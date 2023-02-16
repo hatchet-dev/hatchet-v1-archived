@@ -26,6 +26,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/notifier/sendgrid"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/provisioner/local"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm"
 	"github.com/hatchet-dev/hatchet/internal/temporal"
 	"github.com/joeshaw/envdecode"
@@ -330,19 +331,22 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		}
 	}
 
+	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
+
 	return &server.Config{
-		DB:                  *dbConfig,
-		Config:              *sharedConfig,
-		AuthConfig:          authConfig,
-		ServerRuntimeConfig: serverRuntimeConfig,
-		UserSessionStore:    userSessionStore,
-		TokenOpts:           tokenOpts,
-		UserNotifier:        notifier,
-		GithubApp:           githubAppConf,
-		DefaultFileStore:    storageManager,
-		DefaultLogStore:     logManager,
-		DefaultProvisioner:  provisioner,
-		TemporalClient:      temporalClient,
+		DB:                    *dbConfig,
+		Config:                *sharedConfig,
+		AuthConfig:            authConfig,
+		ServerRuntimeConfig:   serverRuntimeConfig,
+		UserSessionStore:      userSessionStore,
+		TokenOpts:             tokenOpts,
+		UserNotifier:          notifier,
+		GithubApp:             githubAppConf,
+		DefaultFileStore:      storageManager,
+		DefaultLogStore:       logManager,
+		DefaultProvisioner:    provisioner,
+		TemporalClient:        temporalClient,
+		ModuleRunQueueManager: queueManager,
 	}, nil
 }
 

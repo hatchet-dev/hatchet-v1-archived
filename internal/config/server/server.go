@@ -13,6 +13,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/temporal"
 )
 
@@ -149,6 +150,8 @@ type Config struct {
 	DefaultProvisioner provisioner.Provisioner
 
 	TemporalClient *temporal.Client
+
+	ModuleRunQueueManager queuemanager.ModuleRunQueueManager
 }
 
 func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {

@@ -175,7 +175,7 @@ func (repo *ModuleRepository) ListCompletedModuleRunsByLogLocation(location stri
 
 	moduleIDs := make([]string, 0)
 
-	for moduleID, _ := range moduleToTeamID {
+	for moduleID := range moduleToTeamID {
 		moduleIDs = append(moduleIDs, moduleID)
 	}
 
