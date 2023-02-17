@@ -49,31 +49,40 @@ func main() {
 
 	sc.Logger.Info().Msgf("Starting server %v", address)
 
-	if sc.ServerRuntimeConfig.RunWorkers {
-		wc, err := configLoader.LoadWorkerConfigFromEnv()
+	// TODO: move this out of the server binary
+	bwc, err := configLoader.LoadBackgroundWorkerConfigFromEnv()
 
-		if err != nil {
-			fmt.Printf("Fatal: could not load worker config: %v", err)
-			os.Exit(1)
-		}
-
-		err = worker.NewWorker(&worker.WorkerOpts{
-			ServerConfig:         sc,
-			WorkerConfig:         wc,
-			RegisterBackground:   true,
-			RegisterModuleRunner: true,
-		})
-
-		if err != nil {
-			fmt.Printf("Fatal: could not start worker: %v", err)
-			os.Exit(1)
-		}
+	if err != nil {
+		fmt.Printf("Fatal: could not load background worker config: %v", err)
+		os.Exit(1)
 	}
 
-	err = dispatcher.DispatchBackgroundTasks(sc.TemporalClient.GetClient())
+	err = worker.StartBackgroundWorker(bwc)
+
+	if err != nil {
+		fmt.Printf("Fatal: could not start worker: %v", err)
+		os.Exit(1)
+	}
+
+	err = dispatcher.DispatchBackgroundTasks(bwc.TemporalClient)
 
 	if err != nil {
 		fmt.Printf("Fatal: could not dispatch background workflows: %v", err)
+		os.Exit(1)
+	}
+
+	// TODO: move this out of the server binary
+	rwc, err := configLoader.LoadRunnerWorkerConfigFromEnv()
+
+	if err != nil {
+		fmt.Printf("Fatal: could not load runner worker config: %v", err)
+		os.Exit(1)
+	}
+
+	err = worker.StartRunnerWorker(rwc)
+
+	if err != nil {
+		fmt.Printf("Fatal: could not start worker: %v", err)
 		os.Exit(1)
 	}
 

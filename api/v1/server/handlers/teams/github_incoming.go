@@ -578,7 +578,7 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	}
 
 	if !locked {
-		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient.GetClient(), &modulequeuechecker.CheckQueueInput{
+		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
 			TeamID:   mod.TeamID,
 			ModuleID: mod.ID,
 		})

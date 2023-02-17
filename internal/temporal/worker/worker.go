@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/temporal/enums"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/logflusher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
@@ -12,45 +11,46 @@ import (
 	hatchetworker "github.com/hatchet-dev/hatchet/internal/config/worker"
 )
 
-type WorkerOpts struct {
-	RegisterBackground   bool
-	RegisterModuleRunner bool
+func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
+	tc, err := config.TemporalClient.GetClient(enums.BackgroundQueueName)
 
-	// TODO: switch this to the worker config
-	ServerConfig *server.Config
-	WorkerConfig *hatchetworker.Config
+	if err != nil {
+		return err
+	}
+
+	backgroundWorker := worker.New(tc, enums.BackgroundQueueName, worker.Options{})
+
+	lf := logflusher.NewLogFlusher(&logflusher.LogFlusherOpts{
+		LogStore:   config.DefaultLogStore,
+		FileStore:  config.DefaultFileStore,
+		Repository: config.DB.Repository,
+	})
+
+	backgroundWorker.RegisterWorkflow(lf.FlushLogs)
+	backgroundWorker.RegisterActivity(lf.Flush)
+
+	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL)
+	qc := queuechecker.NewQueueChecker(config.DB.Repository, mqc)
+
+	backgroundWorker.RegisterWorkflow(mqc.ScheduleFromQueue)
+	backgroundWorker.RegisterWorkflow(qc.CheckQueues)
+
+	return backgroundWorker.Start()
 }
 
-func NewWorker(opts *WorkerOpts) error {
-	// TODO: queue name shouldn't always be background
-	hatchetWorker := worker.New(opts.WorkerConfig.TemporalClient.GetClient(), enums.BackgroundQueueName, worker.Options{})
+func StartRunnerWorker(config *hatchetworker.RunnerConfig) error {
+	tc, err := config.TemporalClient.GetClient(enums.ModuleRunQueueName)
 
-	if opts.RegisterBackground {
-		sc := opts.ServerConfig
-
-		lf := logflusher.NewLogFlusher(&logflusher.LogFlusherOpts{
-			LogStore:   sc.DefaultLogStore,
-			FileStore:  sc.DefaultFileStore,
-			Repository: sc.DB.Repository,
-		})
-
-		hatchetWorker.RegisterWorkflow(lf.FlushLogs)
-		hatchetWorker.RegisterActivity(lf.Flush)
-
-		mqc := modulequeuechecker.NewModuleQueueChecker(sc.ModuleRunQueueManager, sc.DB, *sc.TokenOpts, sc.ServerRuntimeConfig.ServerURL)
-		qc := queuechecker.NewQueueChecker(sc.DB.Repository, mqc)
-
-		hatchetWorker.RegisterWorkflow(mqc.ScheduleFromQueue)
-		hatchetWorker.RegisterWorkflow(qc.CheckQueues)
+	if err != nil {
+		return err
 	}
 
-	if opts.RegisterModuleRunner {
+	runnerWorker := worker.New(tc, enums.ModuleRunQueueName, worker.Options{})
 
-		mr := modulerunner.NewModuleRunner(opts.WorkerConfig)
+	mr := modulerunner.NewModuleRunner(config)
 
-		hatchetWorker.RegisterWorkflow(mr.Provision)
-		hatchetWorker.RegisterActivity(mr.Run)
-	}
+	runnerWorker.RegisterWorkflow(mr.Provision)
+	runnerWorker.RegisterActivity(mr.Run)
 
-	return hatchetWorker.Start()
+	return runnerWorker.Start()
 }

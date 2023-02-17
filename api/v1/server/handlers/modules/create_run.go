@@ -35,6 +35,11 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Status:      models.ModuleRunStatusQueued,
 		Kind:        models.ModuleRunKindPlan,
 		LogLocation: m.Config().DefaultLogStore.GetID(),
+		ModuleRunConfig: models.ModuleRunConfig{
+			TriggerKind:            models.ModuleRunTriggerKindManual,
+			ModuleValuesVersionID:  module.CurrentModuleValuesVersionID,
+			ModuleEnvVarsVersionID: module.CurrentModuleEnvVarsVersionID,
+		},
 	}
 
 	desc, err := generateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
@@ -60,12 +65,10 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dispatcher.DispatchModuleRunQueueChecker(m.Config().TemporalClient.GetClient(), &modulequeuechecker.CheckQueueInput{
+	err = dispatcher.DispatchModuleRunQueueChecker(m.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
 		TeamID:   module.TeamID,
 		ModuleID: module.ID,
 	})
-
-	// err = m.Config().DefaultProvisioner.RunPlan(opts)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

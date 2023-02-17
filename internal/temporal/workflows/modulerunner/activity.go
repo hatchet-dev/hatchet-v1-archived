@@ -10,10 +10,10 @@ import (
 )
 
 type ModuleRunner struct {
-	conf *worker.Config
+	conf *worker.RunnerConfig
 }
 
-func NewModuleRunner(config *worker.Config) *ModuleRunner {
+func NewModuleRunner(config *worker.RunnerConfig) *ModuleRunner {
 	return &ModuleRunner{config}
 }
 

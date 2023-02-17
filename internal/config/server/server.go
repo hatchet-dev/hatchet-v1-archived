@@ -12,9 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
-	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
-	"github.com/hatchet-dev/hatchet/internal/temporal"
 )
 
 type ConfigFile struct {
@@ -69,31 +67,9 @@ type ConfigFile struct {
 	GithubAppID            string `env:"GITHUB_APP_ID"`
 	GithubAppSecretPath    string `env:"GITHUB_APP_SECRET_PATH"`
 
-	// S3 file storage options
-	S3StateAWSAccessKeyID string `env:"S3_STATE_AWS_ACCESS_KEY_ID"`
-	S3StateAWSSecretKey   string `env:"S3_STATE_AWS_SECRET_KEY"`
-	S3StateAWSRegion      string `env:"S3_STATE_AWS_REGION"`
-	S3StateBucketName     string `env:"S3_STATE_BUCKET_NAME"`
-	S3StateEncryptionKey  string `env:"S3_STATE_ENCRYPTION_KEY,default=__random_strong_encryption_key__"`
+	S3StateStore shared.FileStorageConfigFile
 
-	// Redis log storage options
-	RedisHost     string `env:"REDIS_HOST,default=redis"`
-	RedisPort     string `env:"REDIS_PORT,default=6379"`
-	RedisUsername string `env:"REDIS_USER"`
-	RedisPassword string `env:"REDIS_PASS"`
-	RedisDB       int    `env:"REDIS_DB,default=0"`
-
-	// Provisioner config options
-	ProvisionerRunnerMethod string `env:"PROVISIONER_RUNNER_METHOD,default=local"`
-	RunnerGRPCServerAddress string `env:"RUNNER_GRPC_SERVER_ADDRESS,default=http://localhost:8080"`
-
-	// Temporal config options
-	TemporalEnabled       bool   `env:"TEMPORAL_ENABLED,default=true"`
-	TemporalRunWorkers    bool   `env:"TEMPORAL_RUN_WORKERS,default=true"`
-	TemporalHostPort      string `env:"TEMPORAL_HOST_PORT,default=127.0.0.1:7233"`
-	TemporalNamespace     string `env:"TEMPORAL_NAMESPACE,default=default"`
-	TemporalAuthHeaderKey string `env:"TEMPORAL_AUTH_HEADER_KEY"`
-	TemporalAuthHeaderVal string `env:"TEMPORAL_AUTH_HEADER_VAL"`
+	RedisLogStore shared.RedisConfigFile
 }
 
 type AuthConfig struct {
@@ -123,7 +99,6 @@ type ServerRuntimeConfig struct {
 	ServerURL  string
 	Port       int
 	CookieName string
-	RunWorkers bool
 }
 
 type Config struct {
@@ -146,10 +121,6 @@ type Config struct {
 	DefaultFileStore filestorage.FileStorageManager
 
 	DefaultLogStore logstorage.LogStorageBackend
-
-	DefaultProvisioner provisioner.Provisioner
-
-	TemporalClient *temporal.Client
 
 	ModuleRunQueueManager queuemanager.ModuleRunQueueManager
 }

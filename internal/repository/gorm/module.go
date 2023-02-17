@@ -134,7 +134,7 @@ func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA stri
 }
 
 func (repo *ModuleRepository) UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
-	if err := repo.db.Save(run).Error; err != nil {
+	if err := repo.db.Omit("ModuleRunConfig").Save(run).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

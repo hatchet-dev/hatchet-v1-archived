@@ -1,9 +1,8 @@
 package enums
 
 const (
-	BackgroundQueueName         string = "background"
-	ModuleRunSchedulerQueueName string = "module_run_scheduler_queue"
-	ModuleRunQueueName          string = "module_run_queue"
+	BackgroundQueueName string = "background"
+	ModuleRunQueueName  string = "runner"
 )
 
 const (

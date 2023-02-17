@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hatchet-dev/hatchet/internal/temporal"
 	"github.com/hatchet-dev/hatchet/internal/temporal/enums"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/logflusher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
@@ -11,19 +12,30 @@ import (
 	"go.temporal.io/sdk/client"
 )
 
-func DispatchModuleRunQueueChecker(c client.Client, input *modulequeuechecker.CheckQueueInput) error {
+func DispatchModuleRunQueueChecker(c *temporal.Client, input *modulequeuechecker.CheckQueueInput) error {
+	tc, err := c.GetClient(enums.BackgroundQueueName)
+
+	if err != nil {
+		return err
+	}
+
 	options := client.StartWorkflowOptions{
 		ID:        fmt.Sprintf("%s-%s", input.TeamID, input.ModuleID),
 		TaskQueue: enums.BackgroundQueueName,
 	}
 
-	// TODO: queue name shouldn't always be background
-	_, err := c.ExecuteWorkflow(context.Background(), options, enums.WorkflowTypeNameCheckModuleQueue, input)
+	_, err = tc.ExecuteWorkflow(context.Background(), options, enums.WorkflowTypeNameCheckModuleQueue, input)
 
 	return err
 }
 
-func DispatchBackgroundTasks(c client.Client) error {
+func DispatchBackgroundTasks(c *temporal.Client) error {
+	tc, err := c.GetClient(enums.BackgroundQueueName)
+
+	if err != nil {
+		return err
+	}
+
 	logFlusherInput := logflusher.FlushLogsInput{}
 
 	logFlusherOptions := client.StartWorkflowOptions{
@@ -32,7 +44,7 @@ func DispatchBackgroundTasks(c client.Client) error {
 		CronSchedule: "* * * * *",
 	}
 
-	_, err := c.ExecuteWorkflow(context.Background(), logFlusherOptions, enums.WorkflowTypeNameLogFlush, logFlusherInput)
+	_, err = tc.ExecuteWorkflow(context.Background(), logFlusherOptions, enums.WorkflowTypeNameLogFlush, logFlusherInput)
 
 	if err != nil {
 		return err
@@ -46,7 +58,7 @@ func DispatchBackgroundTasks(c client.Client) error {
 		CronSchedule: "* * * * *",
 	}
 
-	_, err = c.ExecuteWorkflow(context.Background(), queueCheckerOptions, enums.WorkflowTypeNameCheckAllQueues, queueCheckerInput)
+	_, err = tc.ExecuteWorkflow(context.Background(), queueCheckerOptions, enums.WorkflowTypeNameCheckAllQueues, queueCheckerInput)
 
 	return err
 }

@@ -3,6 +3,7 @@ package modulequeuechecker
 import (
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/models"
@@ -117,6 +118,7 @@ func (mqc *ModuleQueueChecker) ScheduleFromQueue(ctx workflow.Context, input Che
 	}
 
 	cwo := workflow.ChildWorkflowOptions{
+		TaskQueue:                hatchetenums.ModuleRunQueueName,
 		WorkflowExecutionTimeout: 1 * time.Minute,
 		WorkflowTaskTimeout:      time.Minute,
 		ParentClosePolicy:        enums.PARENT_CLOSE_POLICY_ABANDON,
@@ -134,7 +136,18 @@ func (mqc *ModuleQueueChecker) ScheduleFromQueue(ctx workflow.Context, input Che
 	var childWE workflow.Execution
 
 	if err := childWorkflowFuture.GetChildWorkflowExecution().Get(ctx, &childWE); err != nil {
-		return "", err
+		var resErr error
+		resErr = multierror.Append(resErr, err)
+
+		currModuleRun.Status = models.ModuleRunStatusFailed
+
+		currModuleRun, err = repo.Module().UpdateModuleRun(currModuleRun)
+
+		if err != nil {
+			err = multierror.Append(resErr, err)
+		}
+
+		return "", resErr
 	}
 
 	return "triggered_workflow", nil

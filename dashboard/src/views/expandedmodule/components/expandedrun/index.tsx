@@ -269,38 +269,54 @@ const ExpandedRun: React.FC<Props> = ({
     );
   };
 
+  const renderGithubTrigger = () => {
+    return (
+      <FlexRowLeft gap="4px">
+        <SmallSpan>Triggered by </SmallSpan>
+        <TriggerPRContainer onClick={selectPR}>
+          <MaterialIcon className="fa-solid fa-code-pull-request" />
+          <StatusText>
+            Pull Request #
+            {
+              moduleRunQuery.data.data?.github_pull_request
+                .github_pull_request_number
+            }
+          </StatusText>
+        </TriggerPRContainer>
+        <SmallSpan>into</SmallSpan>
+        <CodeLine padding="6px">
+          {
+            moduleRunQuery.data.data?.github_pull_request
+              .github_pull_request_base_branch
+          }
+        </CodeLine>
+        <SmallSpan>from</SmallSpan>
+        <CodeLine padding="6px">
+          {
+            moduleRunQuery.data.data?.github_pull_request
+              .github_pull_request_head_branch
+          }
+        </CodeLine>
+      </FlexRowLeft>
+    );
+  };
+
+  const renderManualTrigger = () => {
+    return (
+      <FlexRowLeft gap="4px">
+        <SmallSpan>Triggered by a manual run.</SmallSpan>
+      </FlexRowLeft>
+    );
+  };
+
   const renderPlanOverview = () => {
     return (
       <FlexCol>
         <SmallSpan>{moduleRunQuery?.data?.data?.status_description} </SmallSpan>
         <HorizontalSpacer spacepixels={8} />
-        <FlexRowLeft gap="4px">
-          <SmallSpan>Triggered by </SmallSpan>
-          <TriggerPRContainer onClick={selectPR}>
-            <MaterialIcon className="fa-solid fa-code-pull-request" />
-            <StatusText>
-              Pull Request #
-              {
-                moduleRunQuery.data.data?.github_pull_request
-                  .github_pull_request_number
-              }
-            </StatusText>
-          </TriggerPRContainer>
-          <SmallSpan>into</SmallSpan>
-          <CodeLine padding="6px">
-            {
-              moduleRunQuery.data.data?.github_pull_request
-                .github_pull_request_base_branch
-            }
-          </CodeLine>
-          <SmallSpan>from</SmallSpan>
-          <CodeLine padding="6px">
-            {
-              moduleRunQuery.data.data?.github_pull_request
-                .github_pull_request_head_branch
-            }
-          </CodeLine>
-        </FlexRowLeft>
+        {triggerKind == "github"
+          ? renderGithubTrigger()
+          : renderManualTrigger()}
         <HorizontalSpacer spacepixels={8} />
         {status == "completed" && renderPlannedChanges()}
       </FlexCol>
@@ -355,13 +371,15 @@ const ExpandedRun: React.FC<Props> = ({
         <FlexRow>
           <H4>Overview</H4>
           <FlexRowRight gap="8px">
-            <GithubRef
-              text={moduleRunQuery.data.data?.config.github_commit_sha.substr(
-                0,
-                7
-              )}
-              link={kind == "plan" ? getPRCommitLink() : getCommitLink()}
-            />
+            {triggerKind == "github" && (
+              <GithubRef
+                text={moduleRunQuery.data.data?.config.github_commit_sha.substr(
+                  0,
+                  7
+                )}
+                link={kind == "plan" ? getPRCommitLink() : getCommitLink()}
+              />
+            )}
             {renderStatusContainer()}
             {renderTimeContainer()}
           </FlexRowRight>
