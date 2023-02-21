@@ -16,6 +16,9 @@ type Provisioner interface {
 	RunPlan(opts *ProvisionOpts) error
 	RunApply(opts *ProvisionOpts) error
 	RunDestroy(opts *ProvisionOpts) error
+
+	RunStateMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunPlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
 }
 
 type GetEnvOpts struct {

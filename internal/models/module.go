@@ -112,6 +112,7 @@ const (
 	ModuleRunKindPlan    ModuleRunKind = "plan"
 	ModuleRunKindApply   ModuleRunKind = "apply"
 	ModuleRunKindDestroy ModuleRunKind = "destroy"
+	ModuleRunKindMonitor ModuleRunKind = "monitor"
 )
 
 const LogLocationFileStorage string = "file"

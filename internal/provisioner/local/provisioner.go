@@ -2,6 +2,7 @@ package local
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -58,6 +59,37 @@ func (l *LocalProvisioner) RunApply(opts *provisioner.ProvisionOpts) error {
 	}()
 
 	return nil
+}
+
+func (l *LocalProvisioner) RunStateMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
+	go func() {
+		// write policy to cmd file
+		ioutil.WriteFile(fmt.Sprintf("./bin/tmp/%s.rego", monitorID), policy, 0666)
+
+		cmdProv := exec.Command("./bin/hatchet-runner", "monitor", "-policy-file", fmt.Sprintf("./tmp/%s.rego", monitorID))
+		cmdProv.Stdout = os.Stdout
+		cmdProv.Stderr = os.Stderr
+		env := opts.Env
+		env = append(env, cmdProv.Environ()...)
+
+		env = append(env, fmt.Sprintf("MODULE_MONITOR_ID=%s", monitorID))
+
+		env = append(env, "PATH=/usr/local/bin:/usr/bin:/bin")
+
+		cmdProv.Env = env
+
+		err := cmdProv.Run()
+
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	return nil
+}
+
+func (l *LocalProvisioner) RunPlanMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
+	panic("unimplemented")
 }
 
 func (l *LocalProvisioner) RunDestroy(opts *provisioner.ProvisionOpts) error {

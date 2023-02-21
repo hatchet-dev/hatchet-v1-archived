@@ -2774,6 +2774,256 @@ paths:
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+    post:
+      tags:
+      - Modules
+      summary: Update Module Run
+      description: Updates a module.
+      operationId: updateModule
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      requestBody:
+        description: The module params to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createModule_request'
+        required: false
+      responses:
+        "200":
+          description: Successfully updated the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateModuleResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400 \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400';
+
+          let options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer REPLACE_BEARER_TOKEN',
+              'content-type': 'application/json'
+            },
+            body: '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
+          };
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+          request["content-type"] = 'application/json'
+          request.body = "{\"env_vars\":{\"property1\":\"string\",\"property2\":\"string\"},\"github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"name\":\"string\",\"values_github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"values_raw\":{\"property1\":{},\"property2\":{}}}"
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400"
+
+          payload = {
+              "env_vars": {
+                  "property1": "string",
+                  "property2": "string"
+              },
+              "github": {
+                  "github_app_installation_id": "bb214807-246e-43a5-a25d-41761d1cff9e",
+                  "github_repository_branch": "main",
+                  "github_repository_name": "infra",
+                  "github_repository_owner": "hatchet-dev",
+                  "path": "./staging/eks"
+              },
+              "name": "string",
+              "values_github": {
+                  "github_app_installation_id": "bb214807-246e-43a5-a25d-41761d1cff9e",
+                  "github_repository_branch": "main",
+                  "github_repository_name": "infra",
+                  "github_repository_owner": "hatchet-dev",
+                  "path": "./staging/eks"
+              },
+              "values_raw": {
+                  "property1": {},
+                  "property2": {}
+              }
+          }
+          headers = {
+              "Authorization": "Bearer REPLACE_BEARER_TOKEN",
+              "content-type": "application/json"
+          }
+
+          response = requests.request("POST", url, json=payload, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
+          \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400\"\
+          \n\n\tpayload := strings.NewReader(\"{\\\"env_vars\\\":{\\\"property1\\\"\
+          :\\\"string\\\",\\\"property2\\\":\\\"string\\\"},\\\"github\\\":{\\\"github_app_installation_id\\\
+          \":\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
+          \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
+          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"name\\\"\
+          :\\\"string\\\",\\\"values_github\\\":{\\\"github_app_installation_id\\\"\
+          :\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
+          \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
+          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"values_raw\\\
+          \":{\\\"property1\\\":{},\\\"property2\\\":{}}}\")\n\n\treq, _ := http.NewRequest(\"\
+          POST\", url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
+      x-codegen-request-body-name: UpdateModuleRequest
+    delete:
+      tags:
+      - Modules
+      summary: Delete Module
+      description: Deletes a module.
+      operationId: deleteModule
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      responses:
+        "200":
+          description: Successfully deleted the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteModuleResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request DELETE \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400 \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400';
+
+          let options = {method: 'DELETE', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Delete.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("DELETE", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400\"\
+          \n\n\treq, _ := http.NewRequest(\"DELETE\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
   /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id}:
     get:
       tags:
@@ -2878,6 +3128,82 @@ paths:
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
           \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/env_vars/322346f9-54b4-497d-bc9a-c54b5aaa4400\"\
           \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/modules/{module_id}/force_unlock:
+    post:
+      tags:
+      - Modules
+      summary: Unlock Module
+      description: Force unlocks a module.
+      operationId: forceUnlockModule
+      responses:
+        "200":
+          description: Successfully unlocked the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForceUnlockModuleResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/force_unlock \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/force_unlock';
+
+          let options = {method: 'POST', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/force_unlock")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/force_unlock"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("POST", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/{team_id}/modules/{module_id}/force_unlock\"\
+          \n\n\treq, _ := http.NewRequest(\"POST\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
@@ -3343,6 +3669,255 @@ paths:
           \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
           \n}"
       x-codegen-request-body-name: FinalizeModuleRunRequest
+  /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs:
+    get:
+      tags:
+      - Modules
+      summary: Get logs
+      description: Gets the logs for a module run.
+      operationId: getModuleRunLogs
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      responses:
+        "200":
+          description: Successfully got the logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogsResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+        "423":
+          description: Locked
+          content: {}
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/logs \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/logs';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/logs")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/logs"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/logs\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/monitor_result:
+    post:
+      tags:
+      - Modules
+      summary: Create Monitor Result
+      description: Reports a monitor result.
+      operationId: createMonitorResult
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      requestBody:
+        description: The monitor result
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createMonitorResult_request'
+        required: true
+      responses:
+        "200":
+          description: Successfully created the monitor result
+          content: {}
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request POST \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitor_result \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{"MonitorID":"string","failure_messages":["string"],"severity":"string","status":"string","success_message":"string","title":"string"}'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitor_result';
+
+          let options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer REPLACE_BEARER_TOKEN',
+              'content-type': 'application/json'
+            },
+            body: '{"MonitorID":"string","failure_messages":["string"],"severity":"string","status":"string","success_message":"string","title":"string"}'
+          };
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitor_result")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Post.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+          request["content-type"] = 'application/json'
+          request.body = "{\"MonitorID\":\"string\",\"failure_messages\":[\"string\"],\"severity\":\"string\",\"status\":\"string\",\"success_message\":\"string\",\"title\":\"string\"}"
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitor_result"
+
+          payload = {
+              "MonitorID": "string",
+              "failure_messages": ["string"],
+              "severity": "string",
+              "status": "string",
+              "success_message": "string",
+              "title": "string"
+          }
+          headers = {
+              "Authorization": "Bearer REPLACE_BEARER_TOKEN",
+              "content-type": "application/json"
+          }
+
+          response = requests.request("POST", url, json=payload, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
+          \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitor_result\"\
+          \n\n\tpayload := strings.NewReader(\"{\\\"MonitorID\\\":\\\"string\\\",\\\
+          \"failure_messages\\\":[\\\"string\\\"],\\\"severity\\\":\\\"string\\\"\
+          ,\\\"status\\\":\\\"string\\\",\\\"success_message\\\":\\\"string\\\",\\\
+          \"title\\\":\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\",\
+          \ url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
+      x-codegen-request-body-name: CreateMonitorResultRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan:
     post:
       tags:
@@ -3560,7 +4135,7 @@ paths:
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate:
-    post:
+    get:
       tags:
       - Modules
       summary: Create or Update Terraform State
@@ -3614,6 +4189,113 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/tfstate \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/tfstate';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/tfstate")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/tfstate"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/tfstate\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+    post:
+      tags:
+      - Modules
+      summary: Create or Update Terraform State
+      description: Creates a `POST` request for Terraform state. **Should only be
+        called by Terraform in automation.**
+      operationId: createTerraformState
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      responses:
+        "200":
+          description: Successfully got the TF state
+          content: {}
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+        "423":
+          description: Locked
+          content: {}
       x-codeSamples:
       - lang: Shell
         source: |-
@@ -6207,6 +6889,38 @@ components:
         github_repository_owner: hatchet-dev
         github_repository_name: infra
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    CreateMonitorResultRequest:
+      type: object
+      properties:
+        MonitorID:
+          type: string
+        failure_messages:
+          type: array
+          items:
+            type: string
+          x-go-name: FailureMessages
+        severity:
+          type: string
+          x-go-name: Severity
+        status:
+          type: string
+          x-go-name: Status
+        success_message:
+          type: string
+          x-go-name: SuccessMessage
+        title:
+          type: string
+          x-go-name: Title
+      example:
+        severity: severity
+        success_message: success_message
+        title: title
+        MonitorID: MonitorID
+        failure_messages:
+        - failure_messages
+        - failure_messages
+        status: status
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateOrgMemberInviteRequest:
       required:
       - invitee_email
@@ -6348,6 +7062,8 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateUserResponse:
       $ref: '#/components/schemas/User'
+    DeleteModuleResponse:
+      $ref: '#/components/schemas/Module'
     DeleteOrganizationResponse:
       $ref: '#/components/schemas/Organization'
     DeletePATResponse:
@@ -6376,6 +7092,21 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     FinalizeModuleRunResponse:
       $ref: '#/components/schemas/ModuleRunOverview'
+    ForceUnlockModuleResponse:
+      $ref: '#/components/schemas/Module'
+    GetLogsResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            type: string
+          x-go-name: Logs
+      example:
+        logs:
+        - logs
+        - logs
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     GetModuleEnvVarsVersionResponse:
       $ref: '#/components/schemas/ModuleEnvVarsVersion'
     GetModulePlanSummaryResponse:
@@ -6611,25 +7342,33 @@ components:
           current_page: 2
         rows:
         - updated_at: 2022-12-13T15:06:48.888358-05:00
+          lock_kind: lock_kind
+          current_env_vars_version_id: current_env_vars_version_id
           name: eks
           created_at: 2022-12-13T15:06:48.888358-05:00
           id: bb214807-246e-43a5-a25d-41761d1cff9e
+          current_values_version_id: current_values_version_id
           deployment:
             path: path
             github_app_installation_id: github_app_installation_id
             github_repo_name: github_repo_name
             github_repo_branch: github_repo_branch
             github_repo_owner: github_repo_owner
+          lock_id: lock_id
         - updated_at: 2022-12-13T15:06:48.888358-05:00
+          lock_kind: lock_kind
+          current_env_vars_version_id: current_env_vars_version_id
           name: eks
           created_at: 2022-12-13T15:06:48.888358-05:00
           id: bb214807-246e-43a5-a25d-41761d1cff9e
+          current_values_version_id: current_values_version_id
           deployment:
             path: path
             github_app_installation_id: github_app_installation_id
             github_repo_name: github_repo_name
             github_repo_branch: github_repo_branch
             github_repo_owner: github_repo_owner
+          lock_id: lock_id
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     ListOrgMembersResponse:
       type: object
@@ -6956,6 +7695,12 @@ components:
           format: date-time
           example: 2022-12-13T15:06:48.888358-05:00
           x-go-name: CreatedAt
+        current_env_vars_version_id:
+          type: string
+          x-go-name: CurrentEnvVarsVersionID
+        current_values_version_id:
+          type: string
+          x-go-name: CurrentValuesVersionID
         deployment:
           $ref: '#/components/schemas/ModuleDeploymentConfig'
         id:
@@ -6963,6 +7708,12 @@ components:
           description: "the id of this resource, in UUID format"
           example: bb214807-246e-43a5-a25d-41761d1cff9e
           x-go-name: ID
+        lock_id:
+          type: string
+          x-go-name: LockID
+        lock_kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
         name:
           type: string
           description: the name for the module
@@ -6976,15 +7727,19 @@ components:
           x-go-name: UpdatedAt
       example:
         updated_at: 2022-12-13T15:06:48.888358-05:00
+        lock_kind: lock_kind
+        current_env_vars_version_id: current_env_vars_version_id
         name: eks
         created_at: 2022-12-13T15:06:48.888358-05:00
         id: bb214807-246e-43a5-a25d-41761d1cff9e
+        current_values_version_id: current_values_version_id
         deployment:
           path: path
           github_app_installation_id: github_app_installation_id
           github_repo_name: github_repo_name
           github_repo_branch: github_repo_branch
           github_repo_owner: github_repo_owner
+        lock_id: lock_id
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     ModuleDeploymentConfig:
       type: object
@@ -7063,6 +7818,9 @@ components:
           key: key
         - val: val
           key: key
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleLockKind:
+      type: string
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     ModulePlanSummary:
       type: array
@@ -7217,6 +7975,47 @@ components:
           format: date-time
           example: 2022-12-13T15:06:48.888358-05:00
           x-go-name: CreatedAt
+        github:
+          $ref: '#/components/schemas/ModuleValuesGithubConfig'
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        raw_values:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+          description: Raw values (may be omitted)
+          x-go-name: Values
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+        version:
+          type: integer
+          format: uint64
+          x-go-name: Version
+      example:
+        github:
+          path: path
+          github_app_installation_id: github_app_installation_id
+          github_repo_name: github_repo_name
+          github_repo_branch: github_repo_branch
+          github_repo_owner: github_repo_owner
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        raw_values:
+          key: "{}"
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        version: 0
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleValuesGithubConfig:
+      type: object
+      properties:
         github_app_installation_id:
           type: string
           x-go-name: GithubAppInstallationID
@@ -7229,44 +8028,15 @@ components:
         github_repo_owner:
           type: string
           x-go-name: GithubRepoOwner
-        id:
-          type: string
-          description: "the id of this resource, in UUID format"
-          example: bb214807-246e-43a5-a25d-41761d1cff9e
-          x-go-name: ID
         path:
           type: string
-          description: Github-based values
           x-go-name: Path
-        updated_at:
-          type: string
-          description: the time that this resource was last updated
-          format: date-time
-          example: 2022-12-13T15:06:48.888358-05:00
-          x-go-name: UpdatedAt
-        values:
-          type: object
-          additionalProperties:
-            type: object
-            properties: {}
-          description: Raw values (may be omitted)
-          x-go-name: Values
-        version:
-          type: integer
-          format: uint64
-          x-go-name: Version
       example:
         path: path
-        updated_at: 2022-12-13T15:06:48.888358-05:00
         github_app_installation_id: github_app_installation_id
         github_repo_name: github_repo_name
-        values:
-          key: "{}"
-        created_at: 2022-12-13T15:06:48.888358-05:00
-        id: bb214807-246e-43a5-a25d-41761d1cff9e
         github_repo_branch: github_repo_branch
         github_repo_owner: github_repo_owner
-        version: 0
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     Organization:
       type: object
@@ -7923,6 +8693,30 @@ components:
         Who:
           type: string
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    UpdateModuleRequest:
+      type: object
+      properties:
+        env_vars:
+          type: object
+          additionalProperties:
+            type: string
+          x-go-name: EnvVars
+        github:
+          $ref: '#/components/schemas/CreateModuleRequestGithub'
+        name:
+          type: string
+          x-go-name: Name
+        values_github:
+          $ref: '#/components/schemas/CreateModuleValuesRequestGithub'
+        values_raw:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+          x-go-name: ValuesRaw
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    UpdateModuleResponse:
+      $ref: '#/components/schemas/Module'
     UpdateOrgMemberPoliciesRequest:
       required:
       - policies
@@ -8163,6 +8957,29 @@ components:
         status:
           type: string
           x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    createMonitorResult_request:
+      type: object
+      properties:
+        MonitorID:
+          type: string
+        failure_messages:
+          type: array
+          items:
+            type: string
+          x-go-name: FailureMessages
+        severity:
+          type: string
+          x-go-name: Severity
+        status:
+          type: string
+          x-go-name: Status
+        success_message:
+          type: string
+          x-go-name: SuccessMessage
+        title:
+          type: string
+          x-go-name: Title
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     createTerraformPlan_request:
       required:

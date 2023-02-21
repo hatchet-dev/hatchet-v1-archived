@@ -13,7 +13,9 @@ import (
 
 	"github.com/antihax/optional"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
+	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
+	"github.com/hatchet-dev/hatchet/internal/opa"
 )
 
 type actionHandler func(config *runner.Config, description string) error
@@ -146,6 +148,49 @@ func (r *RunnerAction) Plan(
 	}
 
 	return zipOut, prettyOut, jsonOut, nil
+}
+
+func (r *RunnerAction) MonitorState(
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	// get the state as JSON
+	if !commandExists("terraform") {
+		return nil, fmt.Errorf("terraform cli command does not exist")
+	}
+
+	err := r.reInit(config)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+	}
+
+	stateBytes, err := r.showStateJSON(config)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
+	}
+
+	state := make(map[string]interface{})
+
+	err = json.Unmarshal(stateBytes, &state)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
+	}
+
+	monitorStateInput := map[string]interface{}{
+		"state": state,
+	}
+
+	// load opa query
+	opaQuery, err := opa.LoadQueryFromBytes("state_monitor", policyBytes)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+	}
+
+	return opa.RunMonitorQuery(opaQuery, monitorStateInput)
 }
 
 func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath string) error {
@@ -286,6 +331,24 @@ func (r *RunnerAction) showPretty(
 	config *runner.Config,
 ) ([]byte, error) {
 	args := []string{"show", "-no-color", "./plan.tfplan"}
+
+	cmd := exec.Command("terraform", args...)
+	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Stderr = os.Stderr
+
+	err := r.setBackendEnv(config, cmd)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd.Output()
+}
+
+func (r *RunnerAction) showStateJSON(
+	config *runner.Config,
+) ([]byte, error) {
+	args := []string{"show", "-json"}
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir

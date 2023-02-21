@@ -15,17 +15,12 @@ import (
 type ModuleValues struct {
 	// the time that this resource was created
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	GithubAppInstallationId string `json:"github_app_installation_id,omitempty"`
-	GithubRepoBranch string `json:"github_repo_branch,omitempty"`
-	GithubRepoName string `json:"github_repo_name,omitempty"`
-	GithubRepoOwner string `json:"github_repo_owner,omitempty"`
+	Github *ModuleValuesGithubConfig `json:"github,omitempty"`
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
-	// Github-based values
-	Path string `json:"path,omitempty"`
+	// Raw values (may be omitted)
+	RawValues map[string]interface{} `json:"raw_values,omitempty"`
 	// the time that this resource was last updated
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Raw values (may be omitted)
-	Values map[string]interface{} `json:"values,omitempty"`
 	Version int32 `json:"version,omitempty"`
 }
