@@ -9,6 +9,16 @@ import (
 )
 
 type ProvisionOpts struct {
+	Env []string
+}
+
+type Provisioner interface {
+	RunPlan(opts *ProvisionOpts) error
+	RunApply(opts *ProvisionOpts) error
+	RunDestroy(opts *ProvisionOpts) error
+}
+
+type GetEnvOpts struct {
 	Team      *models.Team
 	Module    *models.Module
 	ModuleRun *models.ModuleRun
@@ -19,13 +29,7 @@ type ProvisionOpts struct {
 	ServerURL  string
 }
 
-type Provisioner interface {
-	RunPlan(opts *ProvisionOpts) error
-	RunApply(opts *ProvisionOpts) error
-	RunDestroy(opts *ProvisionOpts) error
-}
-
-func GetHatchetRunnerEnv(opts *ProvisionOpts, currEnv []string) ([]string, error) {
+func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 	tok, err := GetRunnerToken(opts)
 
 	if err != nil {
@@ -57,7 +61,7 @@ func GetHatchetRunnerEnv(opts *ProvisionOpts, currEnv []string) ([]string, error
 	return currEnv, nil
 }
 
-func GetRunnerToken(opts *ProvisionOpts) (string, error) {
+func GetRunnerToken(opts *GetEnvOpts) (string, error) {
 	mrt, err := models.NewModuleRunTokenFromRunID(opts.Team.ServiceAccountRunnerID, opts.ModuleRun.ID)
 
 	if err != nil {

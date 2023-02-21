@@ -9,7 +9,10 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
+	"github.com/hatchet-dev/hatchet/internal/runutils"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 )
 
 type RunCreateHandler struct {
@@ -27,17 +30,21 @@ func NewRunCreateHandler(
 }
 
 func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
 	run := &models.ModuleRun{
 		ModuleID:    module.ID,
-		Status:      models.ModuleRunStatusInProgress,
+		Status:      models.ModuleRunStatusQueued,
 		Kind:        models.ModuleRunKindPlan,
 		LogLocation: m.Config().DefaultLogStore.GetID(),
+		ModuleRunConfig: models.ModuleRunConfig{
+			TriggerKind:            models.ModuleRunTriggerKindManual,
+			ModuleValuesVersionID:  module.CurrentModuleValuesVersionID,
+			ModuleEnvVarsVersionID: module.CurrentModuleEnvVarsVersionID,
+		},
 	}
 
-	desc, err := generateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
+	desc, err := runutils.GenerateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -53,15 +60,17 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO(abelanger5): queue, don't run plan
-	opts, err := provisionerutils.GetProvisionerOpts(team, module, run, m.Config())
+	err = m.Config().ModuleRunQueueManager.Enqueue(module, run, &queuemanager.LockOpts{})
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
 
-	err = m.Config().DefaultProvisioner.RunPlan(opts)
+	err = dispatcher.DispatchModuleRunQueueChecker(m.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
+		TeamID:   module.TeamID,
+		ModuleID: module.ID,
+	})
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

@@ -42,10 +42,8 @@ func (lf *LogFlusher) FlushLogs(ctx workflow.Context, input FlushLogsInput) (str
 	for _, run := range runs {
 		// stream logs into the file
 		if run.TeamID != "" {
-			// Apply the options.
 			ctx = workflow.WithActivityOptions(ctx, options)
 
-			// Withdraw money.
 			var flushOutput string
 
 			flushErr := workflow.ExecuteActivity(ctx, lf.Flush, FlushInput{

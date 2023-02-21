@@ -25,6 +25,7 @@ type GormRepository struct {
 	mod         repository.ModuleRepository
 	mv          repository.ModuleValuesRepository
 	mev         repository.ModuleEnvVarsRepository
+	mrq         repository.ModuleRunQueueRepository
 }
 
 func (t *GormRepository) User() repository.UserRepository {
@@ -83,6 +84,10 @@ func (t *GormRepository) ModuleEnvVars() repository.ModuleEnvVarsRepository {
 	return t.mev
 }
 
+func (t *GormRepository) ModuleRunQueue() repository.ModuleRunQueueRepository {
+	return t.mrq
+}
+
 // NewRepository returns a Repository which persists users in memory
 // and accepts a parameter that can trigger read/write errors
 func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
@@ -101,6 +106,7 @@ func NewRepository(db *gorm.DB, key *[32]byte) repository.Repository {
 		mod:         NewModuleRepository(db),
 		mv:          NewModuleValuesRepository(db, key),
 		mev:         NewModuleEnvVarsRepository(db, key),
+		mrq:         NewModuleRunQueueRepository(db),
 	}
 }
 

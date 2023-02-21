@@ -2,38 +2,51 @@ package temporal
 
 import (
 	"context"
+	"fmt"
+	"os"
 
-	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/logflusher"
 	"go.temporal.io/sdk/client"
 )
 
-const (
-	BackgroundQueueName string = "background"
-)
-
-const (
-	BackgroundLogFlushID string = "log_flusher"
-)
-
-const (
-	WorkflowTypeNameLogFlush string = "FlushLogs"
-)
+const DefaultQueueName = "default"
 
 type Client struct {
-	tc client.Client
+	clients map[string]client.Client
+
+	opts *ClientOpts
 }
 
 type ClientOpts struct {
-	HostPort      string
-	Namespace     string
-	AuthHeaderKey string
-	AuthHeaderVal string
+	HostPort         string
+	Namespace        string
+	AuthHeaderKey    string
+	AuthHeaderVal    string
+	DefaultQueueName string
 }
 
 func NewTemporalClient(opts *ClientOpts) (*Client, error) {
+	if opts.DefaultQueueName == "" {
+		opts.DefaultQueueName = DefaultQueueName
+	}
+
+	c, err := clientFromOpts(opts, opts.DefaultQueueName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	clients := make(map[string]client.Client)
+
+	clients[opts.DefaultQueueName] = c
+
+	return &Client{clients, opts}, nil
+}
+
+func clientFromOpts(opts *ClientOpts, taskQueueName string) (client.Client, error) {
 	tOpts := client.Options{
 		HostPort:  opts.HostPort,
 		Namespace: opts.Namespace,
+		Identity:  fmt.Sprintf("%d@%s@%s", os.Getpid(), getHostName(), taskQueueName),
 	}
 
 	if opts.AuthHeaderKey != "" && opts.AuthHeaderVal != "" {
@@ -44,35 +57,37 @@ func NewTemporalClient(opts *ClientOpts) (*Client, error) {
 		}
 	}
 
-	c, err := client.Dial(tOpts)
+	return client.Dial(tOpts)
+}
+
+func (c *Client) GetClient(queueName string) (client.Client, error) {
+	if queueName == "" {
+		return c.clients[DefaultQueueName], nil
+	}
+
+	tc, exists := c.clients[queueName]
+
+	if !exists {
+		return c.newQueueClient(queueName)
+	}
+
+	return tc, nil
+}
+
+func (c *Client) newQueueClient(taskQueueName string) (client.Client, error) {
+	tc, err := clientFromOpts(c.opts, taskQueueName)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{c}, nil
-}
+	c.clients[taskQueueName] = tc
 
-func (c *Client) GetClient() client.Client {
-	return c.tc
+	return tc, nil
 }
 
 func (c *Client) Close() {
 	c.Close()
-}
-
-func (c *Client) StartBackgroundTasks() error {
-	input := logflusher.FlushLogsInput{}
-
-	options := client.StartWorkflowOptions{
-		ID:           BackgroundLogFlushID,
-		TaskQueue:    BackgroundQueueName,
-		CronSchedule: "* * * * *",
-	}
-
-	_, err := c.tc.ExecuteWorkflow(context.Background(), options, WorkflowTypeNameLogFlush, input)
-
-	return err
 }
 
 type authHeadersProvider struct {
@@ -81,4 +96,12 @@ type authHeadersProvider struct {
 
 func (a authHeadersProvider) GetHeaders(ctx context.Context) (map[string]string, error) {
 	return a.headers, nil
+}
+
+func getHostName() string {
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = "Unknown"
+	}
+	return hostName
 }

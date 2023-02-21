@@ -19,6 +19,7 @@ type Repository interface {
 	Module() ModuleRepository
 	ModuleValues() ModuleValuesRepository
 	ModuleEnvVars() ModuleEnvVarsRepository
+	ModuleRunQueue() ModuleRunQueueRepository
 }
 
 var (

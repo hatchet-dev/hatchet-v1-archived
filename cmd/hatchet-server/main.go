@@ -12,6 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/pb"
 	"github.com/hatchet-dev/hatchet/api/v1/server/router"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/worker"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -48,19 +49,40 @@ func main() {
 
 	sc.Logger.Info().Msgf("Starting server %v", address)
 
-	if sc.ServerRuntimeConfig.RunWorkers {
-		err = worker.NewWorker(sc)
-
-		if err != nil {
-			fmt.Printf("Fatal: could not load temporal: %v", err)
-			os.Exit(1)
-		}
-	}
-
-	err = sc.TemporalClient.StartBackgroundTasks()
+	// TODO: move this out of the server binary
+	bwc, err := configLoader.LoadBackgroundWorkerConfigFromEnv()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not dispatch test workflow: %v", err)
+		fmt.Printf("Fatal: could not load background worker config: %v", err)
+		os.Exit(1)
+	}
+
+	err = worker.StartBackgroundWorker(bwc)
+
+	if err != nil {
+		fmt.Printf("Fatal: could not start worker: %v", err)
+		os.Exit(1)
+	}
+
+	err = dispatcher.DispatchBackgroundTasks(bwc.TemporalClient)
+
+	if err != nil {
+		fmt.Printf("Fatal: could not dispatch background workflows: %v", err)
+		os.Exit(1)
+	}
+
+	// TODO: move this out of the server binary
+	rwc, err := configLoader.LoadRunnerWorkerConfigFromEnv()
+
+	if err != nil {
+		fmt.Printf("Fatal: could not load runner worker config: %v", err)
+		os.Exit(1)
+	}
+
+	err = worker.StartRunnerWorker(rwc)
+
+	if err != nil {
+		fmt.Printf("Fatal: could not start worker: %v", err)
 		os.Exit(1)
 	}
 

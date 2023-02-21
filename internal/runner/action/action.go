@@ -224,7 +224,8 @@ func (r *RunnerAction) apply(
 ) error {
 	args := []string{"apply", "-json", "-auto-approve"}
 
-	if valsFilePath != "" {
+	// var-file option can only be set when there is not a planned run
+	if valsFilePath != "" && planPath == "" {
 		args = append(args, fmt.Sprintf("-var-file=%s", valsFilePath))
 	}
 

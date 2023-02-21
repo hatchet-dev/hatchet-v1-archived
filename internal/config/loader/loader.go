@@ -14,6 +14,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
+	"github.com/hatchet-dev/hatchet/internal/config/worker"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage/s3"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
@@ -26,16 +27,19 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/notifier/sendgrid"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/provisioner/local"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm"
 	"github.com/hatchet-dev/hatchet/internal/temporal"
 	"github.com/joeshaw/envdecode"
 )
 
 type EnvDecoderConf struct {
-	ServerConfigFile   server.ConfigFile
-	RunnerConfigFile   runner.ConfigFile
-	DatabaseConfigFile database.ConfigFile
-	SharedConfigFile   shared.ConfigFile
+	ServerConfigFile           server.ConfigFile
+	BackgroundWorkerConfigFile worker.BackgroundConfigFile
+	RunnerWorkerConfigFile     worker.RunnerConfigFile
+	RunnerConfigFile           runner.ConfigFile
+	DatabaseConfigFile         database.ConfigFile
+	SharedConfigFile           shared.ConfigFile
 }
 
 // ServerConfigFromEnv loads the server config file from environment variables
@@ -47,6 +51,28 @@ func ServerConfigFromEnv() (*server.ConfigFile, error) {
 	}
 
 	return &envDecoderConf.ServerConfigFile, nil
+}
+
+// BackgroundWorkerConfigFromEnv loads the background worker config file from environment variables
+func BackgroundWorkerConfigFromEnv() (*worker.BackgroundConfigFile, error) {
+	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
+
+	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
+		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
+	}
+
+	return &envDecoderConf.BackgroundWorkerConfigFile, nil
+}
+
+// RunnerWorkerConfigFromEnv loads the runner worker config file from environment variables
+func RunnerWorkerConfigFromEnv() (*worker.RunnerConfigFile, error) {
+	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
+
+	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
+		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
+	}
+
+	return &envDecoderConf.RunnerWorkerConfigFile, nil
 }
 
 // RunnerConfigFromEnv loads the runner config file from environment variables
@@ -96,14 +122,30 @@ func (e *EnvConfigLoader) loadSharedConfig() (res *shared.Config, err error) {
 	return e.LoadSharedConfigFromConfigFile(sharedConfig)
 }
 
-func (e *EnvConfigLoader) LoadSharedConfigFromConfigFile(sharedConfigFile *shared.ConfigFile) (res *shared.Config, err error) {
-	l := logger.NewConsole(sharedConfigFile.Debug)
+func (e *EnvConfigLoader) LoadSharedConfigFromConfigFile(sharedC *shared.ConfigFile) (res *shared.Config, err error) {
+	l := logger.NewConsole(sharedC.Debug)
 
 	errorAlerter := erroralerter.NoOpAlerter{}
 
+	var temporalClient *temporal.Client
+
+	if sharedC.TemporalEnabled {
+		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
+			HostPort:      sharedC.TemporalHostPort,
+			Namespace:     sharedC.TemporalNamespace,
+			AuthHeaderKey: sharedC.TemporalAuthHeaderKey,
+			AuthHeaderVal: sharedC.TemporalAuthHeaderVal,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &shared.Config{
-		Logger:       *l,
-		ErrorAlerter: errorAlerter,
+		Logger:         *l,
+		ErrorAlerter:   errorAlerter,
+		TemporalClient: temporalClient,
 	}, nil
 }
 
@@ -178,6 +220,128 @@ func (e *EnvConfigLoader) LoadRunnerConfigFromConfigFile(rc *runner.ConfigFile, 
 	}, nil
 }
 
+func (e *EnvConfigLoader) LoadRunnerWorkerConfigFromEnv() (res *worker.RunnerConfig, err error) {
+	sharedConfig, err := e.loadSharedConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load shared config: %v", err)
+	}
+
+	wc, err := RunnerWorkerConfigFromEnv()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load server config from env: %v", err)
+	}
+
+	return e.LoadRunnerWorkerConfigFromConfigFile(wc, sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadRunnerWorkerConfigFromConfigFile(
+	wc *worker.RunnerConfigFile,
+	sharedConfig *shared.Config,
+) (res *worker.RunnerConfig, err error) {
+	var provisioner provisioner.Provisioner
+
+	if wc.ProvisionerRunnerMethod == "local" {
+		provisioner = local.NewLocalProvisioner()
+	}
+
+	return &worker.RunnerConfig{
+		Config:             *sharedConfig,
+		DefaultProvisioner: provisioner,
+	}, nil
+}
+
+func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromEnv() (res *worker.BackgroundConfig, err error) {
+	sharedConfig, err := e.loadSharedConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load shared config: %v", err)
+	}
+
+	dbConfig, err := e.LoadDatabaseConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load database config: %v", err)
+	}
+
+	wc, err := BackgroundWorkerConfigFromEnv()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load server config from env: %v", err)
+	}
+
+	return e.LoadBackgroundWorkerConfigFromConfigFile(wc, dbConfig, sharedConfig)
+}
+
+func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromConfigFile(
+	wc *worker.BackgroundConfigFile,
+	dbConfig *database.Config,
+	sharedConfig *shared.Config,
+) (res *worker.BackgroundConfig, err error) {
+	var storageManager filestorage.FileStorageManager
+
+	if e.hasS3StateAppVars(wc.S3StateStore) {
+		fc := wc.S3StateStore
+
+		var stateEncryptionKey [32]byte
+
+		for i, b := range []byte(fc.S3StateEncryptionKey) {
+			stateEncryptionKey[i] = b
+		}
+
+		storageManager, err = s3.NewS3StorageClient(&s3.S3Options{
+			AWSRegion:      fc.S3StateAWSRegion,
+			AWSAccessKeyID: fc.S3StateAWSAccessKeyID,
+			AWSSecretKey:   fc.S3StateAWSSecretKey,
+			AWSBucketName:  fc.S3StateBucketName,
+			EncryptionKey:  &stateEncryptionKey,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	tokenOpts := &token.TokenOpts{
+		Issuer:   wc.TokenIssuerURL,
+		Audience: wc.TokenAudience,
+	}
+
+	if wc.TokenIssuerURL == "" {
+		tokenOpts.Issuer = wc.ServerURL
+	}
+
+	if len(wc.TokenAudience) == 0 {
+		tokenOpts.Audience = []string{wc.ServerURL}
+	}
+
+	var logManager logstorage.LogStorageBackend
+
+	if e.hasRedisVars(wc.RedisLogStore) {
+		rc := wc.RedisLogStore
+		logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
+			RedisHost:     rc.RedisHost,
+			RedisPort:     rc.RedisPort,
+			RedisUsername: rc.RedisUsername,
+			RedisPassword: rc.RedisPassword,
+			RedisDB:       rc.RedisDB,
+		})
+	}
+
+	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
+
+	return &worker.BackgroundConfig{
+		Config:                *sharedConfig,
+		DB:                    *dbConfig,
+		ServerURL:             wc.ServerURL,
+		TokenOpts:             tokenOpts,
+		DefaultFileStore:      storageManager,
+		DefaultLogStore:       logManager,
+		ModuleRunQueueManager: queueManager,
+	}, nil
+}
+
 func (e *EnvConfigLoader) LoadServerConfigFromEnv() (res *server.Config, err error) {
 	sharedConfig, err := e.loadSharedConfig()
 
@@ -210,7 +374,6 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 		Port:       sc.Port,
 		ServerURL:  sc.ServerURL,
 		CookieName: sc.CookieName,
-		RunWorkers: sc.TemporalEnabled && sc.TemporalRunWorkers,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
@@ -277,18 +440,20 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 
 	var storageManager filestorage.FileStorageManager
 
-	if e.hasS3StateAppVars(sc) {
+	if e.hasS3StateAppVars(sc.S3StateStore) {
+		fc := sc.S3StateStore
+
 		var stateEncryptionKey [32]byte
 
-		for i, b := range []byte(sc.S3StateEncryptionKey) {
+		for i, b := range []byte(fc.S3StateEncryptionKey) {
 			stateEncryptionKey[i] = b
 		}
 
 		storageManager, err = s3.NewS3StorageClient(&s3.S3Options{
-			AWSRegion:      sc.S3StateAWSRegion,
-			AWSAccessKeyID: sc.S3StateAWSAccessKeyID,
-			AWSSecretKey:   sc.S3StateAWSSecretKey,
-			AWSBucketName:  sc.S3StateBucketName,
+			AWSRegion:      fc.S3StateAWSRegion,
+			AWSAccessKeyID: fc.S3StateAWSAccessKeyID,
+			AWSSecretKey:   fc.S3StateAWSSecretKey,
+			AWSBucketName:  fc.S3StateBucketName,
 			EncryptionKey:  &stateEncryptionKey,
 		})
 
@@ -299,50 +464,32 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 
 	var logManager logstorage.LogStorageBackend
 
-	if e.hasRedisVars(sc) {
+	if e.hasRedisVars(sc.RedisLogStore) {
+		rc := sc.RedisLogStore
+
 		logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
-			RedisHost:     sc.RedisHost,
-			RedisPort:     sc.RedisPort,
-			RedisUsername: sc.RedisUsername,
-			RedisPassword: sc.RedisPassword,
-			RedisDB:       sc.RedisDB,
+			RedisHost:     rc.RedisHost,
+			RedisPort:     rc.RedisPort,
+			RedisUsername: rc.RedisUsername,
+			RedisPassword: rc.RedisPassword,
+			RedisDB:       rc.RedisDB,
 		})
 	}
 
-	var provisioner provisioner.Provisioner
-
-	if sc.ProvisionerRunnerMethod == "local" {
-		provisioner = local.NewLocalProvisioner()
-	}
-
-	var temporalClient *temporal.Client
-
-	if sc.TemporalEnabled {
-		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
-			HostPort:      sc.TemporalHostPort,
-			Namespace:     sc.TemporalNamespace,
-			AuthHeaderKey: sc.TemporalAuthHeaderKey,
-			AuthHeaderVal: sc.TemporalAuthHeaderVal,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-	}
+	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
 
 	return &server.Config{
-		DB:                  *dbConfig,
-		Config:              *sharedConfig,
-		AuthConfig:          authConfig,
-		ServerRuntimeConfig: serverRuntimeConfig,
-		UserSessionStore:    userSessionStore,
-		TokenOpts:           tokenOpts,
-		UserNotifier:        notifier,
-		GithubApp:           githubAppConf,
-		DefaultFileStore:    storageManager,
-		DefaultLogStore:     logManager,
-		DefaultProvisioner:  provisioner,
-		TemporalClient:      temporalClient,
+		DB:                    *dbConfig,
+		Config:                *sharedConfig,
+		AuthConfig:            authConfig,
+		ServerRuntimeConfig:   serverRuntimeConfig,
+		UserSessionStore:      userSessionStore,
+		TokenOpts:             tokenOpts,
+		UserNotifier:          notifier,
+		GithubApp:             githubAppConf,
+		DefaultFileStore:      storageManager,
+		DefaultLogStore:       logManager,
+		ModuleRunQueueManager: queueManager,
 	}, nil
 }
 
@@ -355,14 +502,14 @@ func (e *EnvConfigLoader) hasGithubAppVars(sc *server.ConfigFile) bool {
 		sc.GithubAppID != ""
 }
 
-func (e *EnvConfigLoader) hasS3StateAppVars(sc *server.ConfigFile) bool {
-	return sc.S3StateAWSAccessKeyID != "" &&
-		sc.S3StateAWSRegion != "" &&
-		sc.S3StateAWSSecretKey != "" &&
-		sc.S3StateBucketName != "" &&
-		sc.S3StateEncryptionKey != ""
+func (e *EnvConfigLoader) hasS3StateAppVars(fc shared.FileStorageConfigFile) bool {
+	return fc.S3StateAWSAccessKeyID != "" &&
+		fc.S3StateAWSRegion != "" &&
+		fc.S3StateAWSSecretKey != "" &&
+		fc.S3StateBucketName != "" &&
+		fc.S3StateEncryptionKey != ""
 }
 
-func (e *EnvConfigLoader) hasRedisVars(sc *server.ConfigFile) bool {
-	return sc.RedisHost != ""
+func (e *EnvConfigLoader) hasRedisVars(rc shared.RedisConfigFile) bool {
+	return rc.RedisHost != ""
 }

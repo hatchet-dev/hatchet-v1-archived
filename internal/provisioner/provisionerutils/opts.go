@@ -1,19 +1,20 @@
 package provisionerutils
 
 import (
-	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/auth/token"
+	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 )
 
-func GetProvisionerOpts(team *models.Team, mod *models.Module, run *models.ModuleRun, config *server.Config) (*provisioner.ProvisionOpts, error) {
+func GetProvisionerEnvOpts(team *models.Team, mod *models.Module, run *models.ModuleRun, dbConfig database.Config, tokenOpts token.TokenOpts, serverURL string) (*provisioner.GetEnvOpts, error) {
 	envVars := make(map[string]string)
 	var err error
 
 	envVarVersion := &mod.CurrentModuleEnvVarsVersion
 
 	if envVarVersion == nil || envVarVersion.ID == "" {
-		envVarVersion, err = config.DB.Repository.ModuleEnvVars().ReadModuleEnvVarsVersionByID(mod.ID, mod.CurrentModuleEnvVarsVersionID)
+		envVarVersion, err = dbConfig.Repository.ModuleEnvVars().ReadModuleEnvVarsVersionByID(mod.ID, mod.CurrentModuleEnvVarsVersionID)
 
 		if err != nil {
 			return nil, err
@@ -21,20 +22,20 @@ func GetProvisionerOpts(team *models.Team, mod *models.Module, run *models.Modul
 	}
 
 	if envVarVersion != nil {
-		envVars, err = envVarVersion.GetEnvVars(config.DB.GetEncryptionKey())
+		envVars, err = envVarVersion.GetEnvVars(dbConfig.GetEncryptionKey())
 
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &provisioner.ProvisionOpts{
+	return &provisioner.GetEnvOpts{
 		Team:       team,
 		Module:     mod,
 		ModuleRun:  run,
 		EnvVars:    envVars,
-		TokenOpts:  *config.TokenOpts,
-		Repository: config.DB.Repository,
-		ServerURL:  config.ServerRuntimeConfig.ServerURL,
+		TokenOpts:  tokenOpts,
+		Repository: dbConfig.Repository,
+		ServerURL:  serverURL,
 	}, nil
 }
