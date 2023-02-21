@@ -11,7 +11,7 @@ type ModuleRunQueueRepository interface {
 	CreateModuleRunQueue(mod *models.Module, queue *models.ModuleRunQueue) (*models.ModuleRunQueue, RepositoryError)
 
 	// ReadModuleByID reads the module by its unique UUID
-	ReadModuleRunQueueByID(moduleID, moduleRunQueueID string) (*models.ModuleRunQueue, RepositoryError)
+	ReadModuleRunQueueByID(moduleID, moduleRunQueueID, lockID string) (*models.ModuleRunQueue, RepositoryError)
 
 	// ListModulesWithQueueItems lists all modules with at least one (non-deleted) queue item
 	ListModulesWithQueueItems(opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)

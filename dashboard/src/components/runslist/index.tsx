@@ -25,6 +25,8 @@ const RunsList: React.FC<Props> = ({ runs, select_run }) => {
         return <MaterialIcon className="material-icons">error</MaterialIcon>;
       case "in_progress":
         return <Spinner />;
+      case "queued":
+        return <MaterialIcon className="material-icons">sort</MaterialIcon>;
     }
   };
 

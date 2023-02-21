@@ -14,8 +14,10 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/runmanager"
+	"github.com/hatchet-dev/hatchet/internal/runutils"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 
@@ -278,24 +280,13 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Tea
 	// if the pr has been closed, determine if the head branch holds the lock on
 	// any module. if so, remove the lock
 	if state == "closed" {
-		mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
+		// mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
 
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 
-		for _, mod := range mods {
-			if mod.LockKind == models.ModuleLockKindGithubBranch && mod.LockID == headBranch {
-				mod.LockID = ""
-				mod.LockKind = models.ModuleLockKind("")
-
-				mod, err = g.Repo().Module().UpdateModule(mod)
-
-				if err != nil {
-					continue
-				}
-			}
-		}
+		// TODO: if pr has been closed, clear any queue items corresponding to that PR
 	}
 
 	for _, pr := range prs {
@@ -391,31 +382,13 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		} else if !shouldTrigger {
 			g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
 
-			if mod.LockID == headBranch {
-				// if module run is skipped, remove the lock
-				mod.LockID = ""
-				mod.LockKind = models.ModuleLockKind("")
-
-				mod, err = g.Repo().Module().UpdateModule(mod)
-
-				if err != nil {
-					continue
-				}
-			}
-
-			continue
-		}
-
-		if mod.LockID != headBranch {
-			g.Config().Logger.Debug().Msgf("skipped apply for module %s (branch: %s) because lock is currently held by %s", mod.ID, headBranch, mod.LockID)
 			continue
 		}
 
 		run := &models.ModuleRun{
-			ModuleID:          mod.ID,
-			Status:            models.ModuleRunStatusInProgress,
-			StatusDescription: fmt.Sprintf("Apply in progress"),
-			Kind:              models.ModuleRunKindApply,
+			ModuleID: mod.ID,
+			Status:   models.ModuleRunStatusQueued,
+			Kind:     models.ModuleRunKindApply,
 			ModuleRunConfig: models.ModuleRunConfig{
 				TriggerKind:            models.ModuleRunTriggerKindGithub,
 				GithubCommitSHA:        headSHA,
@@ -425,18 +398,37 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			LogLocation: g.Config().DefaultLogStore.GetID(),
 		}
 
+		desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status)
+
+		if err != nil {
+			return err
+		}
+
+		run.StatusDescription = desc
+
 		run, err = g.Repo().Module().CreateModuleRun(run)
 
 		if err != nil {
 			return err
 		}
 
-		// TODO: run apply
-		// err = g.Config().DefaultProvisioner.RunApply(opts)
+		err = g.Config().ModuleRunQueueManager.Enqueue(mod, run, &queuemanager.LockOpts{
+			LockID:   headBranch,
+			LockKind: models.ModuleLockKindGithubBranch,
+		})
 
-		// if err != nil {
-		// 	return err
-		// }
+		if err != nil {
+			return err
+		}
+
+		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
+			TeamID:   mod.TeamID,
+			ModuleID: mod.ID,
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -545,22 +537,11 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 
 	status := models.ModuleRunStatusQueued
 
-	if !locked {
-		status = models.ModuleRunStatusInProgress
-	}
-
-	desc := fmt.Sprintf("Plan queued")
-
-	if !locked {
-		desc = fmt.Sprintf("Plan in progress")
-	}
-
 	run := &models.ModuleRun{
-		ModuleID:          mod.ID,
-		Status:            status,
-		StatusDescription: desc,
-		Kind:              models.ModuleRunKindPlan,
-		LogLocation:       g.Config().DefaultLogStore.GetID(),
+		ModuleID:    mod.ID,
+		Status:      status,
+		Kind:        models.ModuleRunKindPlan,
+		LogLocation: g.Config().DefaultLogStore.GetID(),
 		ModuleRunConfig: models.ModuleRunConfig{
 			TriggerKind:            models.ModuleRunTriggerKindGithub,
 			GithubCheckID:          checkResp.GetID(),
@@ -571,33 +552,33 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		},
 	}
 
+	desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status)
+
+	if err != nil {
+		return err
+	}
+
+	run.StatusDescription = desc
+
 	run, err = g.Repo().Module().CreateModuleRun(run)
 
 	if err != nil {
 		return err
 	}
 
-	if !locked {
-		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
-			TeamID:   mod.TeamID,
-			ModuleID: mod.ID,
-		})
+	err = g.Config().ModuleRunQueueManager.Enqueue(mod, run, &queuemanager.LockOpts{
+		LockID:   eventData.headBranch,
+		LockKind: models.ModuleLockKindGithubBranch,
+	})
 
-		if err != nil {
-			return err
-		}
-
-		mod.LockID = eventData.headBranch
-		mod.LockKind = models.ModuleLockKindGithubBranch
-
-		mod, err = g.Repo().Module().UpdateModule(mod)
-
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
+		TeamID:   mod.TeamID,
+		ModuleID: mod.ID,
+	})
 }
 
 func (g *GithubIncomingWebhookHandler) shouldTrigger(

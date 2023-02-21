@@ -9,6 +9,8 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
+	"github.com/hatchet-dev/hatchet/internal/runutils"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 )
@@ -42,7 +44,7 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	desc, err := generateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
+	desc, err := runutils.GenerateRunDescription(m.Config(), module, run, models.ModuleRunStatusInProgress)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -58,7 +60,7 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = m.Config().ModuleRunQueueManager.Enqueue(module, run)
+	err = m.Config().ModuleRunQueueManager.Enqueue(module, run, &queuemanager.LockOpts{})
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

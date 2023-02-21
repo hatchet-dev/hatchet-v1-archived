@@ -26,15 +26,25 @@ func (repo *ModuleRunQueueRepository) CreateModuleRunQueue(mod *models.Module, q
 	return queue, nil
 }
 
-func (repo *ModuleRunQueueRepository) ReadModuleRunQueueByID(moduleID, moduleRunQueueID string) (*models.ModuleRunQueue, repository.RepositoryError) {
+func (repo *ModuleRunQueueRepository) ReadModuleRunQueueByID(moduleID, moduleRunQueueID, lockID string) (*models.ModuleRunQueue, repository.RepositoryError) {
 	queue := &models.ModuleRunQueue{}
-	query := repo.db
+	query := repo.db.Debug()
 
 	query = query.Preload("Items", func(db *gorm.DB) *gorm.DB {
-		return db.Order("module_run_queue_items.priority DESC").Order("module_run_queue_items.created_at DESC")
+		db = db.
+			Order("module_run_queue_items.lock_priority DESC"). // highest lock priority first
+			Order("module_run_queue_items.priority DESC").      // highest priority first
+			Order("module_run_queue_items.created_at ASC")      // oldest queue items first
+
+		// if there's a lock id, query for module runs with that lock id
+		if lockID != "" {
+			db = db.Where("module_run_queue_items.lock_id = ?", lockID)
+		}
+
+		return db
 	})
 
-	if err := query.Where("module_id = ? AND id = ?", moduleID, moduleRunQueueID).First(&queue).Error; err != nil {
+	if err := query.Where("module_id = ? AND module_run_queues.id = ?", moduleID, moduleRunQueueID).First(&queue).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

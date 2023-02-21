@@ -12,7 +12,7 @@ const MAX_QUEUE_LENGTH = 50
 var MaxQueueLenError = fmt.Errorf("max queue length exceeded")
 
 type ModuleRunQueueManager interface {
-	Enqueue(module *models.Module, moduleRun *models.ModuleRun) error
+	Enqueue(module *models.Module, moduleRun *models.ModuleRun, lockOpts *LockOpts) error
 	Len(module *models.Module) (int, error)
 	Peek(module *models.Module) (*models.ModuleRun, error)
 	Remove(module *models.Module, moduleRun *models.ModuleRun) error
@@ -26,7 +26,12 @@ func NewDefaultModuleRunQueueManager(repo repository.Repository) *DefaultModuleR
 	return &DefaultModuleRunQueueManager{repo}
 }
 
-func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, moduleRun *models.ModuleRun) error {
+type LockOpts struct {
+	LockID   string
+	LockKind models.ModuleLockKind
+}
+
+func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, moduleRun *models.ModuleRun, lockOpts *LockOpts) error {
 	var runQueue *models.ModuleRunQueue
 	var err error
 
@@ -49,7 +54,7 @@ func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, module
 			return err
 		}
 	} else {
-		runQueue, err = queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID)
+		runQueue, err = queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID, "")
 
 		if err != nil {
 			return err
@@ -63,6 +68,16 @@ func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, module
 	runQueueItem := &models.ModuleRunQueueItem{
 		ModuleRunID:      moduleRun.ID,
 		ModuleRunQueueID: runQueue.ID,
+		ModuleRunKind:    moduleRun.Kind,
+	}
+
+	runQueueItem.LockID = lockOpts.LockID
+	runQueueItem.LockKind = lockOpts.LockKind
+
+	if lockOpts.LockID != "" {
+		runQueueItem.LockPriority = models.HasLockID
+	} else {
+		runQueueItem.LockPriority = models.NoLockID
 	}
 
 	switch moduleRun.Kind {
@@ -74,17 +89,43 @@ func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, module
 		runQueueItem.Priority = models.ModuleQueuePriorityDestroy
 	}
 
+	queueItemsToRemove := make([]models.ModuleRunQueueItem, 0)
+
+	// if there are queue items that have the same lock id and kind, remove those queue items
+	if lockOpts.LockID != "" {
+		allQueueItems, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, runQueue.ID, lockOpts.LockID)
+
+		if err != nil {
+			return err
+		}
+
+		for _, q := range allQueueItems.Items {
+			if q.ModuleRunKind == runQueueItem.ModuleRunKind {
+				queueItemsToRemove = append(queueItemsToRemove, q)
+			}
+		}
+	}
+
 	runQueueItem, err = queue.repo.ModuleRunQueue().CreateModuleRunQueueItem(runQueue, runQueueItem)
 
 	if err != nil {
 		return err
 	}
 
+	// go through queue items to remove
+	for _, q := range queueItemsToRemove {
+		_, err = queue.repo.ModuleRunQueue().DeleteModuleRunQueueItem(&q)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (queue *DefaultModuleRunQueueManager) Len(module *models.Module) (int, error) {
-	runQueue, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID)
+	runQueue, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID, "")
 
 	if err != nil {
 		return -1, err
@@ -93,8 +134,10 @@ func (queue *DefaultModuleRunQueueManager) Len(module *models.Module) (int, erro
 	return len(runQueue.Items), nil
 }
 
+// NOTE: Peek has the side effect of placing a lock on the module if the module run is currently in a queued state.
+// Module locks are fully managed by the queue manager.
 func (queue *DefaultModuleRunQueueManager) Peek(module *models.Module) (*models.ModuleRun, error) {
-	runQueue, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID)
+	runQueue, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID, module.LockID)
 
 	if err != nil {
 		return nil, err
@@ -106,15 +149,44 @@ func (queue *DefaultModuleRunQueueManager) Peek(module *models.Module) (*models.
 
 	// the first item has highest priority
 	moduleRunID := runQueue.Items[0].ModuleRunID
+	item := runQueue.Items[0]
 
-	return queue.repo.Module().ReadModuleRunByID(module.ID, moduleRunID)
+	mr, err := queue.repo.Module().ReadModuleRunByID(module.ID, moduleRunID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if mr.Status == models.ModuleRunStatusQueued {
+		module.LockID = item.LockID
+		module.LockKind = item.LockKind
+		module, err = queue.repo.Module().UpdateModule(module)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return mr, err
 }
 
+// Remove should remove the lock on the module if the module run corresponds to an apply or destroy.
 func (queue *DefaultModuleRunQueueManager) Remove(module *models.Module, moduleRun *models.ModuleRun) error {
 	runQueueItem, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueItemByModuleRunID(moduleRun.ID)
 
 	if err != nil {
 		return err
+	}
+
+	if moduleRun.Kind == models.ModuleRunKindApply || moduleRun.Kind == models.ModuleRunKindDestroy {
+		module.LockID = ""
+		module.LockKind = models.ModuleLockKind("")
+
+		module, err = queue.repo.Module().UpdateModule(module)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	runQueueItem, err = queue.repo.ModuleRunQueue().DeleteModuleRunQueueItem(runQueueItem)
