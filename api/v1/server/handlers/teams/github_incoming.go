@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
@@ -106,20 +107,20 @@ func (g *GithubIncomingWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.
 			g.HandleAPIError(w, r, apierrors.NewErrInternal(fmt.Errorf("error processing pull request webhook event: %w", err)))
 			return
 		}
-	case *githubsdk.PushEvent:
-		err = g.processPushEvent(team, event, r)
+		// case *githubsdk.PushEvent:
+		// 	err = g.processPushEvent(team, event, r)
 
-		if err != nil {
-			g.HandleAPIError(w, r, apierrors.NewErrInternal(fmt.Errorf("error processing push webhook event: %w", err)))
-			return
-		}
+		// 	if err != nil {
+		// 		g.HandleAPIError(w, r, apierrors.NewErrInternal(fmt.Errorf("error processing push webhook event: %w", err)))
+		// 		return
+		// 	}
 	}
 }
 
 func (g *GithubIncomingWebhookHandler) processPullRequestEvent(team *models.Team, event *githubsdk.PullRequestEvent, r *http.Request) error {
 	// case on the event action
 	switch *event.Action {
-	case "opened", "reopened":
+	case "opened", "reopened", "synchronize":
 		return g.processPullRequestOpened(team, event)
 	case "edited":
 		return g.processPullRequestEdited(team, event)
@@ -163,23 +164,18 @@ func (g *GithubIncomingWebhookHandler) processPushEvent(team *models.Team, event
 
 	ghClients := make(map[string]*githubsdk.Client)
 
-	errs := make([]string, 0)
-
 	for _, mod := range mods {
 		for _, pr := range prs {
 			err := g.newPlanFromPR(team, mod, pr, &eventData{owner, repoName, baseSHA, headSHA, "", headBranch}, ghClients)
 
 			if err != nil {
-				errs = append(errs, err.Error())
+				err = multierror.Append(err)
+				continue
 			}
 		}
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, ", "))
-	}
-
-	return nil
+	return err
 }
 
 func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Team, event *githubsdk.PullRequestEvent) error {
@@ -242,22 +238,17 @@ func (g *GithubIncomingWebhookHandler) processPullRequestOpened(team *models.Tea
 	// list of github app installation ids to clients that can be reused
 	ghClients := make(map[string]*githubsdk.Client)
 
-	errs := make([]string, 0)
-
 	// create comments corresponding to each module
 	for _, mod := range mods {
 		err := g.newPlanFromPR(team, mod, ghPR, &eventData{owner, repoName, baseSHA, headSHA, baseBranch, headBranch}, ghClients)
 
 		if err != nil {
-			errs = append(errs, err.Error())
+			err = multierror.Append(err)
+			continue
 		}
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, ", "))
-	}
-
-	return nil
+	return err
 }
 
 func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Team, event *githubsdk.PullRequestEvent) error {
@@ -275,18 +266,27 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Tea
 		return err
 	}
 
-	var errs = make([]string, 0)
+	err = nil
 
 	// if the pr has been closed, determine if the head branch holds the lock on
 	// any module. if so, remove the lock
 	if state == "closed" {
-		// mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
+		mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, owner, repoName)
 
-		// if err != nil {
-		// 	return err
-		// }
+		if err != nil {
+			return err
+		}
 
-		// TODO: if pr has been closed, clear any queue items corresponding to that PR
+		for _, mod := range mods {
+			err = g.Config().ModuleRunQueueManager.FlushQueue(mod, &queuemanager.LockOpts{
+				LockID:   headBranch,
+				LockKind: models.ModuleLockKindGithubBranch,
+			})
+
+			if err != nil {
+				err = multierror.Append(err)
+			}
+		}
 	}
 
 	for _, pr := range prs {
@@ -298,16 +298,12 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEdited(team *models.Tea
 		pr, err = g.Repo().GithubPullRequest().UpdateGithubPullRequest(pr)
 
 		if err != nil {
-			errs = append(errs, err.Error())
+			err = multierror.Append(err)
 			continue
 		}
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, ", "))
-	}
-
-	return nil
+	return err
 }
 
 func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Team, event *githubsdk.PullRequestEvent) error {
@@ -349,8 +345,6 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 
 	ghClients := make(map[string]*githubsdk.Client)
 
-	errs := make([]error, 0)
-
 	// create comments corresponding to each module
 	for _, mod := range mods {
 		client, ok := ghClients[mod.DeploymentConfig.GithubAppInstallationID]
@@ -359,7 +353,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			client, err = github.GetGithubAppClientFromModule(g.Config(), mod)
 
 			if err != nil {
-				errs = append(errs, err)
+				err = multierror.Append(err)
 				continue
 			}
 
@@ -369,7 +363,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		// check if we should actually process this module
 		shouldTrigger, msg, err := g.shouldTrigger(
 			client, mod,
-			models.ModuleRunKindPlan,
+			models.ModuleRunKindApply,
 			owner,
 			repoName,
 			baseBranch,
@@ -378,7 +372,9 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		)
 
 		if err != nil {
-			return err
+			err = multierror.Append(err)
+
+			continue
 		} else if !shouldTrigger {
 			g.Config().Logger.Debug().Msgf("did not trigger a module run: %s", msg)
 
@@ -401,7 +397,8 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status)
 
 		if err != nil {
-			return err
+			err = multierror.Append(err)
+			continue
 		}
 
 		run.StatusDescription = desc
@@ -409,7 +406,8 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		run, err = g.Repo().Module().CreateModuleRun(run)
 
 		if err != nil {
-			return err
+			err = multierror.Append(err)
+			continue
 		}
 
 		err = g.Config().ModuleRunQueueManager.Enqueue(mod, run, &queuemanager.LockOpts{
@@ -418,7 +416,8 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		})
 
 		if err != nil {
-			return err
+			err = multierror.Append(err)
+			continue
 		}
 
 		err = dispatcher.DispatchModuleRunQueueChecker(g.Config().TemporalClient, &modulequeuechecker.CheckQueueInput{
@@ -427,11 +426,12 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 		})
 
 		if err != nil {
-			return err
+			err = multierror.Append(err)
+			continue
 		}
 	}
 
-	return nil
+	return err
 }
 
 type eventData struct {
@@ -587,30 +587,35 @@ func (g *GithubIncomingWebhookHandler) shouldTrigger(
 	kind models.ModuleRunKind,
 	repoOwner, repoName, baseBranch, baseCommit, headCommit string,
 ) (bool, string, error) {
-	// get files for pull request
-	commitsRes, _, err := client.Repositories.CompareCommits(
-		context.Background(),
-		repoOwner,
-		repoName,
-		baseCommit,
-		headCommit,
-		&githubsdk.ListOptions{},
-	)
-
-	if err != nil {
-		return false, "", err
-	}
-
-	fileNames := make([]string, 0)
-
-	for _, file := range commitsRes.Files {
-		fileNames = append(fileNames, file.GetFilename())
-	}
-
-	res, msg := runmanager.Trigger(mod, kind, &runmanager.TriggerInput{
+	triggerInput := &runmanager.TriggerInput{
 		BaseBranch: baseBranch,
-		Files:      fileNames,
-	})
+	}
+
+	// get files for pull request if this is a plan
+	if kind == models.ModuleRunKindPlan {
+		commitsRes, _, err := client.Repositories.CompareCommits(
+			context.Background(),
+			repoOwner,
+			repoName,
+			baseCommit,
+			headCommit,
+			&githubsdk.ListOptions{},
+		)
+
+		if err != nil {
+			return false, "", err
+		}
+
+		fileNames := make([]string, 0)
+
+		for _, file := range commitsRes.Files {
+			fileNames = append(fileNames, file.GetFilename())
+		}
+
+		triggerInput.Files = fileNames
+	}
+
+	res, msg := runmanager.Trigger(mod, kind, triggerInput)
 
 	return res, msg, nil
 }

@@ -12,6 +12,7 @@ const MAX_QUEUE_LENGTH = 50
 var MaxQueueLenError = fmt.Errorf("max queue length exceeded")
 
 type ModuleRunQueueManager interface {
+	FlushQueue(module *models.Module, lockOpts *LockOpts) error
 	Enqueue(module *models.Module, moduleRun *models.ModuleRun, lockOpts *LockOpts) error
 	Len(module *models.Module) (int, error)
 	Peek(module *models.Module) (*models.ModuleRun, error)
@@ -115,6 +116,36 @@ func (queue *DefaultModuleRunQueueManager) Enqueue(module *models.Module, module
 	// go through queue items to remove
 	for _, q := range queueItemsToRemove {
 		_, err = queue.repo.ModuleRunQueue().DeleteModuleRunQueueItem(&q)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (queue *DefaultModuleRunQueueManager) FlushQueue(module *models.Module, lockOpts *LockOpts) error {
+	runQueue, err := queue.repo.ModuleRunQueue().ReadModuleRunQueueByID(module.ID, module.ModuleRunQueueID, lockOpts.LockID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, q := range runQueue.Items {
+		_, err = queue.repo.ModuleRunQueue().DeleteModuleRunQueueItem(&q)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// if the module's lock currently corresponds to that lock id, remove the lock on the module
+	if module.LockID == lockOpts.LockID {
+		module.LockID = ""
+		module.LockKind = models.ModuleLockKind("")
+
+		module, err = queue.repo.Module().UpdateModule(module)
 
 		if err != nil {
 			return err
