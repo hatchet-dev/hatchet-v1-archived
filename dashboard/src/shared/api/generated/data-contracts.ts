@@ -189,9 +189,11 @@ export interface CreateModuleValuesRequestGithub {
   path: string;
 }
 
-/** @example {"cron_schedule":"cron_schedule"} */
+/** @example {"policy_bytes":[0,0],"cron_schedule":"cron_schedule","name":"name"} */
 export interface CreateMonitorRequest {
   cron_schedule?: string;
+  name?: string;
+  policy_bytes?: number[];
 }
 
 /** @example {"severity":"severity","success_message":"success_message","title":"title","MonitorID":"MonitorID","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
@@ -415,6 +417,12 @@ export interface ListModulesResponse {
   rows?: Module[];
 }
 
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}]} */
+export interface ListMonitorsResponse {
+  pagination?: PaginationResponse;
+  rows?: ModuleMonitorMeta[];
+}
+
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
 export interface ListOrgMembersResponse {
   pagination?: PaginationResponse;
@@ -558,6 +566,77 @@ export interface ModuleEnvVarsVersion {
 }
 
 export type ModuleLockKind = string;
+
+export interface ModuleMonitor {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /** the cron schedule for the monitor */
+  cron_schedule?: string;
+  /**
+   * the description for the monitor
+   * @example "detects drift"
+   */
+  description?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  kind?: string;
+  /**
+   * the name for the monitor
+   * @example "drift"
+   */
+  name?: string;
+  /** the policy bytes for the monitor */
+  policy_bytes?: number[];
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+export type ModuleMonitorKind = string;
+
+/** @example {"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+export interface ModuleMonitorMeta {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /** the cron schedule for the monitor */
+  cron_schedule?: string;
+  /**
+   * the description for the monitor
+   * @example "detects drift"
+   */
+  description?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  kind?: string;
+  /**
+   * the name for the monitor
+   * @example "drift"
+   */
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
 
 export type ModulePlanSummary = ModulePlannedChangeSummary[];
 
@@ -1299,6 +1378,8 @@ export interface CreateTerraformPlanRequest {
 
 export interface CreateMonitorRequest {
   cron_schedule?: string;
+  name?: string;
+  policy_bytes?: number[];
 }
 
 export interface CreateUserRequest {

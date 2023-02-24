@@ -33,6 +33,22 @@ func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(teamID, moduleMonitor
 	return monitor, nil
 }
 
+func (repo *ModuleMonitorRepository) ListModuleMonitorsByTeamID(teamID string, opts ...repository.QueryOption) ([]*models.ModuleMonitor, *repository.PaginatedResult, repository.RepositoryError) {
+	var results []*models.ModuleMonitor
+
+	query := repo.db.Model(&models.ModuleMonitor{}).Where("team_id = ?", teamID)
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	query = query.Scopes(queryutils.Paginate(opts, query, paginatedResult))
+
+	if err := query.Find(&results).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return results, paginatedResult, nil
+}
+
 func (repo *ModuleMonitorRepository) UpdateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
 	if err := repo.db.Save(monitor).Error; err != nil {
 		return nil, err

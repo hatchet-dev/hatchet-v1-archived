@@ -115,5 +115,58 @@ func GetMonitorRoutes(
 		Router:   r,
 	})
 
+	// GET /api/v1/teams/{team_id}/monitors -> modules.NewMonitorListHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/monitors listMonitors
+	//
+	// ### Description
+	//
+	// Lists monitors for a given team.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List Monitors
+	// tags:
+	// - Monitors
+	// responses:
+	//   '200':
+	//     description: Successfully listed monitors
+	//     schema:
+	//       $ref: '#/definitions/ListMonitorsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	monitorsListEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: "/monitors",
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+			},
+		},
+	)
+
+	monitorsListHandler := monitors.NewMonitorListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: monitorsListEndpoint,
+		Handler:  monitorsListHandler,
+		Router:   r,
+	})
+
 	return routes
 }

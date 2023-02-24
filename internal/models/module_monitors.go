@@ -1,5 +1,7 @@
 package models
 
+import "github.com/hatchet-dev/hatchet/api/v1/types"
+
 type ModuleMonitorKind string
 
 const (
@@ -25,6 +27,7 @@ type ModuleMonitor struct {
 	TeamID string
 
 	DisplayName  string
+	Description  string
 	Kind         ModuleMonitorKind
 	CronSchedule string
 
@@ -34,6 +37,23 @@ type ModuleMonitor struct {
 	MatchChildModules []byte
 	MatchProviders    []byte
 	MatchResources    []byte
+}
+
+func (m *ModuleMonitor) ToAPITypeMeta() *types.ModuleMonitorMeta {
+	return &types.ModuleMonitorMeta{
+		APIResourceMeta: m.ToAPITypeMetadata(),
+		Name:            m.DisplayName,
+		Description:     m.Description,
+		Kind:            types.ModuleMonitorKind(m.Kind),
+		CronSchedule:    m.CronSchedule,
+	}
+}
+
+func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
+	return &types.ModuleMonitor{
+		ModuleMonitorMeta: m.ToAPITypeMeta(),
+		PolicyBytes:       m.PolicyBytes,
+	}
 }
 
 type MonitorResultSeverity string
