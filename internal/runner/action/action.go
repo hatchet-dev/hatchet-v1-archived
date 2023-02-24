@@ -184,13 +184,69 @@ func (r *RunnerAction) MonitorState(
 	}
 
 	// load opa query
-	opaQuery, err := opa.LoadQueryFromBytes("hatchet.state_test", policyBytes)
+	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
 
 	if err != nil {
 		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
 	}
 
 	return opa.RunMonitorQuery(opaQuery, monitorStateInput)
+}
+
+func (r *RunnerAction) MonitorPlan(
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	// get the state as JSON
+	if !commandExists("terraform") {
+		return nil, fmt.Errorf("terraform cli command does not exist")
+	}
+
+	err := r.downloadModuleValues(config, "./tfvars.json")
+
+	if err != nil {
+		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
+		return nil, err
+	}
+
+	err = r.reInit(config)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+	}
+
+	err = r.plan(config, "./tfvars.json")
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
+	}
+
+	planBytes, err := r.showJSON(config)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
+	}
+
+	plan := make(map[string]interface{})
+
+	err = json.Unmarshal(planBytes, &plan)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
+	}
+
+	monitorPlanInput := map[string]interface{}{
+		"plan": plan,
+	}
+
+	// load opa query
+	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+	}
+
+	return opa.RunMonitorQuery(opaQuery, monitorPlanInput)
 }
 
 func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath string) error {

@@ -4,5 +4,5 @@ import (
 	_ "embed"
 )
 
-//go:embed presets/state_test.rego
-var PresetStateTestPolicy []byte
+//go:embed presets/drift_detection.rego
+var PresetDriftDetectionPolicy []byte

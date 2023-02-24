@@ -17,8 +17,25 @@ import (
 
 var monitorCmd = &cobra.Command{
 	Use: "monitor",
+}
+
+var monitorStateCmd = &cobra.Command{
+	Use: "state",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runMonitor()
+		err := runMonitorState()
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Println("Error running monitor:", err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var monitorPlanCmd = &cobra.Command{
+	Use: "plan",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runMonitorPlan()
 
 		if err != nil {
 			red := color.New(color.FgRed)
@@ -30,9 +47,11 @@ var monitorCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(monitorCmd)
+	monitorCmd.AddCommand(monitorStateCmd)
+	monitorCmd.AddCommand(monitorPlanCmd)
 }
 
-func runMonitor() error {
+func runMonitorState() error {
 	configLoader := &loader.EnvConfigLoader{}
 	rc, err := configLoader.LoadRunnerConfigFromEnv()
 
@@ -61,6 +80,66 @@ func runMonitor() error {
 	}
 
 	res, err := action.MonitorState(rc, policyBytes)
+
+	if err != nil {
+		return err
+	}
+
+	res.MonitorID = rc.ConfigFile.ModuleMonitorID
+
+	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
+		context.Background(),
+		swagger.CreateMonitorResultRequest{
+			MonitorID:       rc.ConfigFile.ModuleMonitorID,
+			FailureMessages: res.FailureMessages,
+			SuccessMessage:  res.SuccessMessage,
+			Severity:        res.Severity,
+			Status:          res.Status,
+			Title:           res.Title,
+		},
+		rc.ConfigFile.TeamID,
+		rc.ConfigFile.ModuleID,
+		rc.ConfigFile.ModuleRunID,
+	)
+
+	if err != nil {
+		errorHandler(rc, fmt.Sprintf("Could not report monitor result to server"))
+
+		return err
+	}
+
+	return successHandler(rc, "")
+}
+
+func runMonitorPlan() error {
+	configLoader := &loader.EnvConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfigFromEnv()
+
+	if err != nil {
+		return err
+	}
+
+	err = downloadGithubRepoContents(rc)
+
+	if err != nil {
+		return err
+	}
+
+	writer, err := getWriter(rc)
+
+	if err != nil {
+		return err
+	}
+
+	action := action.NewRunnerAction(writer, errorHandler)
+
+	policyBytes, err := downloadMonitorPolicy(rc)
+
+	if err != nil {
+		return err
+	}
+
+	res, err := action.MonitorPlan(rc, policyBytes)
 
 	if err != nil {
 		return err

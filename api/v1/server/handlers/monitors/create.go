@@ -9,7 +9,6 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/monitors"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 )
 
@@ -41,7 +40,7 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		TeamID:           team.ID,
 		Kind:             models.MonitorKindState,
 		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
-		PolicyBytes:      monitors.PresetStateTestPolicy,
+		PolicyBytes:      req.PolicyBytes,
 	}
 
 	monitor, err := m.Repo().ModuleMonitor().CreateModuleMonitor(monitor)
@@ -52,7 +51,6 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// TODO: dispatch monitor check for a module?
 	err = dispatcher.DispatchCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, req.CronSchedule)
 
 	if err != nil {

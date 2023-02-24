@@ -8,6 +8,10 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 )
 
+const PACKAGE_HATCHET_MODULE = "hatchet.module"
+const PACKAGE_HATCHET_ORGANIZATION = "hatchet.organization"
+const PACKAGE_HATCHET_TEAM = "hatchet.team"
+
 func LoadQueryFromFile(name, filepath string) (*OPAQuery, error) {
 	fileBytes, err := ioutil.ReadFile(filepath)
 

@@ -22,9 +22,11 @@ const (
 type ModuleMonitor struct {
 	Base
 
-	Kind ModuleMonitorKind
-
 	TeamID string
+
+	DisplayName  string
+	Kind         ModuleMonitorKind
+	CronSchedule string
 
 	PresetPolicyName ModuleMonitorPresetPolicyName
 	PolicyBytes      []byte

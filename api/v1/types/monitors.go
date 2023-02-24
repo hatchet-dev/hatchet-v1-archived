@@ -16,5 +16,7 @@ type CreateMonitorResultRequest struct {
 
 // swagger:model
 type CreateMonitorRequest struct {
+	Name         string `json:"name" form:"required"`
 	CronSchedule string `json:"cron_schedule" form:"required"`
+	PolicyBytes  []byte `json:"policy_bytes" form:"required"`
 }

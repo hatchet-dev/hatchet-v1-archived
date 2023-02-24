@@ -62,7 +62,7 @@ func (l *LocalProvisioner) RunApply(opts *provisioner.ProvisionOpts) error {
 
 func (l *LocalProvisioner) RunStateMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
 	go func() {
-		cmdProv := exec.Command("./bin/hatchet-runner", "monitor")
+		cmdProv := exec.Command("./bin/hatchet-runner", "monitor", "state")
 		cmdProv.Stdout = os.Stdout
 		cmdProv.Stderr = os.Stderr
 		env := opts.Env
@@ -85,7 +85,27 @@ func (l *LocalProvisioner) RunStateMonitor(opts *provisioner.ProvisionOpts, moni
 }
 
 func (l *LocalProvisioner) RunPlanMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
-	panic("unimplemented")
+	go func() {
+		cmdProv := exec.Command("./bin/hatchet-runner", "monitor", "plan")
+		cmdProv.Stdout = os.Stdout
+		cmdProv.Stderr = os.Stderr
+		env := opts.Env
+		env = append(env, cmdProv.Environ()...)
+
+		env = append(env, fmt.Sprintf("MODULE_MONITOR_ID=%s", monitorID))
+
+		env = append(env, "PATH=/usr/local/bin:/usr/bin:/bin")
+
+		cmdProv.Env = env
+
+		err := cmdProv.Run()
+
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	return nil
 }
 
 func (l *LocalProvisioner) RunDestroy(opts *provisioner.ProvisionOpts) error {
