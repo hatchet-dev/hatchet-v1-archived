@@ -28,6 +28,7 @@ func NewMonitorResultCreateHandler(
 }
 
 func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
@@ -47,11 +48,11 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// read the monitor ID and check that it belongs to this module
-	monitor, err := m.Repo().ModuleMonitor().ReadModuleMonitorByID(module.ID, req.MonitorID)
+	// read the monitor ID and check that it belongs to this team
+	monitor, err := m.Repo().ModuleMonitor().ReadModuleMonitorByID(team.ID, req.MonitorID)
 
 	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrForbidden(fmt.Errorf("monitor %s does not belong to module %s", req.MonitorID, module.ID)))
+		m.HandleAPIError(w, r, apierrors.NewErrForbidden(fmt.Errorf("monitor %s does not belong to team %s", req.MonitorID, team.ID)))
 
 		return
 	}

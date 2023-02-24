@@ -65,7 +65,7 @@ const MonitoringView: React.FunctionComponent = () => {
   ];
 
   const handleResourceClick = (row: any) => {
-    history.push(`/monitoring/${row.original.id}`);
+    history.push(`/monitors/${row.original.id}`);
   };
 
   return (
@@ -85,7 +85,16 @@ const MonitoringView: React.FunctionComponent = () => {
         onRowClick={handleResourceClick}
       />
       <FlexRowRight>
-        <Paginator />
+        <Paginator
+          curr_page={0}
+          last_page={0}
+          cursor_forward={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+          cursor_backward={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
       </FlexRowRight>
     </>
   );

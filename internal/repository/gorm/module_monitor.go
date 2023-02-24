@@ -15,7 +15,7 @@ func NewModuleMonitorRepository(db *gorm.DB) repository.ModuleMonitorRepository 
 	return &ModuleMonitorRepository{db}
 }
 
-func (repo *ModuleMonitorRepository) CreateModuleMonitor(mod *models.Module, monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
+func (repo *ModuleMonitorRepository) CreateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
 	if err := repo.db.Create(monitor).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
@@ -23,10 +23,10 @@ func (repo *ModuleMonitorRepository) CreateModuleMonitor(mod *models.Module, mon
 	return monitor, nil
 }
 
-func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(moduleID, moduleMonitorID string) (*models.ModuleMonitor, repository.RepositoryError) {
+func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(teamID, moduleMonitorID string) (*models.ModuleMonitor, repository.RepositoryError) {
 	monitor := &models.ModuleMonitor{}
 
-	if err := repo.db.Where("module_id = ? AND id = ?", moduleID, moduleMonitorID).First(&monitor).Error; err != nil {
+	if err := repo.db.Where("team_id = ? AND id = ?", teamID, moduleMonitorID).First(&monitor).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

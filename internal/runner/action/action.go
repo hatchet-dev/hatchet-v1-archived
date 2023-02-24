@@ -184,7 +184,7 @@ func (r *RunnerAction) MonitorState(
 	}
 
 	// load opa query
-	opaQuery, err := opa.LoadQueryFromBytes("state_monitor", policyBytes)
+	opaQuery, err := opa.LoadQueryFromBytes("hatchet.state_test", policyBytes)
 
 	if err != nil {
 		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))

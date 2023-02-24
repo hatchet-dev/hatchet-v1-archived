@@ -2,6 +2,7 @@ package opa
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/mitchellh/mapstructure"
@@ -66,5 +67,5 @@ func RunMonitorQuery(query *OPAQuery, input map[string]interface{}) (*types.Crea
 		return queryRes, nil
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("no results returned")
 }

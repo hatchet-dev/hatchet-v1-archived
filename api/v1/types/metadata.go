@@ -54,6 +54,7 @@ const (
 	ModuleEnvVarScope          PermissionScope = "module_env_var_scope"
 	ModuleValuesScope          PermissionScope = "module_values_scope"
 	ModuleRunScope             PermissionScope = "module_run_scope"
+	MonitorScope               PermissionScope = "monitor_scope"
 
 	// ModuleServiceAccountScope restricts the scope to service account types only. This is enforced
 	// by OPA policies

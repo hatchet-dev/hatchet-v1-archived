@@ -17,6 +17,8 @@ import {
   APIServerMetadata,
   CreateModuleRequest,
   CreateModuleResponse,
+  CreateMonitorRequest,
+  CreateMonitorResultRequest,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   CreateOrgMemberInviteRequest,
@@ -816,6 +818,30 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Reports a monitor result.
+   *
+   * @tags Modules
+   * @name CreateMonitorResult
+   * @summary Create Monitor Result
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/monitor_result
+   * @secure
+   */
+  createMonitorResult = (
+    teamId: string,
+    moduleId: string,
+    moduleRunId: string,
+    data: CreateMonitorResultRequest,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/monitor_result`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
    * @description Creates a `POST` request for a Terraform plan. **Should only be called by Terraform in automation.**
    *
    * @tags Modules
@@ -862,11 +888,27 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @tags Modules
    * @name GetTerraformState
    * @summary Create or Update Terraform State
-   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
    * @secure
    */
   getTerraformState = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
     this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/tfstate`,
+      method: "GET",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description Creates a `POST` request for Terraform state. **Should only be called by Terraform in automation.**
+   *
+   * @tags Modules
+   * @name CreateTerraformState
+   * @summary Create or Update Terraform State
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
+   * @secure
+   */
+  createTerraformState = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/tfstate`,
       method: "POST",
       secure: true,
@@ -945,6 +987,24 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       query: query,
       secure: true,
       format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a new monitor.
+   *
+   * @tags Monitors
+   * @name CreateMonitor
+   * @summary Create Monitor
+   * @request POST:/api/v1/teams/{team_id}/monitors
+   * @secure
+   */
+  createMonitor = (teamId: string, data?: CreateMonitorRequest, params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       ...params,
     });
   /**

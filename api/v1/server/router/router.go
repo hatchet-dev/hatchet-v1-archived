@@ -25,6 +25,7 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 	orgRegisterer := NewOrgRouteRegisterer()
 	teamRegisterer := NewTeamRouteRegisterer()
 	moduleRegisterer := NewModuleRouteRegisterer()
+	monitorRegisterer := NewMonitorRouteRegisterer()
 
 	baseRoutePath := "/api/v1"
 
@@ -108,6 +109,19 @@ func NewAPIRouter(config *server.Config) *chi.Mux {
 					endpointFactory,
 				),
 			)
+
+			routes = append(
+				routes,
+				monitorRegisterer.GetRoutes(
+					r,
+					config,
+					&endpoint.Path{
+						Parent:       baseRoutePath,
+						RelativePath: fmt.Sprintf("/teams/{%s}", types.URLParamTeamID),
+					},
+					endpointFactory,
+				),
+			)
 		})
 
 		var allRoutes []*router.Route
@@ -139,6 +153,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 	moduleRunFactory := authz.NewRunScopedFactory(config)
 	moduleEnvVarsFactory := authz.NewModuleEnvVarsScopedFactory(config)
 	moduleValuesFactory := authz.NewModuleValuesScopedFactory(config)
+
+	monitorFactory := authz.NewMonitorScopedFactory(config)
 
 	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
 
@@ -193,6 +209,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(moduleEnvVarsFactory.Middleware)
 			case types.ModuleValuesScope:
 				atomicGroup.Use(moduleValuesFactory.Middleware)
+			case types.MonitorScope:
+				atomicGroup.Use(monitorFactory.Middleware)
 			}
 		}
 

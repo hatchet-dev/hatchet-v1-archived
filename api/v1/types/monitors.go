@@ -1,5 +1,9 @@
 package types
 
+const (
+	URLParamMonitorID URLParam = "monitor_id"
+)
+
 // swagger:model
 type CreateMonitorResultRequest struct {
 	MonitorID       string
@@ -8,4 +12,9 @@ type CreateMonitorResultRequest struct {
 	Title           string   `json:"title" mapstructure:"POLICY_TITLE" form:"required"`
 	SuccessMessage  string   `json:"success_message" mapstructure:"POLICY_SUCCESS_MESSAGE"`
 	FailureMessages []string `json:"failure_messages" mapstructure:"POLICY_FAILURE_MESSAGES"`
+}
+
+// swagger:model
+type CreateMonitorRequest struct {
+	CronSchedule string `json:"cron_schedule" form:"required"`
 }

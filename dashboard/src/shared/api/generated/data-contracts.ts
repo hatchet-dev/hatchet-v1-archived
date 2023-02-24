@@ -189,6 +189,21 @@ export interface CreateModuleValuesRequestGithub {
   path: string;
 }
 
+/** @example {"cron_schedule":"cron_schedule"} */
+export interface CreateMonitorRequest {
+  cron_schedule?: string;
+}
+
+/** @example {"severity":"severity","success_message":"success_message","title":"title","MonitorID":"MonitorID","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
+export interface CreateMonitorResultRequest {
+  MonitorID?: string;
+  failure_messages?: string[];
+  severity?: string;
+  status?: string;
+  success_message?: string;
+  title?: string;
+}
+
 /** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
   /**
@@ -1266,11 +1281,24 @@ export interface FinalizeModuleRunRequest {
   status: string;
 }
 
+export interface CreateMonitorResultRequest {
+  MonitorID?: string;
+  failure_messages?: string[];
+  severity?: string;
+  status?: string;
+  success_message?: string;
+  title?: string;
+}
+
 export interface CreateTerraformPlanRequest {
   /** the JSON contents of the plan */
   plan_json: string;
   /** the prettified contents of the plan */
   plan_pretty: string;
+}
+
+export interface CreateMonitorRequest {
+  cron_schedule?: string;
 }
 
 export interface CreateUserRequest {

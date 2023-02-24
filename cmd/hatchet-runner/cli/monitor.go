@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
+	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
 
 	"github.com/spf13/cobra"
@@ -27,32 +28,19 @@ var monitorCmd = &cobra.Command{
 	},
 }
 
-var policyFilePath string
-
 func init() {
 	rootCmd.AddCommand(monitorCmd)
-
-	monitorCmd.PersistentFlags().StringVarP(
-		&policyFilePath,
-		"policy-file",
-		"",
-		"",
-		"path to the OPA policy file to run the command against",
-	)
-
-	monitorCmd.MarkPersistentFlagRequired("policy-file")
 }
 
 func runMonitor() error {
-	// load policy file bytes
-	policyBytes, err := ioutil.ReadFile(policyFilePath)
+	configLoader := &loader.EnvConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfigFromEnv()
 
 	if err != nil {
 		return err
 	}
 
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	err = downloadGithubRepoContents(rc)
 
 	if err != nil {
 		return err
@@ -65,6 +53,12 @@ func runMonitor() error {
 	}
 
 	action := action.NewRunnerAction(writer, errorHandler)
+
+	policyBytes, err := downloadMonitorPolicy(rc)
+
+	if err != nil {
+		return err
+	}
 
 	res, err := action.MonitorState(rc, policyBytes)
 
@@ -96,4 +90,18 @@ func runMonitor() error {
 	}
 
 	return successHandler(rc, "")
+}
+
+func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {
+	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.TeamID, config.ConfigFile.ModuleMonitorID)
+
+	if resp != nil {
+		defer resp.Close()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadAll(resp)
 }

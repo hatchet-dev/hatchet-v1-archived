@@ -15,10 +15,10 @@ type ModuleMonitorRepository interface {
 	//
 	// CreateModuleMonitor creates a new module monitor in the database, associating it
 	// with the parent module
-	CreateModuleMonitor(mod *models.Module, monitor *models.ModuleMonitor) (*models.ModuleMonitor, RepositoryError)
+	CreateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, RepositoryError)
 
-	// ReadModuleByID reads the module by its unique UUID
-	ReadModuleMonitorByID(moduleID, moduleMonitorID string) (*models.ModuleMonitor, RepositoryError)
+	// ReadModuleMonitorByID reads the module by its unique UUID
+	ReadModuleMonitorByID(teamID, moduleMonitorID string) (*models.ModuleMonitor, RepositoryError)
 
 	// UpdateModuleMonitor updates a module monitor in the database
 	UpdateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, RepositoryError)

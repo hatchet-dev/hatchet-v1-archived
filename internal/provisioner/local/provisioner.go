@@ -2,7 +2,6 @@ package local
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -63,10 +62,7 @@ func (l *LocalProvisioner) RunApply(opts *provisioner.ProvisionOpts) error {
 
 func (l *LocalProvisioner) RunStateMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
 	go func() {
-		// write policy to cmd file
-		ioutil.WriteFile(fmt.Sprintf("./bin/tmp/%s.rego", monitorID), policy, 0666)
-
-		cmdProv := exec.Command("./bin/hatchet-runner", "monitor", "-policy-file", fmt.Sprintf("./tmp/%s.rego", monitorID))
+		cmdProv := exec.Command("./bin/hatchet-runner", "monitor")
 		cmdProv.Stdout = os.Stdout
 		cmdProv.Stderr = os.Stderr
 		env := opts.Env

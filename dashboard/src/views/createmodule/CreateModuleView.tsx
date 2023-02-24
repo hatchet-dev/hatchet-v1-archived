@@ -26,7 +26,7 @@ const CreateModuleView: React.FunctionComponent = () => {
   const { step } = useParams<{ step: string }>();
 
   const mutation = useMutation({
-    mutationKey: ["create_organization_invite", currTeam?.id],
+    mutationKey: ["create_module", currTeam?.id],
     mutationFn: (req: CreateModuleRequest) => {
       return api.createModule(currTeam.id, req);
     },

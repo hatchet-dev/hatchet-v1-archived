@@ -24,11 +24,14 @@ type ModuleMonitor struct {
 
 	Kind ModuleMonitorKind
 
+	TeamID string
+
 	PresetPolicyName ModuleMonitorPresetPolicyName
 	PolicyBytes      []byte
 
-	MatchModules   []byte
-	MatchResources []byte
+	MatchChildModules []byte
+	MatchProviders    []byte
+	MatchResources    []byte
 }
 
 type MonitorResultSeverity string
