@@ -189,11 +189,11 @@ export interface CreateModuleValuesRequestGithub {
   path: string;
 }
 
-/** @example {"policy_bytes":[0,0],"cron_schedule":"cron_schedule","name":"name"} */
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","name":"name"} */
 export interface CreateMonitorRequest {
   cron_schedule?: string;
   name?: string;
-  policy_bytes?: number[];
+  policy_bytes?: string;
 }
 
 /** @example {"severity":"severity","success_message":"success_message","title":"title","MonitorID":"MonitorID","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
@@ -335,6 +335,8 @@ export type GetModuleValuesCurrentResponse = Record<string, object>;
 
 export type GetModuleValuesResponse = ModuleValues;
 
+export type GetMonitorResponse = ModuleMonitor;
+
 export type GetOrgMemberResponse = OrganizationMember;
 
 export type GetOrganizationResponse = Organization;
@@ -415,6 +417,12 @@ export interface ListModuleRunsResponse {
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
   rows?: Module[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"}]} */
+export interface ListMonitorResultsResponse {
+  pagination?: PaginationResponse;
+  rows?: ModuleMonitorResult[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}]} */
@@ -567,6 +575,7 @@ export interface ModuleEnvVarsVersion {
 
 export type ModuleLockKind = string;
 
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
 export interface ModuleMonitor {
   /**
    * the time that this resource was created
@@ -593,7 +602,7 @@ export interface ModuleMonitor {
    */
   name?: string;
   /** the policy bytes for the monitor */
-  policy_bytes?: number[];
+  policy_bytes?: string;
   /**
    * the time that this resource was last updated
    * @format date-time
@@ -630,6 +639,33 @@ export interface ModuleMonitorMeta {
    * @example "drift"
    */
   name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"} */
+export interface ModuleMonitorResult {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  message?: string;
+  module_id?: string;
+  module_monitor_id?: string;
+  severity?: string;
+  status?: string;
+  title?: string;
   /**
    * the time that this resource was last updated
    * @format date-time
@@ -744,6 +780,10 @@ export interface ModuleValuesGithubConfig {
   github_repo_owner?: string;
   path?: string;
 }
+
+export type MonitorResultSeverity = string;
+
+export type MonitorResultStatus = string;
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {
@@ -1379,7 +1419,7 @@ export interface CreateTerraformPlanRequest {
 export interface CreateMonitorRequest {
   cron_schedule?: string;
   name?: string;
-  policy_bytes?: number[];
+  policy_bytes?: string;
 }
 
 export interface CreateUserRequest {

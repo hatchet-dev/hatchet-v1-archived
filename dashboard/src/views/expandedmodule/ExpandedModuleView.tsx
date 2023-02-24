@@ -65,7 +65,12 @@ const ExpandedModuleView: React.FunctionComponent = () => {
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;
       case "Monitors":
-        return <ExpandedModuleMonitors />;
+        return (
+          <ExpandedModuleMonitors
+            team_id={currTeam.id}
+            module_id={data?.data.id}
+          />
+        );
       default:
         return <ModuleSettings team_id={currTeam.id} module={data?.data} />;
     }

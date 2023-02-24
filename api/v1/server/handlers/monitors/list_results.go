@@ -9,55 +9,56 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
-	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
-type MonitorCreateHandler struct {
+type MonitorResultListHandler struct {
 	handlers.HatchetHandlerReadWriter
 }
 
-func NewMonitorCreateHandler(
+func NewMonitorResultListHandler(
 	config *server.Config,
 	decoderValidator handlerutils.RequestDecoderValidator,
 	writer handlerutils.ResultWriter,
 ) http.Handler {
-	return &MonitorCreateHandler{
+	return &MonitorResultListHandler{
 		HatchetHandlerReadWriter: handlers.NewDefaultHatchetHandler(config, decoderValidator, writer),
 	}
 }
 
-func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *MonitorResultListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 
-	// TODO: cron schedule validation
-	req := &types.CreateMonitorRequest{}
+	req := &types.ListMonitorResultsRequest{}
 
 	if ok := m.DecodeAndValidate(w, r, req); !ok {
 		return
 	}
 
-	monitor := &models.ModuleMonitor{
-		TeamID:           team.ID,
-		Kind:             models.MonitorKindState,
-		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
-		PolicyBytes:      []byte(req.PolicyBytes),
+	filter := &repository.ListModuleMonitorResultsOpts{
+		ModuleID:        req.ModuleID,
+		ModuleMonitorID: req.ModuleMonitorID,
 	}
 
-	monitor, err := m.Repo().ModuleMonitor().CreateModuleMonitor(monitor)
+	results, paginate, err := m.Repo().ModuleMonitor().ListModuleMonitorResults(
+		team.ID,
+		filter,
+		repository.WithPage(req.PaginationRequest),
+	)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-
 		return
 	}
 
-	err = dispatcher.DispatchCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, req.CronSchedule)
-
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-
-		return
+	resp := &types.ListMonitorResultsResponse{
+		Pagination: paginate.ToAPIType(),
+		Rows:       make([]*types.ModuleMonitorResult, 0),
 	}
 
-	w.WriteHeader(http.StatusOK)
+	for _, result := range results {
+		resp.Rows = append(resp.Rows, result.ToAPIType())
+	}
+
+	m.WriteResult(w, r, resp)
 }

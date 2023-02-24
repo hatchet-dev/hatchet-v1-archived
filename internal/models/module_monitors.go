@@ -52,7 +52,7 @@ func (m *ModuleMonitor) ToAPITypeMeta() *types.ModuleMonitorMeta {
 func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
 	return &types.ModuleMonitor{
 		ModuleMonitorMeta: m.ToAPITypeMeta(),
-		PolicyBytes:       m.PolicyBytes,
+		PolicyBytes:       string(m.PolicyBytes),
 	}
 }
 
@@ -74,6 +74,8 @@ const (
 type ModuleMonitorResult struct {
 	Base
 
+	TeamID string
+
 	ModuleID string
 	Module   Module `gorm:"foreignKey:ModuleID"`
 
@@ -88,4 +90,16 @@ type ModuleMonitorResult struct {
 	Title    string
 	Message  string
 	Severity MonitorResultSeverity
+}
+
+func (m *ModuleMonitorResult) ToAPIType() *types.ModuleMonitorResult {
+	return &types.ModuleMonitorResult{
+		APIResourceMeta: m.ToAPITypeMetadata(),
+		ModuleID:        m.ModuleID,
+		ModuleMonitorID: m.ModuleMonitorID,
+		Status:          types.MonitorResultStatus(m.Status),
+		Title:           m.Title,
+		Message:         m.Message,
+		Severity:        types.MonitorResultSeverity(m.Severity),
+	}
 }

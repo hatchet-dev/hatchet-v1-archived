@@ -74,12 +74,13 @@ func (repo *ModuleMonitorRepository) CreateModuleMonitorResult(monitor *models.M
 }
 
 func (repo *ModuleMonitorRepository) ListModuleMonitorResults(
+	teamID string,
 	filterOpts *repository.ListModuleMonitorResultsOpts,
 	opts ...repository.QueryOption,
 ) ([]*models.ModuleMonitorResult, *repository.PaginatedResult, repository.RepositoryError) {
 	var results []*models.ModuleMonitorResult
 
-	query := repo.db.Model(&models.ModuleMonitorResult{})
+	query := repo.db.Model(&models.ModuleMonitorResult{}).Where("team_id = ?", teamID)
 
 	if filterOpts.ModuleID != "" {
 		query = query.Where("module_id = ?", filterOpts.ModuleID)

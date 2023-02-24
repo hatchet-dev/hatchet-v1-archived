@@ -35,6 +35,7 @@ import TeamsList from "views/teamslist/TeamsList";
 import CreateTeam from "views/createteam/CreateTeam";
 import UserAccountsView from "views/useraccounts/UserAccountsView";
 import CreateMonitorView from "views/createmonitor/CreateMonitorView";
+import ExpandedMonitorView from "views/expandedmonitor/ExpandedMonitorView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -274,7 +275,7 @@ const AppContents: React.FunctionComponent = () => {
             path="/team/:team/monitors/:monitor"
             render={() => (
               <WrappedTeamContents>
-                <div>MONITOR EXPANDED VIEW</div>
+                <ExpandedMonitorView />
               </WrappedTeamContents>
             )}
           ></Route>

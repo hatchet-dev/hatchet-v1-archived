@@ -42,7 +42,36 @@ type ModuleMonitor struct {
 	*ModuleMonitorMeta
 
 	// the policy bytes for the monitor
-	PolicyBytes []byte `json:"policy_bytes"`
+	PolicyBytes string `json:"policy_bytes"`
+}
+
+type MonitorResultSeverity string
+
+const (
+	MonitorResultSeverityCritical MonitorResultSeverity = "critical"
+	MonitorResultSeverityHigh     MonitorResultSeverity = "high"
+	MonitorResultSeverityLow      MonitorResultSeverity = "low"
+)
+
+type MonitorResultStatus string
+
+const (
+	MonitorResultStatusSucceeded MonitorResultStatus = "succeeded"
+	MonitorResultStatusFailed    MonitorResultStatus = "failed"
+)
+
+// swagger:model
+type ModuleMonitorResult struct {
+	*APIResourceMeta
+
+	ModuleID        string `json:"module_id"`
+	ModuleMonitorID string `json:"module_monitor_id"`
+
+	Status MonitorResultStatus `json:"status"`
+
+	Title    string                `json:"title"`
+	Message  string                `json:"message"`
+	Severity MonitorResultSeverity `json:"severity"`
 }
 
 // swagger:model
@@ -59,8 +88,11 @@ type CreateMonitorResultRequest struct {
 type CreateMonitorRequest struct {
 	Name         string `json:"name" form:"required"`
 	CronSchedule string `json:"cron_schedule" form:"required"`
-	PolicyBytes  []byte `json:"policy_bytes" form:"required"`
+	PolicyBytes  string `json:"policy_bytes" form:"required"`
 }
+
+// swagger:model
+type GetMonitorResponse ModuleMonitor
 
 // swagger:parameters listMonitors
 type ListMonitorsRequest struct {
@@ -71,4 +103,25 @@ type ListMonitorsRequest struct {
 type ListMonitorsResponse struct {
 	Pagination *PaginationResponse  `json:"pagination"`
 	Rows       []*ModuleMonitorMeta `json:"rows"`
+}
+
+// swagger:parameters listMonitorResults
+type ListMonitorResultsRequest struct {
+	*PaginationRequest
+
+	// The monitor id to filter by
+	// in: query
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	ModuleMonitorID string `schema:"module_monitor_id" json:"module_monitor_id" form:"omitempty,uuid"`
+
+	// The module id to filter by
+	// in: query
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	ModuleID string `schema:"module_id" json:"module_id" form:"omitempty,uuid"`
+}
+
+// swagger:model
+type ListMonitorResultsResponse struct {
+	Pagination *PaginationResponse    `json:"pagination"`
+	Rows       []*ModuleMonitorResult `json:"rows"`
 }

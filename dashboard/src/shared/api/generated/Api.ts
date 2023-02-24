@@ -46,6 +46,7 @@ import {
   GetModuleTarballURLResponse,
   GetModuleValuesCurrentResponse,
   GetModuleValuesResponse,
+  GetMonitorResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -55,6 +56,7 @@ import {
   ListGithubReposResponse,
   ListModuleRunsResponse,
   ListModulesResponse,
+  ListMonitorResultsResponse,
   ListMonitorsResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
@@ -969,6 +971,38 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Lists monitor results for a given team, optionally filtered by module or monitor id.
+   *
+   * @tags Monitors
+   * @name ListMonitorResults
+   * @summary List Monitor Results
+   * @request GET:/api/v1/teams/{team_id}/monitor_results
+   * @secure
+   */
+  listMonitorResults = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+      /** The monitor id to filter by */
+      module_monitor_id?: string;
+      /** The module id to filter by */
+      module_id?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListMonitorResultsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitor_results`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Lists monitors for a given team.
    *
    * @tags Monitors
@@ -1012,6 +1046,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       body: data,
       secure: true,
       type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Gets a monitor by id.
+   *
+   * @tags Monitors
+   * @name GetMonitor
+   * @summary Get Monitor
+   * @request GET:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  getMonitor = (teamId: string, monitorId: string, params: RequestParams = {}) =>
+    this.request<GetMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
       ...params,
     });
   /**

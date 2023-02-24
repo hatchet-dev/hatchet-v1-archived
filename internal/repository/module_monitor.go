@@ -39,7 +39,7 @@ type ModuleMonitorRepository interface {
 	ReadModuleMonitorResultByID(moduleID, monitorID, resultID string) (*models.ModuleMonitorResult, RepositoryError)
 
 	// ListModuleMonitorResults lists the module results based on a set of filters
-	ListModuleMonitorResults(filterOpts *ListModuleMonitorResultsOpts, opts ...QueryOption) ([]*models.ModuleMonitorResult, *PaginatedResult, RepositoryError)
+	ListModuleMonitorResults(teamID string, filterOpts *ListModuleMonitorResultsOpts, opts ...QueryOption) ([]*models.ModuleMonitorResult, *PaginatedResult, RepositoryError)
 
 	// DeleteModuleMonitorResult soft-deletes a module run queue item in the database
 	DeleteModuleMonitorResult(result *models.ModuleMonitorResult) (*models.ModuleMonitorResult, RepositoryError)
