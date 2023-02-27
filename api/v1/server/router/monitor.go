@@ -11,7 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters getMonitor
+// swagger:parameters getMonitor updateMonitor deleteMonitor
 type monitorPathParams struct {
 	// The team id
 	// in: path
@@ -156,6 +156,125 @@ func GetMonitorRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getMonitorEndpoint,
 		Handler:  getMonitorHandler,
+		Router:   r,
+	})
+
+	// POST /api/v1/teams/{team_id}/monitors/{monitor_id} -> monitors.NewMonitorUpdateHandler
+	// swagger:operation POST /api/v1/teams/{team_id}/monitors/{monitor_id} updateMonitor
+	//
+	// ### Description
+	//
+	// Updates a monitor.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Update Monitor
+	// tags:
+	// - Monitors
+	// parameters:
+	//   - name: team_id
+	//   - name: monitor_id
+	//   - in: body
+	//     name: UpdateMonitorRequest
+	//     description: The monitor to update
+	//     schema:
+	//       $ref: '#/definitions/UpdateMonitorRequest'
+	// responses:
+	//   '200':
+	//     description: Successfully updated the monitor
+	//     schema:
+	//       $ref: '#/definitions/UpdateMonitorResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	updateMonitorEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbUpdate,
+			Method: types.HTTPVerbPost,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/monitors/{%s}", types.URLParamMonitorID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.MonitorScope,
+			},
+		},
+	)
+
+	updateMonitorHandler := monitors.NewMonitorUpdateHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: updateMonitorEndpoint,
+		Handler:  updateMonitorHandler,
+		Router:   r,
+	})
+
+	// DELETE /api/v1/teams/{team_id}/monitors/{monitor_id} -> monitors.NewMonitorDeleteHandler
+	// swagger:operation DELETE /api/v1/teams/{team_id}/monitors/{monitor_id} deleteMonitor
+	//
+	// ### Description
+	//
+	// Deletes a monitor.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Delete Monitor
+	// tags:
+	// - Monitors
+	// parameters:
+	//   - name: team_id
+	//   - name: monitor_id
+	// responses:
+	//   '200':
+	//     description: Successfully delete the monitor
+	//     schema:
+	//       $ref: '#/definitions/DeleteMonitorResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	deleteMonitorEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbDelete,
+			Method: types.HTTPVerbDelete,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/monitors/{%s}", types.URLParamMonitorID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.MonitorScope,
+			},
+		},
+	)
+
+	deleteMonitorHandler := monitors.NewMonitorDeleteHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: deleteMonitorEndpoint,
+		Handler:  deleteMonitorHandler,
 		Router:   r,
 	})
 

@@ -32,6 +32,7 @@ import {
   CreateUserRequest,
   CreateUserResponse,
   DeleteModuleResponse,
+  DeleteMonitorResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
   DeleteTeamResponse,
@@ -75,6 +76,7 @@ import {
   TeamAddMemberResponse,
   TeamUpdateResponse,
   UpdateModuleResponse,
+  UpdateMonitorResponse,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
@@ -1073,6 +1075,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Deletes a monitor.
+   *
+   * @tags Monitors
+   * @name DeleteMonitor
+   * @summary Delete Monitor
+   * @request DELETE:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  deleteMonitor = (teamId: string, monitorId: string, params: RequestParams = {}) =>
+    this.request<DeleteMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "DELETE",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Gets a monitor by id.
    *
    * @tags Monitors
@@ -1086,6 +1105,25 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
       method: "GET",
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Updates a monitor.
+   *
+   * @tags Monitors
+   * @name UpdateMonitor
+   * @summary Update Monitor
+   * @request POST:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  updateMonitor = (teamId: string, monitorId: string, data?: CreateMonitorRequest, params: RequestParams = {}) =>
+    this.request<UpdateMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });

@@ -300,6 +300,8 @@ export type CreateUserResponse = User;
 
 export type DeleteModuleResponse = Module;
 
+export type DeleteMonitorResponse = ModuleMonitor;
+
 export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
@@ -431,7 +433,7 @@ export interface ListMonitorResultsResponse {
   rows?: ModuleMonitorResult[];
 }
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true},{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true}]} */
 export interface ListMonitorsResponse {
   pagination?: PaginationResponse;
   rows?: ModuleMonitorMeta[];
@@ -581,7 +583,7 @@ export interface ModuleEnvVarsVersion {
 
 export type ModuleLockKind = string;
 
-/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true} */
 export interface ModuleMonitor {
   /**
    * the time that this resource was created
@@ -601,6 +603,8 @@ export interface ModuleMonitor {
    * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
    */
   id?: string;
+  /** whether this monitor is a default for all modules in the team */
+  is_default?: boolean;
   kind?: string;
   /**
    * the name for the monitor
@@ -619,7 +623,7 @@ export interface ModuleMonitor {
 
 export type ModuleMonitorKind = string;
 
-/** @example {"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e"} */
+/** @example {"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true} */
 export interface ModuleMonitorMeta {
   /**
    * the time that this resource was created
@@ -639,6 +643,8 @@ export interface ModuleMonitorMeta {
    * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
    */
   id?: string;
+  /** whether this monitor is a default for all modules in the team */
+  is_default?: boolean;
   kind?: string;
   /**
    * the name for the monitor
@@ -1242,6 +1248,18 @@ export interface UpdateModuleRequest {
 }
 
 export type UpdateModuleResponse = Module;
+
+export interface UpdateMonitorRequest {
+  cron_schedule?: string;
+  description?: string;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
+  name?: string;
+  policy_bytes?: string;
+}
+
+export type UpdateMonitorResponse = ModuleMonitor;
 
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
