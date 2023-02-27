@@ -18,7 +18,6 @@ import { CreateMonitorRequest } from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";
 import { currTeamAtom } from "shared/atoms/atoms";
 import SelectGitSource from "components/module/selectgitpath";
-import MultiSelector from "components/multiselector";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 
@@ -26,7 +25,7 @@ type Props = {
   submit: (req: CreateMonitorRequest) => void;
 };
 
-const monitorKindOptions = [
+export const MonitorKindOptions = [
   {
     label: "Scheduled Plan Check",
     value: "plan",
@@ -144,7 +143,7 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
         <Selector
           placeholder="Scheduled Plan Check"
           placeholder_material_icon="schedule"
-          options={monitorKindOptions}
+          options={MonitorKindOptions}
           select={selectKind}
         />
         <HorizontalSpacer spacepixels={20} />

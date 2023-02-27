@@ -25,6 +25,7 @@ import { useHistory, useParams } from "react-router-dom";
 import api from "shared/api";
 import { currTeamAtom } from "shared/atoms/atoms";
 import { relativeDate } from "shared/utils";
+import MonitorSettings from "./components/monitorsettings";
 
 const TabOptions = ["Recent Results", "Policy", "Settings"];
 
@@ -67,7 +68,7 @@ const ExpandedMonitorView: React.FunctionComponent = () => {
           />
         );
       case "Settings":
-        return <div>Policy goes here</div>;
+        return <MonitorSettings team_id={currTeam?.id} monitor={data?.data} />;
     }
   };
 

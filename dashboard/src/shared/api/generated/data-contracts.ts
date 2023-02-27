@@ -583,7 +583,7 @@ export interface ModuleEnvVarsVersion {
 
 export type ModuleLockKind = string;
 
-/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true} */
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]} */
 export interface ModuleMonitor {
   /**
    * the time that this resource was created
@@ -606,6 +606,8 @@ export interface ModuleMonitor {
   /** whether this monitor is a default for all modules in the team */
   is_default?: boolean;
   kind?: string;
+  /** The list of modules that this monitor filters for */
+  modules?: string[];
   /**
    * the name for the monitor
    * @example "drift"

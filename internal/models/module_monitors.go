@@ -58,9 +58,16 @@ func (m *ModuleMonitor) ToAPITypeMeta() *types.ModuleMonitorMeta {
 }
 
 func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
+	modules := make([]string, 0)
+
+	for _, mod := range m.Modules {
+		modules = append(modules, mod.ID)
+	}
+
 	return &types.ModuleMonitor{
 		ModuleMonitorMeta: m.ToAPITypeMeta(),
 		PolicyBytes:       string(m.PolicyBytes),
+		Modules:           modules,
 	}
 }
 

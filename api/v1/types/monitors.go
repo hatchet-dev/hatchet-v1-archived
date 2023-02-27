@@ -44,6 +44,9 @@ type ModuleMonitorMeta struct {
 type ModuleMonitor struct {
 	*ModuleMonitorMeta
 
+	// The list of modules that this monitor filters for
+	Modules []string `json:"modules"`
+
 	// the policy bytes for the monitor
 	PolicyBytes string `json:"policy_bytes"`
 }
