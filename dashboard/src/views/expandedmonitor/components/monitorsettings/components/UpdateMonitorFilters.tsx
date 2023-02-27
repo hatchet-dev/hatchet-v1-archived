@@ -75,7 +75,11 @@ const UpdateMonitorFilters: React.FC<Props> = ({
           });
 
           setModuleOptions(newOptions);
-          setMonitorModules(newOptions.map((option) => option.value));
+          setMonitorModules(
+            newOptions
+              .filter((option) => option.checked)
+              .map((option) => option.value)
+          );
         }}
       />
     </>

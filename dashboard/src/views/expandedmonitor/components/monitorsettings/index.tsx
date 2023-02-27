@@ -54,16 +54,48 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
     retry: false,
   });
 
+  const nameModified = useIsModified(name, monitor.name);
+  const modulesModified = useIsModified(modules, monitor.modules);
+  const kindModified = useIsModified(kind, monitor.kind);
+  const scheduleModified = useIsModified(schedule, monitor.cron_schedule);
+  const descriptionModified = useIsModified(description, monitor.description);
+
   const request = useMemo<UpdateMonitorRequest>(() => {
-    let req: UpdateMonitorRequest = {
-      name: name,
-      description: description,
-      kind: kind,
-      cron_schedule: schedule,
-    };
+    let req: UpdateMonitorRequest = {};
+
+    if (nameModified.isModified && name != "") {
+      req.name = name;
+    }
+
+    if (kindModified.isModified && kind != "") {
+      req.kind = kind;
+    }
+
+    if (descriptionModified.isModified && description != "") {
+      req.description = description;
+    }
+
+    if (scheduleModified.isModified && schedule != "") {
+      req.cron_schedule = schedule;
+    }
+
+    if (modulesModified.isModified && modules) {
+      req.modules = modules;
+    }
 
     return req;
-  }, [name, description, kind, schedule]);
+  }, [
+    name,
+    nameModified,
+    description,
+    descriptionModified,
+    kind,
+    kindModified,
+    schedule,
+    scheduleModified,
+    modules,
+    modulesModified,
+  ]);
 
   const mutation = useMutation({
     mutationKey: ["update_monitor", team_id, monitor_id],
