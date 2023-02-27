@@ -26,7 +26,7 @@ func (repo *ModuleMonitorRepository) CreateModuleMonitor(monitor *models.ModuleM
 func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(teamID, moduleMonitorID string) (*models.ModuleMonitor, repository.RepositoryError) {
 	monitor := &models.ModuleMonitor{}
 
-	if err := repo.db.Preload("Modules").Where("team_id = ? AND id = ?", teamID, moduleMonitorID).First(&monitor).Error; err != nil {
+	if err := repo.db.Preload("CurrentMonitorPolicyBytesVersion").Preload("Modules").Where("team_id = ? AND id = ?", teamID, moduleMonitorID).First(&monitor).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

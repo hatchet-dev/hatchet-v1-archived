@@ -63,8 +63,11 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		Kind:             models.ModuleMonitorKind(req.Kind),
 		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
 		CronSchedule:     req.CronSchedule,
-		PolicyBytes:      []byte(req.PolicyBytes),
 		Modules:          targetModules,
+		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
+			Version:     1,
+			PolicyBytes: []byte(req.PolicyBytes),
+		},
 	}
 
 	monitor, err = m.Repo().ModuleMonitor().CreateModuleMonitor(monitor)

@@ -28,7 +28,7 @@ func NewMonitorPolicyGetHandler(
 func (t *MonitorPolicyGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	monitor, _ := r.Context().Value(types.MonitorScope).(*models.ModuleMonitor)
 
-	if _, err := w.Write(monitor.PolicyBytes); err != nil {
+	if _, err := w.Write(monitor.CurrentMonitorPolicyBytesVersion.PolicyBytes); err != nil {
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
 		return

@@ -101,7 +101,7 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
   const mutation = useMutation({
     mutationKey: ["update_monitor", team_id, monitor_id],
     mutationFn: async (request: UpdateMonitorRequest) => {
-      const res = await api.updateModule(team_id, monitor_id, request);
+      const res = await api.updateMonitor(team_id, monitor_id, request);
       return res;
     },
     onSuccess: (data) => {

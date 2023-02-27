@@ -32,7 +32,9 @@ type ModuleMonitor struct {
 	CronSchedule string
 
 	PresetPolicyName ModuleMonitorPresetPolicyName
-	PolicyBytes      []byte
+
+	CurrentMonitorPolicyBytesVersionID string
+	CurrentMonitorPolicyBytesVersion   MonitorPolicyBytesVersion `gorm:"foreignKey:CurrentMonitorPolicyBytesVersionID"`
 
 	// A list of modules to target. If left empty, targets all modules.
 	Modules []Module `gorm:"many2many:monitors_to_modules;"`
@@ -66,9 +68,18 @@ func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
 
 	return &types.ModuleMonitor{
 		ModuleMonitorMeta: m.ToAPITypeMeta(),
-		PolicyBytes:       string(m.PolicyBytes),
+		PolicyBytes:       string(m.CurrentMonitorPolicyBytesVersion.PolicyBytes),
 		Modules:           modules,
 	}
+}
+
+type MonitorPolicyBytesVersion struct {
+	Base
+
+	ModuleMonitorID string
+	Version         uint
+
+	PolicyBytes []byte
 }
 
 type MonitorResultSeverity string

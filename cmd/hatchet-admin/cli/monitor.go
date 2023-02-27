@@ -118,8 +118,11 @@ func runCreateDefaultMonitor() error {
 		Kind:         models.ModuleMonitorKind(createRequest.Kind),
 		DisplayName:  createRequest.Name,
 		CronSchedule: createRequest.CronSchedule,
-		PolicyBytes:  policyBytes,
 		IsDefault:    true,
+		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
+			Version:     1,
+			PolicyBytes: policyBytes,
+		},
 	}
 
 	monitor, err = sc.DB.Repository.ModuleMonitor().CreateModuleMonitor(monitor)

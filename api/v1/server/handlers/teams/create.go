@@ -144,7 +144,10 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		TeamID:           team.ID,
 		Kind:             models.MonitorKindPlan,
 		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
-		PolicyBytes:      monitors.PresetDriftDetectionPolicy,
+		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
+			Version:     1,
+			PolicyBytes: monitors.PresetDriftDetectionPolicy,
+		},
 	}
 
 	monitor, err = t.Repo().ModuleMonitor().CreateModuleMonitor(monitor)

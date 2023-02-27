@@ -26,6 +26,7 @@ import api from "shared/api";
 import { currTeamAtom } from "shared/atoms/atoms";
 import { relativeDate } from "shared/utils";
 import MonitorSettings from "./components/monitorsettings";
+import PolicyTab from "./components/policytab";
 
 const TabOptions = ["Recent Results", "Policy", "Settings"];
 
@@ -60,13 +61,7 @@ const ExpandedMonitorView: React.FunctionComponent = () => {
           />
         );
       case "Policy":
-        return (
-          <CodeBlock
-            value={data?.data?.policy_bytes}
-            height="calc(100% - 250px)"
-            readOnly={true}
-          />
-        );
+        return <PolicyTab team_id={currTeam?.id} monitor={data?.data} />;
       case "Settings":
         return <MonitorSettings team_id={currTeam?.id} monitor={data?.data} />;
     }

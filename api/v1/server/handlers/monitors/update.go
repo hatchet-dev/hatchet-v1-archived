@@ -74,7 +74,19 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	if req.PolicyBytes != "" {
-		_, err := opa.LoadQueryFromBytes(req.Name, []byte(req.PolicyBytes))
+		// create a new version of the policy bytes
+		newPolicyBytesVersion := models.MonitorPolicyBytesVersion{
+			Version:     monitor.CurrentMonitorPolicyBytesVersion.Version + 1,
+			PolicyBytes: []byte(req.PolicyBytes),
+		}
+
+		fmt.Printf("\n\n\n")
+
+		fmt.Printf(string(req.PolicyBytes))
+
+		fmt.Printf("\n\n\n")
+
+		_, err := opa.LoadQueryFromBytes(monitor.DisplayName, []byte(req.PolicyBytes))
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
@@ -85,7 +97,7 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		monitor.PolicyBytes = []byte(req.PolicyBytes)
+		monitor.CurrentMonitorPolicyBytesVersion = newPolicyBytesVersion
 	}
 
 	monitor, err := m.Repo().ModuleMonitor().UpdateModuleMonitor(monitor)
