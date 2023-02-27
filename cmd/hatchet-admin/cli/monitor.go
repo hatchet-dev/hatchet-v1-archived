@@ -20,7 +20,7 @@ var monitorCmd = &cobra.Command{
 
 var monitorCreateCmd = &cobra.Command{
 	Use:   "create-default",
-	Short: "Command used to manage default organization/team monitors",
+	Short: "Creates a new default monitor for a given team",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := runCreateDefaultMonitor()
 
@@ -119,6 +119,7 @@ func runCreateDefaultMonitor() error {
 		DisplayName:  createRequest.Name,
 		CronSchedule: createRequest.CronSchedule,
 		PolicyBytes:  policyBytes,
+		IsDefault:    true,
 	}
 
 	monitor, err = sc.DB.Repository.ModuleMonitor().CreateModuleMonitor(monitor)

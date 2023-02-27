@@ -35,6 +35,9 @@ type ModuleMonitorMeta struct {
 
 	// the cron schedule for the monitor
 	CronSchedule string `json:"cron_schedule"`
+
+	// whether this monitor is a default for all modules in the team
+	IsDefault bool `json:"is_default"`
 }
 
 // swagger:model

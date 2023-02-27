@@ -37,6 +37,10 @@ type ModuleMonitor struct {
 	// A list of modules to target. If left empty, targets all modules.
 	Modules []Module `gorm:"many2many:monitors_to_modules;"`
 
+	// IsDefault controls whether this is a default monitor for all modules. If this is a default,
+	// it cannot be configured from the dashboard.
+	IsDefault bool
+
 	MatchChildModules []byte
 	MatchProviders    []byte
 	MatchResources    []byte
@@ -49,6 +53,7 @@ func (m *ModuleMonitor) ToAPITypeMeta() *types.ModuleMonitorMeta {
 		Description:     m.Description,
 		Kind:            types.ModuleMonitorKind(m.Kind),
 		CronSchedule:    m.CronSchedule,
+		IsDefault:       m.IsDefault,
 	}
 }
 
