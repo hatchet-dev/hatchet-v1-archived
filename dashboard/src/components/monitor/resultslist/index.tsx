@@ -8,11 +8,17 @@ import {
   Table,
 } from "@hatchet-dev/hatchet-components";
 import { useQuery } from "@tanstack/react-query";
+import Status from "components/status";
 import React, { useState } from "react";
 import api from "shared/api";
-import { ModuleRun } from "shared/api/generated/data-contracts";
+import {
+  ModuleRun,
+  ModuleMonitorResult,
+} from "shared/api/generated/data-contracts";
 import usePagination from "shared/hooks/usepagination";
-import { relativeDate } from "shared/utils";
+import theme from "shared/theme";
+import { capitalize, relativeDate } from "shared/utils";
+import ExpandedResult from "../expandedresult";
 
 export type Props = {
   team_id: string;
@@ -25,6 +31,8 @@ const ResultsList: React.FC<Props> = ({
   module_id,
   module_monitor_id,
 }) => {
+  const [selectedResult, setSelectedResult] = useState<ModuleMonitorResult>();
+
   const {
     currentPage,
     maxPage,
@@ -60,7 +68,26 @@ const ResultsList: React.FC<Props> = ({
     {
       Header: "Status",
       accessor: "status",
-      width: 100,
+      width: 60,
+      Cell: ({ row }: any) => {
+        return (
+          <Status
+            kind="color"
+            color={
+              row.original.status == "succeeded"
+                ? theme.text.default
+                : "#ff385d"
+            }
+            status_text={capitalize(row.original.status)}
+            material_icon="check"
+          />
+        );
+      },
+    },
+    {
+      Header: "Module",
+      accessor: "module_name",
+      width: 200,
     },
     {
       Header: "Message",
@@ -84,17 +111,45 @@ const ResultsList: React.FC<Props> = ({
 
   const tableData = listResultsQuery?.data?.data?.rows?.map((result) => {
     return {
+      id: result.id,
       status: result.status,
       title: result.title,
       message: result.message,
       created_at: relativeDate(result.created_at),
+      module_id: result.module_id,
+      module_name: result.module_name,
     };
   });
+
+  if (selectedResult) {
+    return (
+      <ExpandedResult
+        team_id={team_id}
+        module_monitor_result={selectedResult}
+        back={() => setSelectedResult(null)}
+      />
+    );
+  }
 
   return (
     <>
       <FlexColScroll height="calc(100% - 250px)">
-        <Table rowHeight={"3.5em"} columns={columns} data={tableData} />
+        <Table
+          rowHeight={"3.5em"}
+          columns={columns}
+          data={tableData}
+          onRowClick={(row: any) => {
+            const matchedResult = listResultsQuery?.data?.data?.rows?.filter(
+              (result) => {
+                return result.id == row.original.id;
+              }
+            );
+
+            if (matchedResult.length == 1) {
+              setSelectedResult(matchedResult[0]);
+            }
+          }}
+        />
       </FlexColScroll>
       <FlexRowRight>
         <Paginator

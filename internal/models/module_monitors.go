@@ -121,7 +121,9 @@ type ModuleMonitorResult struct {
 func (m *ModuleMonitorResult) ToAPIType() *types.ModuleMonitorResult {
 	return &types.ModuleMonitorResult{
 		APIResourceMeta: m.ToAPITypeMetadata(),
+		ModuleRunID:     m.ModuleRunID,
 		ModuleID:        m.ModuleID,
+		ModuleName:      m.Module.Name,
 		ModuleMonitorID: m.ModuleMonitorID,
 		Status:          types.MonitorResultStatus(m.Status),
 		Title:           m.Title,

@@ -80,7 +80,7 @@ func (repo *ModuleMonitorRepository) ListModuleMonitorResults(
 ) ([]*models.ModuleMonitorResult, *repository.PaginatedResult, repository.RepositoryError) {
 	var results []*models.ModuleMonitorResult
 
-	query := repo.db.Model(&models.ModuleMonitorResult{}).Where("team_id = ?", teamID)
+	query := repo.db.Preload("Module").Model(&models.ModuleMonitorResult{}).Where("team_id = ?", teamID)
 
 	if filterOpts.ModuleID != "" {
 		query = query.Where("module_id = ?", filterOpts.ModuleID)
@@ -112,7 +112,7 @@ func (repo *ModuleMonitorRepository) ListModuleMonitorResults(
 func (repo *ModuleMonitorRepository) ReadModuleMonitorResultByID(moduleID, monitorID, resultID string) (*models.ModuleMonitorResult, repository.RepositoryError) {
 	result := &models.ModuleMonitorResult{}
 
-	if err := repo.db.Where("module_id = ? AND module_monitor_id = ? AND id = ?", moduleID, monitorID, resultID).First(&result).Error; err != nil {
+	if err := repo.db.Preload("Module").Where("module_id = ? AND module_monitor_id = ? AND id = ?", moduleID, monitorID, resultID).First(&result).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

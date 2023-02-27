@@ -10,6 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 )
 
 type MonitorDeleteHandler struct {
@@ -27,6 +28,7 @@ func NewMonitorDeleteHandler(
 }
 
 func (m *MonitorDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	monitor, _ := r.Context().Value(types.MonitorScope).(*models.ModuleMonitor)
 
 	if monitor.IsDefault {
@@ -39,6 +41,15 @@ func (m *MonitorDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	monitor, err := m.Repo().ModuleMonitor().DeleteModuleMonitor(monitor)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+
+		return
+	}
+
+	// terminate the workflow
+	err = dispatcher.DeleteCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

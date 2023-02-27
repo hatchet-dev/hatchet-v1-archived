@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "shared/api";
 import { Module, ModuleRun } from "shared/api/generated/data-contracts";
-import ExpandedRun from "../expandedrun";
+import ExpandedRun from "../../../../components/run/expandedrun";
 import ModuleRunsList from "../modulerunslist";
 
 type Props = {

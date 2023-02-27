@@ -11,6 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/opa"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 )
 
 type MonitorUpdateHandler struct {
@@ -80,12 +81,6 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 			PolicyBytes: []byte(req.PolicyBytes),
 		}
 
-		fmt.Printf("\n\n\n")
-
-		fmt.Printf(string(req.PolicyBytes))
-
-		fmt.Printf("\n\n\n")
-
 		_, err := opa.LoadQueryFromBytes(monitor.DisplayName, []byte(req.PolicyBytes))
 
 		if err != nil {
@@ -106,6 +101,17 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
 		return
+	}
+
+	if req.CronSchedule != "" {
+		// update the workflow
+		err = dispatcher.UpdateCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, monitor.CronSchedule)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
 	}
 
 	m.WriteResult(w, r, monitor.ToAPIType())

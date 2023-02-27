@@ -70,7 +70,11 @@ const (
 type ModuleMonitorResult struct {
 	*APIResourceMeta
 
-	ModuleID        string `json:"module_id"`
+	ModuleID   string `json:"module_id"`
+	ModuleName string `json:"module_name"`
+
+	ModuleRunID string `json:"module_run_id"`
+
 	ModuleMonitorID string `json:"module_monitor_id"`
 
 	Status MonitorResultStatus `json:"status"`

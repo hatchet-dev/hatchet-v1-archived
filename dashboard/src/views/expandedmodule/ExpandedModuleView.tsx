@@ -23,7 +23,7 @@ import { useHistory, useParams } from "react-router-dom";
 import api from "shared/api";
 import { currTeamAtom } from "shared/atoms/atoms";
 import { relativeDate } from "shared/utils";
-import RunsList from "../../components/runslist";
+import RunsList from "../../components/run/runslist";
 import ModuleRunsList from "./components/modulerunslist";
 import ModuleSettings from "./components/modulesettings";
 import ExpandedModuleMonitors from "./components/monitors";

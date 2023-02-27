@@ -4,7 +4,6 @@ import {
   BackText,
   FlexRow,
   SmallSpan,
-  FlexColScroll,
   MaterialIcon,
   Placeholder,
   Spinner,
@@ -14,9 +13,7 @@ import {
   FlexRowLeft,
 } from "@hatchet-dev/hatchet-components";
 import { useQuery } from "@tanstack/react-query";
-import CodeBlock from "components/codeblock";
-import EnvVars, { getInternalEnvVars, newEnvVarAtom } from "components/envvars";
-import React, { useMemo } from "react";
+import React from "react";
 import api from "shared/api";
 import { parseTerraformPlanSummary, relativeDate } from "shared/utils";
 import {
@@ -25,13 +22,11 @@ import {
   TriggerPRContainer,
 } from "./styles";
 import { Module } from "shared/api/generated/data-contracts";
-import styled from "styled-components";
 import Logs from "components/logs";
-import StatusContainer from "components/status";
 import Status from "components/status";
 import GithubRef from "components/githubref";
 import { StatusText } from "components/status/styles";
-import { useAtom } from "jotai";
+import ConfigurationSection from "./components/ConfigurationSection";
 
 type Props = {
   back: () => void;
@@ -56,12 +51,6 @@ const ExpandedRun: React.FC<Props> = ({
     },
     retry: false,
   });
-
-  const envVarAtom = useMemo(() => {
-    return newEnvVarAtom([]);
-  }, []);
-
-  const [envVars, setEnvVars] = useAtom(envVarAtom);
 
   const status = moduleRunQuery?.data?.data?.status;
   const kind = moduleRunQuery?.data?.data?.kind;
@@ -94,55 +83,6 @@ const ExpandedRun: React.FC<Props> = ({
     retry: false,
   });
 
-  const envVarsQuery = useQuery({
-    queryKey: [
-      "module_run_env_vars",
-      team_id,
-      module_id,
-      moduleRunQuery?.data?.data?.config?.env_var_version_id,
-    ],
-    queryFn: async () => {
-      const res = await api.getModuleEnvVars(
-        team_id,
-        module_id,
-        moduleRunQuery?.data?.data?.config?.env_var_version_id
-      );
-
-      return res;
-    },
-    onSuccess: (res) => {
-      const newVars = getInternalEnvVars(
-        res.data.env_vars.map((envVar) => {
-          return `${envVar.key}~~=~~${envVar.val}`;
-        })
-      );
-
-      setEnvVars(newVars);
-    },
-    retry: false,
-    enabled: !!moduleRunQuery?.data?.data?.config?.env_var_version_id,
-  });
-
-  const valuesQuery = useQuery({
-    queryKey: [
-      "module_run_values",
-      team_id,
-      module_id,
-      moduleRunQuery?.data?.data?.config?.values_version_id,
-    ],
-    queryFn: async () => {
-      const res = await api.getModuleValues(
-        team_id,
-        module_id,
-        moduleRunQuery?.data?.data?.config?.values_version_id
-      );
-
-      return res;
-    },
-    retry: false,
-    enabled: !!moduleRunQuery?.data?.data?.config?.values_version_id,
-  });
-
   const selectPR = () => {
     const pr = moduleRunQuery.data.data?.github_pull_request;
     window.open(
@@ -164,15 +104,6 @@ const ExpandedRun: React.FC<Props> = ({
     return `https://github.com/${gh.github_repo_owner}/${gh.github_repo_name}/commit/${sha}`;
   };
 
-  const getGithubFileRefLink = () => {
-    const gh = valuesQuery.data.data?.github;
-    const sha = moduleRunQuery.data.data?.config.github_commit_sha;
-
-    return `https://github.com/${gh.github_repo_owner}/${
-      gh.github_repo_name
-    }/blob/${sha}${gh.path.replace(/^(\.)/, "")}`;
-  };
-
   if (
     moduleRunQuery.isLoading ||
     (planSummaryEnabled && planSummaryQuery.isLoading)
@@ -183,47 +114,6 @@ const ExpandedRun: React.FC<Props> = ({
       </Placeholder>
     );
   }
-
-  const renderValuesSection = () => {
-    if (valuesQuery.isLoading) {
-      return (
-        <Placeholder>
-          <Spinner />
-        </Placeholder>
-      );
-    }
-
-    if (valuesQuery.data.data.github) {
-      return (
-        <GithubRef
-          text={valuesQuery.data.data.github.path}
-          link={getGithubFileRefLink()}
-        />
-      );
-    }
-
-    return (
-      <FlexColScroll height="200px" width="100%">
-        <CodeBlock
-          value={JSON.stringify(valuesQuery?.data?.data?.raw_values)}
-          height="200px"
-          readOnly={true}
-        />
-      </FlexColScroll>
-    );
-  };
-
-  const renderEnvVarsSection = () => {
-    if (envVarsQuery.isLoading) {
-      return (
-        <Placeholder>
-          <Spinner />
-        </Placeholder>
-      );
-    }
-
-    return <EnvVars envVarAtom={envVarAtom} read_only={true} />;
-  };
 
   const renderStatusContainer = () => {
     let materialIcon = "";
@@ -388,19 +278,11 @@ const ExpandedRun: React.FC<Props> = ({
         {renderOverview()}
       </RunSectionCard>
       <HorizontalSpacer spacepixels={24} />
-      <RunSectionCard>
-        <H4>Configuration</H4>
-        <HorizontalSpacer spacepixels={12} />
-        <FlexColScroll>
-          <SmallSpan>Values:</SmallSpan>
-          <HorizontalSpacer spacepixels={12} />
-          {renderValuesSection()}
-          <HorizontalSpacer spacepixels={12} />
-          <SmallSpan>Environment variables:</SmallSpan>
-          <HorizontalSpacer spacepixels={12} />
-          {renderEnvVarsSection()}
-        </FlexColScroll>
-      </RunSectionCard>
+      <ConfigurationSection
+        team_id={team_id}
+        module_id={module.id}
+        module_run={moduleRunQuery.data.data}
+      />
       <HorizontalSpacer spacepixels={24} />
       <RunSectionCard>
         <H4>Logs</H4>

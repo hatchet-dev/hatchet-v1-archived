@@ -427,7 +427,7 @@ export interface ListModulesResponse {
   rows?: Module[];
 }
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}]} */
 export interface ListMonitorResultsResponse {
   pagination?: PaginationResponse;
   rows?: ModuleMonitorResult[];
@@ -661,7 +661,7 @@ export interface ModuleMonitorMeta {
   updated_at?: string;
 }
 
-/** @example {"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","message":"message","title":"title","status":"status"} */
+/** @example {"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"} */
 export interface ModuleMonitorResult {
   /**
    * the time that this resource was created
@@ -677,6 +677,8 @@ export interface ModuleMonitorResult {
   message?: string;
   module_id?: string;
   module_monitor_id?: string;
+  module_name?: string;
+  module_run_id?: string;
   severity?: string;
   status?: string;
   title?: string;

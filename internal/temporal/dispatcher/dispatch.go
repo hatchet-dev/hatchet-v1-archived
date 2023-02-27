@@ -101,3 +101,49 @@ func DispatchCronMonitor(c *temporal.Client, teamID, monitorID, cronSchedule str
 
 	return err
 }
+
+func UpdateCronMonitor(c *temporal.Client, teamID, monitorID, cronSchedule string) error {
+	// TODO: this queue name should align with the team id
+	tc, err := c.GetClient(enums.BackgroundQueueName)
+
+	if err != nil {
+		return err
+	}
+
+	monitorInput := monitordispatcher.MonitorDispatcherInput{
+		TeamID:    teamID,
+		MonitorID: monitorID,
+	}
+
+	workflowID := fmt.Sprintf("%s/%s", teamID, monitorID)
+
+	runMonitorOptions := client.StartWorkflowOptions{
+		ID:           workflowID,
+		TaskQueue:    enums.BackgroundQueueName,
+		CronSchedule: cronSchedule,
+	}
+
+	// delete/terminate the first workflow
+	err = tc.TerminateWorkflow(context.Background(), workflowID, "", "Terminated due to cron schedule update")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tc.ExecuteWorkflow(context.Background(), runMonitorOptions, hatchetenums.WorkflowTypeNameDispatchMonitors, monitorInput)
+
+	return err
+}
+
+func DeleteCronMonitor(c *temporal.Client, teamID, monitorID string) error {
+	// TODO: this queue name should align with the team id
+	tc, err := c.GetClient(enums.BackgroundQueueName)
+
+	if err != nil {
+		return err
+	}
+
+	workflowID := fmt.Sprintf("%s/%s", teamID, monitorID)
+
+	return tc.TerminateWorkflow(context.Background(), workflowID, "", "Terminated due to monitor deletion")
+}
