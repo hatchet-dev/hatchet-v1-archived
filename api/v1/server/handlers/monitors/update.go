@@ -31,6 +31,15 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	monitor, _ := r.Context().Value(types.MonitorScope).(*models.ModuleMonitor)
 
+	if monitor.IsDefault {
+		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: fmt.Sprintf("Cannot update default modules"),
+		}, http.StatusBadRequest))
+
+		return
+	}
+
 	req := &types.UpdateMonitorRequest{}
 
 	if ok := m.DecodeAndValidate(w, r, req); !ok {

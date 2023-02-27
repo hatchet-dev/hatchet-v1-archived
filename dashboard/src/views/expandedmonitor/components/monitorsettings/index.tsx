@@ -6,6 +6,7 @@ import {
   Placeholder,
   Spinner,
   SectionArea,
+  SmallSpan,
 } from "@hatchet-dev/hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import EnvVars, { getInternalEnvVars, newEnvVarAtom } from "components/envvars";
@@ -117,6 +118,17 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
       setErr(err.error.errors[0].description);
     },
   });
+
+  if (monitor.is_default) {
+    return (
+      <Placeholder>
+        <SmallSpan>
+          Cannot update settings for default monitors. Contact your Hatchet
+          administrator to update default monitors.
+        </SmallSpan>
+      </Placeholder>
+    );
+  }
 
   return (
     <MonitorSettingsContainer>

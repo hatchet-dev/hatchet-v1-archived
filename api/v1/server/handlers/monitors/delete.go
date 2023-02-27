@@ -1,6 +1,7 @@
 package monitors
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -27,6 +28,15 @@ func NewMonitorDeleteHandler(
 
 func (m *MonitorDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	monitor, _ := r.Context().Value(types.MonitorScope).(*models.ModuleMonitor)
+
+	if monitor.IsDefault {
+		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+			Code:        types.ErrCodeBadRequest,
+			Description: fmt.Sprintf("Cannot delete default modules"),
+		}, http.StatusBadRequest))
+
+		return
+	}
 
 	monitor, err := m.Repo().ModuleMonitor().DeleteModuleMonitor(monitor)
 
