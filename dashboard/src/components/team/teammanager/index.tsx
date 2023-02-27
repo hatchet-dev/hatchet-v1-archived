@@ -44,15 +44,17 @@ const TeamManager: React.FunctionComponent<Props> = ({
 
   const mutation = useMutation({
     mutationKey: ["create_team", currOrg.id],
-    mutationFn: (team: CreateTeamRequest) => {
-      return api.createTeam(currOrg.id, team);
+    mutationFn: async (team: CreateTeamRequest) => {
+      const res = await api.createTeam(currOrg.id, team);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

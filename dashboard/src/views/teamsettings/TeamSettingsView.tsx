@@ -24,33 +24,6 @@ const TeamSettingsView: React.FunctionComponent = () => {
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const [err, setErr] = useState("");
 
-  // const { data, isLoading, refetch } = useQuery({
-  //   queryKey: ["current_organization_members", currOrg.id],
-  //   queryFn: async () => {
-  //     const res = await api.listOrgMembers(currOrg.id);
-  //     return res;
-  //   },
-  //   retry: false,
-  // });
-
-  // const mutation = useMutation({
-  //   mutationKey: ["create_organization_invite", currOrg.id],
-  //   mutationFn: (invite: CreateOrgMemberInviteRequest) => {
-  //     return api.createOrgMemberInvite(currOrg.id, invite);
-  //   },
-  //   onSuccess: (data) => {
-  //     setErr("");
-  //     refetch();
-  //   },
-  //   onError: (err: any) => {
-  //     if (!err.error.errors || err.error.errors.length == 0) {
-  //       setErr("An unexpected error occurred. Please try again.");
-  //     }
-
-  //     setErr(err.error.errors[0].description);
-  //   },
-  // });
-
   return (
     <FlexColCenter height={"100%"}>
       <FlexColScroll width="100%" maxWidth="840px" height={"100%"}>

@@ -77,6 +77,22 @@ func (repo *ModuleRepository) ListModulesByTeamID(teamID string, opts ...reposit
 	return mods, paginatedResult, nil
 }
 
+func (repo *ModuleRepository) ListModulesByIDs(teamID string, ids []string, opts ...repository.QueryOption) ([]*models.Module, *repository.PaginatedResult, repository.RepositoryError) {
+	var mods []*models.Module
+
+	db := repo.db.Model(&models.Module{}).Where("team_id = ? AND id IN (?)", teamID, ids)
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
+
+	if err := db.Preload("DeploymentConfig").Find(&mods).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return mods, paginatedResult, nil
+}
+
 func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
 	var mods []*models.Module
 

@@ -272,18 +272,18 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/monitors/:monitor"
+            path="/team/:team/monitors/create/:step"
             render={() => (
               <WrappedTeamContents>
-                <ExpandedMonitorView />
+                <CreateMonitorView />
               </WrappedTeamContents>
             )}
           ></Route>
           <Route
-            path="/team/:team/monitors/create"
+            path="/team/:team/monitors/:monitor"
             render={() => (
               <WrappedTeamContents>
-                <CreateMonitorView />
+                <ExpandedMonitorView />
               </WrappedTeamContents>
             )}
           ></Route>

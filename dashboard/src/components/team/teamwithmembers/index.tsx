@@ -74,8 +74,9 @@ const TeamWithMembers: React.FC<Props> = ({
 
   const addTeamMemberMutation = useMutation({
     mutationKey: ["add_team_member", team.id],
-    mutationFn: (member: AddTeamMemberRequest) => {
-      return api.addTeamMember(team.id, member);
+    mutationFn: async (member: AddTeamMemberRequest) => {
+      const res = await api.addTeamMember(team.id, member);
+      return res;
     },
     onSuccess: (data) => {
       setAddMemberErr("");
@@ -92,16 +93,18 @@ const TeamWithMembers: React.FC<Props> = ({
 
   const deleteTeamMemberMutation = useMutation({
     mutationKey: ["delete_team_member", team.id],
-    mutationFn: (member_id: string) => {
-      return api.deleteTeamMember(team.id, member_id);
+    mutationFn: async (member_id: string) => {
+      const res = await api.deleteTeamMember(team.id, member_id);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
       refetch();
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

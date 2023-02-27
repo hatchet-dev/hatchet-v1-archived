@@ -20,8 +20,9 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
 
   const { mutate, isLoading } = useMutation({
     mutationKey: ["update_organization", currOrg.id],
-    mutationFn: (orgUpdate: UpdateOrganizationRequest) => {
-      return api.updateOrganization(currOrg.id, orgUpdate);
+    mutationFn: async (orgUpdate: UpdateOrganizationRequest) => {
+      const res = await api.updateOrganization(currOrg.id, orgUpdate);
+      return res;
     },
     onSuccess: (data) => {
       if (data?.data) {
@@ -29,8 +30,9 @@ const OrganizationMetaForm: React.FunctionComponent = () => {
       }
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

@@ -82,7 +82,7 @@ const MonitoringView: React.FunctionComponent = () => {
   };
 
   const handleCreateMonitorClick = () => {
-    history.push(`/team/${currTeam.id}/monitors/create`);
+    history.push(`/team/${currTeam.id}/monitors/create/step_1`);
   };
 
   const tableData =

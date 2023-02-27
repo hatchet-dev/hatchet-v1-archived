@@ -199,8 +199,9 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
 
   const mutation = useMutation({
     mutationKey: ["update_module", team_id, module_id],
-    mutationFn: (request: UpdateModuleRequest) => {
-      return api.updateModule(team_id, module_id, request);
+    mutationFn: async (request: UpdateModuleRequest) => {
+      const res = await api.updateModule(team_id, module_id, request);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
@@ -210,8 +211,9 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
       envVarsQuery.refetch();
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

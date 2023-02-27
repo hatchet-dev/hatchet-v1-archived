@@ -59,6 +59,7 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	// create the result in the database, and associate it with this module run
 	result := &models.ModuleMonitorResult{
+		TeamID:          team.ID,
 		ModuleID:        module.ID,
 		ModuleRunID:     run.ID,
 		ModuleMonitorID: monitor.ID,

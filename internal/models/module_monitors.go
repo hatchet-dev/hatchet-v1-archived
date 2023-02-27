@@ -34,6 +34,9 @@ type ModuleMonitor struct {
 	PresetPolicyName ModuleMonitorPresetPolicyName
 	PolicyBytes      []byte
 
+	// A list of modules to target. If left empty, targets all modules.
+	Modules []Module `gorm:"many2many:monitors_to_modules;"`
+
 	MatchChildModules []byte
 	MatchProviders    []byte
 	MatchResources    []byte

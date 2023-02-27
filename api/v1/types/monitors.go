@@ -86,10 +86,18 @@ type CreateMonitorResultRequest struct {
 
 // swagger:model
 type CreateMonitorRequest struct {
-	Name         string `json:"name" form:"required"`
-	CronSchedule string `json:"cron_schedule" form:"required"`
-	PolicyBytes  string `json:"policy_bytes" form:"required"`
+	Name         string            `json:"name" form:"required"`
+	Description  string            `json:"description" form:"required"`
+	Kind         ModuleMonitorKind `json:"kind" form:"required,oneof=plan state before_plan after_plan before_apply after_apply before_destroy after_destroy"`
+	CronSchedule string            `json:"cron_schedule" form:"required,cron"`
+	PolicyBytes  string            `json:"policy_bytes" form:"required"`
+
+	// A list of module ids. If empty or omitted, this monitor targets all modules.
+	Modules []string `json:"modules,omitempty"`
 }
+
+// swagger:model
+type CreateMonitorResponse ModuleMonitor
 
 // swagger:model
 type GetMonitorResponse ModuleMonitor

@@ -15,6 +15,9 @@ type ModuleRepository interface {
 	// ListModulesByTeamID lists all modules for a team
 	ListModulesByTeamID(teamID string, opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)
 
+	// ListModulesByIDs lists all modules matching a list of IDs
+	ListModulesByIDs(teamID string, ids []string, opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)
+
 	// ListGithubRepositoryModules lists modules that use the github deployment mechanism belonging
 	// to a specific repo owner and name
 	ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, RepositoryError)

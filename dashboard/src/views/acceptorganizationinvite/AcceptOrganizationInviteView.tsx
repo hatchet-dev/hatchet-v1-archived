@@ -40,16 +40,18 @@ const AcceptOrganizationInviteView: React.FunctionComponent = () => {
 
   const acceptMutation = useMutation({
     mutationKey: ["accept_invite"],
-    mutationFn: () => {
-      return api.acceptOrgMemberInvite(tokenId, token);
+    mutationFn: async () => {
+      const res = await api.acceptOrgMemberInvite(tokenId, token);
+      return res;
     },
     onSuccess: (data) => {
       setSuccess(true);
       history.push("/");
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

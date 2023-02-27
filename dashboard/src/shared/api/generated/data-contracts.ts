@@ -189,12 +189,18 @@ export interface CreateModuleValuesRequestGithub {
   path: string;
 }
 
-/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","name":"name"} */
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","kind":"kind","name":"name","description":"description","modules":["modules","modules"]} */
 export interface CreateMonitorRequest {
   cron_schedule?: string;
+  description?: string;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
   name?: string;
   policy_bytes?: string;
 }
+
+export type CreateMonitorResponse = ModuleMonitor;
 
 /** @example {"severity":"severity","success_message":"success_message","title":"title","MonitorID":"MonitorID","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
 export interface CreateMonitorResultRequest {
@@ -1418,6 +1424,10 @@ export interface CreateTerraformPlanRequest {
 
 export interface CreateMonitorRequest {
   cron_schedule?: string;
+  description?: string;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
   name?: string;
   policy_bytes?: string;
 }

@@ -26,7 +26,7 @@ func (repo *ModuleMonitorRepository) CreateModuleMonitor(monitor *models.ModuleM
 func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(teamID, moduleMonitorID string) (*models.ModuleMonitor, repository.RepositoryError) {
 	monitor := &models.ModuleMonitor{}
 
-	if err := repo.db.Where("team_id = ? AND id = ?", teamID, moduleMonitorID).First(&monitor).Error; err != nil {
+	if err := repo.db.Preload("Modules").Where("team_id = ? AND id = ?", teamID, moduleMonitorID).First(&monitor).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -36,7 +36,7 @@ func (repo *ModuleMonitorRepository) ReadModuleMonitorByID(teamID, moduleMonitor
 func (repo *ModuleMonitorRepository) ListModuleMonitorsByTeamID(teamID string, opts ...repository.QueryOption) ([]*models.ModuleMonitor, *repository.PaginatedResult, repository.RepositoryError) {
 	var results []*models.ModuleMonitor
 
-	query := repo.db.Model(&models.ModuleMonitor{}).Where("team_id = ?", teamID)
+	query := repo.db.Preload("Modules").Model(&models.ModuleMonitor{}).Where("team_id = ?", teamID)
 
 	paginatedResult := &repository.PaginatedResult{}
 

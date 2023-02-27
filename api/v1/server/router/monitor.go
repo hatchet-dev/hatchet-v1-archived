@@ -65,6 +65,8 @@ func GetMonitorRoutes(
 	// responses:
 	//   '200':
 	//     description: Successfully created the monitor
+	//     schema:
+	//       $ref: '#/definitions/CreateMonitorResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:

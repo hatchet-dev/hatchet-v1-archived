@@ -48,10 +48,26 @@ func (md *MonitorDispatcher) DispatchMonitors(ctx workflow.Context, input Monito
 		return "", err
 	}
 
-	mods, _, err := repo.Module().ListModulesByTeamID(team.ID)
+	var mods []*models.Module
 
-	if err != nil {
-		return "", err
+	if len(monitor.Modules) > 0 {
+		monitorModuleIDs := make([]string, 0)
+
+		for _, monitorMod := range monitor.Modules {
+			monitorModuleIDs = append(monitorModuleIDs, monitorMod.ID)
+		}
+
+		mods, _, err = repo.Module().ListModulesByIDs(team.ID, monitorModuleIDs)
+
+		if err != nil {
+			return "", err
+		}
+	} else {
+		mods, _, err = repo.Module().ListModulesByTeamID(team.ID)
+
+		if err != nil {
+			return "", err
+		}
 	}
 
 	retrypolicy := &temporal.RetryPolicy{
