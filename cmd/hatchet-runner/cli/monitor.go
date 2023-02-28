@@ -22,7 +22,7 @@ var monitorCmd = &cobra.Command{
 var monitorStateCmd = &cobra.Command{
 	Use: "state",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runMonitorState()
+		err := runMonitorFunc(action.MonitorState)
 
 		if err != nil {
 			red := color.New(color.FgRed)
@@ -35,7 +35,7 @@ var monitorStateCmd = &cobra.Command{
 var monitorPlanCmd = &cobra.Command{
 	Use: "plan",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runMonitorPlan()
+		err := runMonitorFunc(action.MonitorPlan)
 
 		if err != nil {
 			red := color.New(color.FgRed)
@@ -48,11 +48,50 @@ var monitorPlanCmd = &cobra.Command{
 var monitorBeforePlanCmd = &cobra.Command{
 	Use: "before-plan",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runMonitorBeforePlan()
+		err := runMonitorFunc(action.MonitorBeforePlan)
 
 		if err != nil {
 			red := color.New(color.FgRed)
 			red.Println("Error running [monitor before-plan]:", err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var monitorAfterPlanCmd = &cobra.Command{
+	Use: "after-plan",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runMonitorFunc(action.MonitorAfterPlan)
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Println("Error running [monitor after-plan]:", err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var monitorBeforeApplyCmd = &cobra.Command{
+	Use: "before-apply",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runMonitorFunc(action.MonitorBeforeApply)
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Println("Error running [monitor before-apply]:", err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var monitorAfterApplyCmd = &cobra.Command{
+	Use: "after-apply",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runMonitorFunc(action.MonitorAfterApply)
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Println("Error running [monitor before-apply]:", err.Error())
 			os.Exit(1)
 		}
 	},
@@ -63,9 +102,12 @@ func init() {
 	monitorCmd.AddCommand(monitorStateCmd)
 	monitorCmd.AddCommand(monitorPlanCmd)
 	monitorCmd.AddCommand(monitorBeforePlanCmd)
+	monitorCmd.AddCommand(monitorAfterPlanCmd)
+	monitorCmd.AddCommand(monitorBeforeApplyCmd)
+	monitorCmd.AddCommand(monitorAfterApplyCmd)
 }
 
-func runMonitorState() error {
+func runMonitorFunc(f action.MonitorFunc) error {
 	configLoader := &loader.EnvConfigLoader{}
 	rc, err := configLoader.LoadRunnerConfigFromEnv()
 
@@ -93,129 +135,7 @@ func runMonitorState() error {
 		return err
 	}
 
-	res, err := action.MonitorState(rc, policyBytes)
-
-	if err != nil {
-		return err
-	}
-
-	res.MonitorID = rc.ConfigFile.ModuleMonitorID
-
-	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
-		context.Background(),
-		swagger.CreateMonitorResultRequest{
-			MonitorID:       rc.ConfigFile.ModuleMonitorID,
-			FailureMessages: res.FailureMessages,
-			SuccessMessage:  res.SuccessMessage,
-			Severity:        res.Severity,
-			Status:          res.Status,
-			Title:           res.Title,
-		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
-	)
-
-	if res.Status == "failed" {
-		err := fmt.Errorf("Monitor failed") // TODO: better error message
-		errorHandler(rc, err.Error())
-
-		return err
-	}
-
-	return nil
-}
-
-func runMonitorPlan() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
-
-	if err != nil {
-		return err
-	}
-
-	err = downloadGithubRepoContents(rc)
-
-	if err != nil {
-		return err
-	}
-
-	writer, err := getWriter(rc)
-
-	if err != nil {
-		return err
-	}
-
-	action := action.NewRunnerAction(writer, errorHandler)
-
-	policyBytes, err := downloadMonitorPolicy(rc)
-
-	if err != nil {
-		return err
-	}
-
-	res, err := action.MonitorPlan(rc, policyBytes)
-
-	if err != nil {
-		return err
-	}
-
-	res.MonitorID = rc.ConfigFile.ModuleMonitorID
-
-	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
-		context.Background(),
-		swagger.CreateMonitorResultRequest{
-			MonitorID:       rc.ConfigFile.ModuleMonitorID,
-			FailureMessages: res.FailureMessages,
-			SuccessMessage:  res.SuccessMessage,
-			Severity:        res.Severity,
-			Status:          res.Status,
-			Title:           res.Title,
-		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
-	)
-
-	if res.Status == "failed" {
-		err := fmt.Errorf("Monitor failed") // TODO: better error message
-		errorHandler(rc, err.Error())
-
-		return err
-	}
-
-	return nil
-}
-
-func runMonitorBeforePlan() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
-
-	if err != nil {
-		return err
-	}
-
-	err = downloadGithubRepoContents(rc)
-
-	if err != nil {
-		return err
-	}
-
-	writer, err := getWriter(rc)
-
-	if err != nil {
-		return err
-	}
-
-	action := action.NewRunnerAction(writer, errorHandler)
-
-	policyBytes, err := downloadMonitorPolicy(rc)
-
-	if err != nil {
-		return err
-	}
-
-	res, err := action.MonitorBeforePlan(rc, policyBytes)
+	res, err := f(action, rc, policyBytes)
 
 	if err != nil {
 		return err

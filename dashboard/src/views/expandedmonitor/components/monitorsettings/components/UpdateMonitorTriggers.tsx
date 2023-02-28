@@ -29,9 +29,14 @@ const UpdateMonitorTriggers: React.FC<Props> = ({
   setMonitorKind,
   setMonitorSchedule,
 }) => {
+  const [kind, setKind] = useState(monitor.kind);
+
   const selectKind = (option: Selection) => {
     setMonitorKind(option.value);
+    setKind(option.value);
   };
+
+  const isCronMonitor = kind == "plan" || kind == "state";
 
   return (
     <>
@@ -47,17 +52,21 @@ const UpdateMonitorTriggers: React.FC<Props> = ({
         options={MonitorKindOptions}
         select={selectKind}
       />
-      <HorizontalSpacer spacepixels={20} />
-      <P>Provide a cron schedule to run these policy checks.</P>
-      <HorizontalSpacer spacepixels={12} />
-      <TextInput
-        placeholder="ex. * * * * *"
-        initial_value={monitor.cron_schedule}
-        width="400px"
-        on_change={(val) => {
-          setMonitorSchedule(val);
-        }}
-      />
+      {isCronMonitor && (
+        <>
+          <HorizontalSpacer spacepixels={20} />
+          <P>Provide a cron schedule to run these policy checks.</P>
+          <HorizontalSpacer spacepixels={12} />
+          <TextInput
+            placeholder="ex. * * * * *"
+            initial_value={monitor.cron_schedule}
+            width="400px"
+            on_change={(val) => {
+              setMonitorSchedule(val);
+            }}
+          />
+        </>
+      )}
     </>
   );
 };

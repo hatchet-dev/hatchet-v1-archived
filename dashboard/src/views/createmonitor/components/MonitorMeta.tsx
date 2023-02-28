@@ -42,6 +42,21 @@ export const MonitorKindOptions = [
     value: "before_plan",
     material_icon: "check",
   },
+  {
+    label: "After Plan",
+    value: "after_plan",
+    material_icon: "check",
+  },
+  {
+    label: "Before Apply",
+    value: "before_apply",
+    material_icon: "check",
+  },
+  {
+    label: "After Apply",
+    value: "after_apply",
+    material_icon: "check",
+  },
 ];
 
 const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
@@ -102,7 +117,7 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
     setKind(option.value);
   };
 
-  const isCronMonitor = request.kind == "plan" || request.kind == "apply";
+  const isCronMonitor = request.kind == "plan" || request.kind == "state";
 
   const submitEnabled =
     !!request.name &&

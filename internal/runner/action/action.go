@@ -41,39 +41,13 @@ func (r *RunnerAction) Apply(
 
 	// download plan, if github commit sha is passed in
 	if config.ConfigFile.GithubSHA != "" {
-		resp, _, err := config.FileClient.GetPlanByCommitSHA(
-			config.ConfigFile.TeamID,
-			config.ConfigFile.ModuleID,
-			config.ConfigFile.ModuleRunID,
-		)
-
-		if resp != nil {
-			defer resp.Close()
-		}
-
-		if err != nil {
-			r.errHandler(config, fmt.Sprintf("Could not get plan to apply"))
-
-			return nil, err
-		}
-
-		fileBytes, err := ioutil.ReadAll(resp)
-
-		if err != nil {
-			r.errHandler(config, "")
-
-			return nil, err
-		}
-
-		err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, "./plan.tfplan"), fileBytes, 0666)
-
-		if err != nil {
-			r.errHandler(config, "")
-
-			return nil, err
-		}
-
 		planPath = "./plan.tfplan"
+
+		err := r.downloadPlanToFile(config, planPath)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
@@ -150,11 +124,70 @@ func (r *RunnerAction) Plan(
 	return zipOut, prettyOut, jsonOut, nil
 }
 
-func (r *RunnerAction) MonitorState(
+type MonitorFunc func(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error)
+
+func MonitorState(
+	r *RunnerAction,
 	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	// get the state as JSON
+	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+func MonitorPlan(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+func MonitorBeforePlan(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(config, policyBytes, r.populateVariables, r.populateState)
+}
+
+func MonitorAfterPlan(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+func MonitorBeforeApply(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+func MonitorAfterApply(
+	r *RunnerAction,
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+type populatorFunc func(
+	config *runner.Config,
+	input map[string]interface{},
+) error
+
+func (r *RunnerAction) monitor(
+	config *runner.Config,
+	policyBytes []byte,
+	populators ...populatorFunc,
+) (*types.CreateMonitorResultRequest, error) {
 	if !commandExists("terraform") {
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
@@ -165,10 +198,33 @@ func (r *RunnerAction) MonitorState(
 		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
 	}
 
+	input := make(map[string]interface{})
+
+	for _, f := range populators {
+		err = f(config, input)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+	}
+
+	return opa.RunMonitorQuery(opaQuery, input)
+}
+
+func (r *RunnerAction) populateState(
+	config *runner.Config,
+	input map[string]interface{},
+) error {
 	stateBytes, err := r.showStateJSON(config)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
+		return r.errHandler(config, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
 	}
 
 	state := make(map[string]interface{})
@@ -176,55 +232,39 @@ func (r *RunnerAction) MonitorState(
 	err = json.Unmarshal(stateBytes, &state)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
+		return r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
 	}
 
-	monitorStateInput := map[string]interface{}{
-		"state": state,
-	}
+	input["state"] = state
 
-	// load opa query
-	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
-
-	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
-	}
-
-	return opa.RunMonitorQuery(opaQuery, monitorStateInput)
+	return nil
 }
 
-func (r *RunnerAction) MonitorPlan(
+func (r *RunnerAction) populatePlan(
 	config *runner.Config,
-	policyBytes []byte,
-) (*types.CreateMonitorResultRequest, error) {
-	// get the state as JSON
-	if !commandExists("terraform") {
-		return nil, fmt.Errorf("terraform cli command does not exist")
-	}
+	input map[string]interface{},
+) error {
+	// if there's a github SHA that we can retrieve the plan from, download the plan to a file
+	if config.ConfigFile.GithubSHA != "" {
+		planPath := "./plan.tfplan"
 
-	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
+		err := r.downloadPlanToFile(config, planPath)
 
-	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
-		return nil, err
-	}
+		if err != nil {
+			return err
+		}
+	} else {
+		err := r.plan(config, "./tfvars.json")
 
-	err = r.reInit(config)
-
-	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
-	}
-
-	err = r.plan(config, "./tfvars.json")
-
-	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
+		if err != nil {
+			return r.errHandler(config, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
+		}
 	}
 
 	planBytes, err := r.showJSON(config)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
+		return r.errHandler(config, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
 	}
 
 	plan := make(map[string]interface{})
@@ -232,51 +272,64 @@ func (r *RunnerAction) MonitorPlan(
 	err = json.Unmarshal(planBytes, &plan)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
+		return r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
 	}
 
-	monitorPlanInput := map[string]interface{}{
-		"plan": plan,
-	}
+	input["plan"] = plan
 
-	// load opa query
-	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
-
-	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
-	}
-
-	return opa.RunMonitorQuery(opaQuery, monitorPlanInput)
+	return nil
 }
 
-func (r *RunnerAction) MonitorBeforePlan(
+func (r *RunnerAction) populateVariables(
 	config *runner.Config,
-	policyBytes []byte,
-) (*types.CreateMonitorResultRequest, error) {
-	// get the state as JSON
-	if !commandExists("terraform") {
-		return nil, fmt.Errorf("terraform cli command does not exist")
-	}
-
-	vals, err := r.getModuleValues(config)
+	input map[string]interface{},
+) error {
+	vars, err := r.getModuleValues(config)
 
 	if err != nil {
 		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
-		return nil, err
+		return err
 	}
 
-	monitorBeforePlanInput := map[string]interface{}{
-		"variables": vals,
-	}
+	input["variables"] = vars
 
-	// load opa query
-	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
+	return nil
+}
+
+func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string) error {
+	resp, _, err := config.FileClient.GetPlanByCommitSHA(
+		config.ConfigFile.TeamID,
+		config.ConfigFile.ModuleID,
+		config.ConfigFile.ModuleRunID,
+	)
+
+	if resp != nil {
+		defer resp.Close()
+	}
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+		r.errHandler(config, fmt.Sprintf("Could not get plan to apply"))
+
+		return err
 	}
 
-	return opa.RunMonitorQuery(opaQuery, monitorBeforePlanInput)
+	fileBytes, err := ioutil.ReadAll(resp)
+
+	if err != nil {
+		r.errHandler(config, "")
+
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, planPath), fileBytes, 0666)
+
+	if err != nil {
+		r.errHandler(config, "")
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *RunnerAction) downloadModuleValuesToFile(config *runner.Config, relPath string) error {

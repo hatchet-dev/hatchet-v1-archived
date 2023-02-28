@@ -79,6 +79,12 @@ func (mr *ModuleRunner) Monitor(ctx context.Context, input MonitorInput) (string
 		err = mr.conf.DefaultProvisioner.RunPlanMonitor(input.Opts, input.ModuleMonitorID, nil)
 	case models.MonitorKindBeforePlan:
 		err = mr.conf.DefaultProvisioner.RunBeforePlanMonitor(input.Opts, input.ModuleMonitorID, nil)
+	case models.MonitorKindAfterPlan:
+		err = mr.conf.DefaultProvisioner.RunAfterPlanMonitor(input.Opts, input.ModuleMonitorID, nil)
+	case models.MonitorKindBeforeApply:
+		err = mr.conf.DefaultProvisioner.RunBeforeApplyMonitor(input.Opts, input.ModuleMonitorID, nil)
+	case models.MonitorKindAfterApply:
+		err = mr.conf.DefaultProvisioner.RunAfterApplyMonitor(input.Opts, input.ModuleMonitorID, nil)
 	default:
 		return "", fmt.Errorf("not a supported monitor type")
 	}

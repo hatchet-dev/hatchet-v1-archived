@@ -75,6 +75,42 @@ func (l *LocalProvisioner) RunBeforePlanMonitor(opts *provisioner.ProvisionOpts,
 	return nil
 }
 
+func (l *LocalProvisioner) RunAfterPlanMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
+	runFunc := l.getMonitorFunc(opts, monitorID, policy, "after-plan")
+
+	if opts.WaitForRunFinished {
+		return runFunc()
+	} else {
+		go runFunc()
+	}
+
+	return nil
+}
+
+func (l *LocalProvisioner) RunBeforeApplyMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
+	runFunc := l.getMonitorFunc(opts, monitorID, policy, "before-apply")
+
+	if opts.WaitForRunFinished {
+		return runFunc()
+	} else {
+		go runFunc()
+	}
+
+	return nil
+}
+
+func (l *LocalProvisioner) RunAfterApplyMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
+	runFunc := l.getMonitorFunc(opts, monitorID, policy, "after-apply")
+
+	if opts.WaitForRunFinished {
+		return runFunc()
+	} else {
+		go runFunc()
+	}
+
+	return nil
+}
+
 func (l *LocalProvisioner) getRunFunc(opts *provisioner.ProvisionOpts, arg string) func() error {
 	return func() error {
 		cmdProv := exec.Command("./bin/hatchet-runner", arg)
