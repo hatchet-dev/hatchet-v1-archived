@@ -62,6 +62,10 @@ type ModuleRun struct {
 	ModuleRunConfig *ModuleRunConfig `json:"config,omitempty"`
 
 	ModuleRunPullRequest *GithubPullRequest `json:"github_pull_request,omitempty"`
+
+	Monitors []ModuleMonitor `json:"monitors,omitempty"`
+
+	MonitorResults []ModuleMonitorResult `json:"monitor_results,omitempty"`
 }
 
 type ModuleRunTriggerKind string

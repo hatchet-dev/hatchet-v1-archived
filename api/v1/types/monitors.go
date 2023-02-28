@@ -99,7 +99,7 @@ type CreateMonitorRequest struct {
 	Name         string            `json:"name" form:"required"`
 	Description  string            `json:"description" form:"required"`
 	Kind         ModuleMonitorKind `json:"kind" form:"required,oneof=plan state before_plan after_plan before_apply after_apply before_destroy after_destroy"`
-	CronSchedule string            `json:"cron_schedule" form:"required,cron"`
+	CronSchedule string            `json:"cron_schedule" form:"omitempty,required_if=Kind plan,required_if=Kind state,cron"`
 	PolicyBytes  string            `json:"policy_bytes" form:"required"`
 
 	// A list of module ids. If empty or omitted, this monitor targets all modules.

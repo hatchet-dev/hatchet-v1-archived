@@ -36,6 +36,11 @@ export const MonitorKindOptions = [
     value: "state",
     material_icon: "schedule",
   },
+  {
+    label: "Before Plan",
+    value: "before_plan",
+    material_icon: "check",
+  },
 ];
 
 const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
@@ -94,11 +99,13 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
     setKind(option.value);
   };
 
+  const isCronMonitor = request.kind == "plan" || request.kind == "apply";
+
   const submitEnabled =
     !!request.name &&
     !!request.description &&
     !!request.kind &&
-    !!request.cron_schedule;
+    (!isCronMonitor || (isCronMonitor && !!request.cron_schedule));
 
   return (
     <>
@@ -146,15 +153,19 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
           options={MonitorKindOptions}
           select={selectKind}
         />
-        <HorizontalSpacer spacepixels={20} />
-        <P>Provide a cron schedule to run these policy checks.</P>
-        <HorizontalSpacer spacepixels={12} />
-        <TextInput
-          placeholder="ex. * * * * *"
-          on_change={(val) => {
-            setSchedule(val);
-          }}
-        />
+        {isCronMonitor && (
+          <>
+            <HorizontalSpacer spacepixels={20} />
+            <P>Provide a cron schedule to run these policy checks.</P>
+            <HorizontalSpacer spacepixels={12} />
+            <TextInput
+              placeholder="ex. * * * * *"
+              on_change={(val) => {
+                setSchedule(val);
+              }}
+            />
+          </>
+        )}
         <HorizontalSpacer spacepixels={20} />
         <P>Provide a list of modules that this monitor should trigger on.</P>
         <HorizontalSpacer spacepixels={12} />

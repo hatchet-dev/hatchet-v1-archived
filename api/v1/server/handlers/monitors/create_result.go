@@ -11,6 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/runutils"
 )
 
 type MonitorResultCreateHandler struct {
@@ -31,16 +32,6 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
-
-	// if the run is not of kind "monitor", throw an error
-	if run.Kind != models.ModuleRunKindMonitor {
-		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
-			Description: fmt.Sprintf("results can only be reported for runs with \"monitor\" type"),
-			Code:        types.ErrCodeBadRequest,
-		}, http.StatusBadRequest))
-
-		return
-	}
 
 	req := &types.CreateMonitorResultRequest{}
 
@@ -80,6 +71,27 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
 		return
+	}
+
+	// if the module run has a "monitor" kind, update the module run as well
+	if run.Kind == models.ModuleRunKindMonitor {
+		run.Status = models.ModuleRunStatusCompleted
+
+		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
+
+		run.StatusDescription = desc
+
+		run, err = m.Repo().Module().UpdateModuleRun(run)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

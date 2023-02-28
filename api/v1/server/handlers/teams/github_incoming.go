@@ -15,6 +15,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/monitors"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/runmanager"
@@ -410,6 +411,21 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			continue
 		}
 
+		// get all monitors for this run
+		runMonitors, err := monitors.GetAllMonitorsForModuleRun(g.Repo(), mod.TeamID, run)
+
+		if err != nil {
+			err = multierror.Append(err)
+			continue
+		}
+
+		run, err = g.Repo().Module().AppendModuleRunMonitors(run, runMonitors)
+
+		if err != nil {
+			err = multierror.Append(err)
+			continue
+		}
+
 		err = g.Config().ModuleRunQueueManager.Enqueue(mod, run, &queuemanager.LockOpts{
 			LockID:   headBranch,
 			LockKind: models.ModuleLockKindGithubBranch,
@@ -561,6 +577,19 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 	run.StatusDescription = desc
 
 	run, err = g.Repo().Module().CreateModuleRun(run)
+
+	if err != nil {
+		return err
+	}
+
+	// get all monitors for this run
+	runMonitors, err := monitors.GetAllMonitorsForModuleRun(g.Repo(), mod.TeamID, run)
+
+	if err != nil {
+		return err
+	}
+
+	run, err = g.Repo().Module().AppendModuleRunMonitors(run, runMonitors)
 
 	if err != nil {
 		return err

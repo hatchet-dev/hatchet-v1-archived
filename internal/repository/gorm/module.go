@@ -116,7 +116,7 @@ func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.Mo
 func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND module_runs.id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("ModuleMonitorResults").Preload("Monitors").Joins("ModuleRunConfig").Where("module_id = ? AND module_runs.id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -126,7 +126,7 @@ func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*
 func (repo *ModuleRepository) ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND lock_id != ''", moduleID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("ModuleMonitorResults").Preload("Monitors").Joins("ModuleRunConfig").Where("module_id = ? AND lock_id != ''", moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -149,8 +149,24 @@ func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA stri
 	return mods, nil
 }
 
+func (repo *ModuleRepository) AppendModuleRunMonitors(run *models.ModuleRun, monitors []*models.ModuleMonitor) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Model(run).Omit("ModuleRunConfig", "ModuleMonitorResults", "Monitors.*").Association("Monitors").Append(monitors); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
+func (repo *ModuleRepository) AppendModuleRunMonitorResult(run *models.ModuleRun, result *models.ModuleMonitorResult) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Model(run).Omit("ModuleRunConfig", "Monitors", "ModuleMonitorResults.*").Association("ModuleMonitorResults").Append(result); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
 func (repo *ModuleRepository) UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
-	if err := repo.db.Omit("ModuleRunConfig").Save(run).Error; err != nil {
+	if err := repo.db.Omit("ModuleRunConfig", "Monitors", "ModuleMonitorResults").Save(run).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

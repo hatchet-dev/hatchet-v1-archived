@@ -81,7 +81,7 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 			PolicyBytes: []byte(req.PolicyBytes),
 		}
 
-		_, err := opa.LoadQueryFromBytes(monitor.DisplayName, []byte(req.PolicyBytes))
+		_, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, []byte(req.PolicyBytes))
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{

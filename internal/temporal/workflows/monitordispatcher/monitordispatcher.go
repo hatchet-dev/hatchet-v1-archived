@@ -86,8 +86,6 @@ func (md *MonitorDispatcher) DispatchMonitors(ctx workflow.Context, input Monito
 	var resErr error
 
 	for _, mod := range mods {
-		// TODO: check if this module should be triggered
-
 		// create a new module run of kind monitor (this is read-only and thus bypasses the queue)
 		run := &models.ModuleRun{
 			ModuleID:          mod.ID,

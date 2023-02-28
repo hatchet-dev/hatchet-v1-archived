@@ -26,7 +26,7 @@ var monitorStateCmd = &cobra.Command{
 
 		if err != nil {
 			red := color.New(color.FgRed)
-			red.Println("Error running monitor:", err.Error())
+			red.Println("Error running [monitor state]:", err.Error())
 			os.Exit(1)
 		}
 	},
@@ -39,7 +39,20 @@ var monitorPlanCmd = &cobra.Command{
 
 		if err != nil {
 			red := color.New(color.FgRed)
-			red.Println("Error running monitor:", err.Error())
+			red.Println("Error running [monitor plan]:", err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var monitorBeforePlanCmd = &cobra.Command{
+	Use: "before-plan",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runMonitorBeforePlan()
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Println("Error running [monitor before-plan]:", err.Error())
 			os.Exit(1)
 		}
 	},
@@ -49,6 +62,7 @@ func init() {
 	rootCmd.AddCommand(monitorCmd)
 	monitorCmd.AddCommand(monitorStateCmd)
 	monitorCmd.AddCommand(monitorPlanCmd)
+	monitorCmd.AddCommand(monitorBeforePlanCmd)
 }
 
 func runMonitorState() error {
@@ -102,13 +116,14 @@ func runMonitorState() error {
 		rc.ConfigFile.ModuleRunID,
 	)
 
-	if err != nil {
-		errorHandler(rc, fmt.Sprintf("Could not report monitor result to server"))
+	if res.Status == "failed" {
+		err := fmt.Errorf("Monitor failed") // TODO: better error message
+		errorHandler(rc, err.Error())
 
 		return err
 	}
 
-	return successHandler(rc, "")
+	return nil
 }
 
 func runMonitorPlan() error {
@@ -162,13 +177,81 @@ func runMonitorPlan() error {
 		rc.ConfigFile.ModuleRunID,
 	)
 
+	if res.Status == "failed" {
+		err := fmt.Errorf("Monitor failed") // TODO: better error message
+		errorHandler(rc, err.Error())
+
+		return err
+	}
+
+	return nil
+}
+
+func runMonitorBeforePlan() error {
+	configLoader := &loader.EnvConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfigFromEnv()
+
+	if err != nil {
+		return err
+	}
+
+	err = downloadGithubRepoContents(rc)
+
+	if err != nil {
+		return err
+	}
+
+	writer, err := getWriter(rc)
+
+	if err != nil {
+		return err
+	}
+
+	action := action.NewRunnerAction(writer, errorHandler)
+
+	policyBytes, err := downloadMonitorPolicy(rc)
+
+	if err != nil {
+		return err
+	}
+
+	res, err := action.MonitorBeforePlan(rc, policyBytes)
+
+	if err != nil {
+		return err
+	}
+
+	res.MonitorID = rc.ConfigFile.ModuleMonitorID
+
+	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
+		context.Background(),
+		swagger.CreateMonitorResultRequest{
+			MonitorID:       rc.ConfigFile.ModuleMonitorID,
+			FailureMessages: res.FailureMessages,
+			SuccessMessage:  res.SuccessMessage,
+			Severity:        res.Severity,
+			Status:          res.Status,
+			Title:           res.Title,
+		},
+		rc.ConfigFile.TeamID,
+		rc.ConfigFile.ModuleID,
+		rc.ConfigFile.ModuleRunID,
+	)
+
 	if err != nil {
 		errorHandler(rc, fmt.Sprintf("Could not report monitor result to server"))
 
 		return err
 	}
 
-	return successHandler(rc, "")
+	if res.Status == "failed" {
+		err := fmt.Errorf("Monitor failed") // TODO: better error message
+		errorHandler(rc, err.Error())
+
+		return err
+	}
+
+	return nil
 }
 
 func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {

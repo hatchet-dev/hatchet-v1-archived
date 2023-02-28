@@ -10,6 +10,8 @@ import (
 
 type ProvisionOpts struct {
 	Env []string
+
+	WaitForRunFinished bool
 }
 
 type Provisioner interface {
@@ -19,6 +21,7 @@ type Provisioner interface {
 
 	RunStateMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
 	RunPlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunBeforePlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
 }
 
 type GetEnvOpts struct {

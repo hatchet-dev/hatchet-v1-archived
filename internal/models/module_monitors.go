@@ -73,6 +73,20 @@ func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
 	}
 }
 
+func (m *ModuleMonitor) ShouldRunForModule(modID string) bool {
+	if m.Modules == nil || len(m.Modules) == 0 {
+		return true
+	}
+
+	for _, mod := range m.Modules {
+		if mod.ID == modID {
+			return true
+		}
+	}
+
+	return false
+}
+
 type MonitorPolicyBytesVersion struct {
 	Base
 

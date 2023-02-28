@@ -51,6 +51,12 @@ type ModuleRepository interface {
 	// UpdateModuleRun updates any modified values for a module
 	UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
 
+	// AppendModuleRunMonitors adds a list of monitors to a module run
+	AppendModuleRunMonitors(run *models.ModuleRun, monitors []*models.ModuleMonitor) (*models.ModuleRun, RepositoryError)
+
+	// AppendModuleRunMonitorResult adds a single monitor result to the module run monitor results
+	AppendModuleRunMonitorResult(run *models.ModuleRun, result *models.ModuleMonitorResult) (*models.ModuleRun, RepositoryError)
+
 	// DeleteModuleRun soft-deletes a run
 	DeleteModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)
 

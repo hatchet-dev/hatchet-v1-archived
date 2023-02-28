@@ -5,6 +5,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/queryutils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ModuleMonitorRepository struct {
@@ -16,7 +17,7 @@ func NewModuleMonitorRepository(db *gorm.DB) repository.ModuleMonitorRepository 
 }
 
 func (repo *ModuleMonitorRepository) CreateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
-	if err := repo.db.Create(monitor).Error; err != nil {
+	if err := repo.db.Omit("Modules.*").Create(monitor).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -50,7 +51,7 @@ func (repo *ModuleMonitorRepository) ListModuleMonitorsByTeamID(teamID string, o
 }
 
 func (repo *ModuleMonitorRepository) UpdateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
-	if err := repo.db.Save(monitor).Error; err != nil {
+	if err := repo.db.Omit(clause.Associations).Save(monitor).Error; err != nil {
 		return nil, err
 	}
 
@@ -66,7 +67,7 @@ func (repo *ModuleMonitorRepository) DeleteModuleMonitor(monitor *models.ModuleM
 }
 
 func (repo *ModuleMonitorRepository) CreateModuleMonitorResult(monitor *models.ModuleMonitor, result *models.ModuleMonitorResult) (*models.ModuleMonitorResult, repository.RepositoryError) {
-	if err := repo.db.Create(result).Error; err != nil {
+	if err := repo.db.Debug().Omit("Module.*").Create(result).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

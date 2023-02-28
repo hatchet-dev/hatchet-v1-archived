@@ -8,6 +8,29 @@ import (
 )
 
 func (mqc *ModuleRunner) Provision(ctx workflow.Context, input RunInput) (string, error) {
+	monitorOptions := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Minute,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: 1, // no retries for monitors
+		},
+	}
+
+	for _, monitor := range input.BeforeMonitors {
+		ctx = workflow.WithActivityOptions(ctx, monitorOptions)
+
+		var monitorRunOutput string
+
+		runErr := workflow.ExecuteActivity(ctx, "Monitor", MonitorInput{
+			ModuleMonitorID: monitor.ID,
+			Kind:            monitor.Kind,
+			Opts:            input.Opts,
+		}).Get(ctx, &monitorRunOutput)
+
+		if runErr != nil {
+			return "", runErr
+		}
+	}
+
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
 		BackoffCoefficient: 2.0,
@@ -30,15 +53,28 @@ func (mqc *ModuleRunner) Provision(ctx workflow.Context, input RunInput) (string
 		return "", runErr
 	}
 
+	for _, monitor := range input.AfterMonitors {
+		ctx = workflow.WithActivityOptions(ctx, monitorOptions)
+
+		var monitorRunOutput string
+
+		runErr := workflow.ExecuteActivity(ctx, "Monitor", MonitorInput{
+			ModuleMonitorID: monitor.ID,
+			Kind:            monitor.Kind,
+			Opts:            input.Opts,
+		}).Get(ctx, &monitorRunOutput)
+
+		if runErr != nil {
+			return "", runErr
+		}
+	}
+
 	return runOutput, nil
 }
 
 func (mqc *ModuleRunner) RunMonitor(ctx workflow.Context, input MonitorInput) (string, error) {
 	retrypolicy := &temporal.RetryPolicy{
-		InitialInterval:    time.Second,
-		BackoffCoefficient: 2.0,
-		MaximumInterval:    100 * time.Second,
-		MaximumAttempts:    0,
+		MaximumAttempts: 1,
 	}
 
 	options := workflow.ActivityOptions{

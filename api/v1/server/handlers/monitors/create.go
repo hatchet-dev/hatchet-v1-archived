@@ -45,7 +45,7 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// load the query to make sure it parses
-	_, err := opa.LoadQueryFromBytes(req.Name, []byte(req.PolicyBytes))
+	_, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, []byte(req.PolicyBytes))
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
@@ -57,13 +57,12 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	monitor := &models.ModuleMonitor{
-		TeamID:           team.ID,
-		DisplayName:      req.Name,
-		Description:      req.Description,
-		Kind:             models.ModuleMonitorKind(req.Kind),
-		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
-		CronSchedule:     req.CronSchedule,
-		Modules:          targetModules,
+		TeamID:       team.ID,
+		DisplayName:  req.Name,
+		Description:  req.Description,
+		Kind:         models.ModuleMonitorKind(req.Kind),
+		CronSchedule: req.CronSchedule,
+		Modules:      targetModules,
 		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
 			Version:     1,
 			PolicyBytes: []byte(req.PolicyBytes),
@@ -78,12 +77,14 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = dispatcher.DispatchCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, req.CronSchedule)
+	if req.Kind == types.MonitorKindPlan || req.Kind == types.MonitorKindState {
+		err = dispatcher.DispatchCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, req.CronSchedule)
 
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
-		return
+			return
+		}
 	}
 
 	m.WriteResult(w, r, monitor.ToAPIType())

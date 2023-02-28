@@ -17,7 +17,18 @@ func NewModuleRunner(config *worker.RunnerConfig) *ModuleRunner {
 	return &ModuleRunner{config}
 }
 
+type MonitorIDAndKind struct {
+	ID   string
+	Kind models.ModuleMonitorKind
+}
+
 type RunInput struct {
+	// A list of monitors to trigger before the run
+	BeforeMonitors []MonitorIDAndKind
+
+	// A list of monitors to trigger after the run
+	AfterMonitors []MonitorIDAndKind
+
 	Kind models.ModuleRunKind
 	Opts *provisioner.ProvisionOpts
 }
@@ -66,6 +77,8 @@ func (mr *ModuleRunner) Monitor(ctx context.Context, input MonitorInput) (string
 		err = mr.conf.DefaultProvisioner.RunStateMonitor(input.Opts, input.ModuleMonitorID, nil)
 	case models.MonitorKindPlan:
 		err = mr.conf.DefaultProvisioner.RunPlanMonitor(input.Opts, input.ModuleMonitorID, nil)
+	case models.MonitorKindBeforePlan:
+		err = mr.conf.DefaultProvisioner.RunBeforePlanMonitor(input.Opts, input.ModuleMonitorID, nil)
 	default:
 		return "", fmt.Errorf("not a supported monitor type")
 	}

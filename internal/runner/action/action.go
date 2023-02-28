@@ -76,7 +76,7 @@ func (r *RunnerAction) Apply(
 		planPath = "./plan.tfplan"
 	}
 
-	err := r.downloadModuleValues(config, "./tfvars.json")
+	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
 		r.errHandler(config, fmt.Sprintf("Could not download module values"))
@@ -109,7 +109,7 @@ func (r *RunnerAction) Plan(
 		return nil, nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
-	err := r.downloadModuleValues(config, "./tfvars.json")
+	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
 		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
@@ -202,7 +202,7 @@ func (r *RunnerAction) MonitorPlan(
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
-	err := r.downloadModuleValues(config, "./tfvars.json")
+	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
 		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
@@ -249,16 +249,39 @@ func (r *RunnerAction) MonitorPlan(
 	return opa.RunMonitorQuery(opaQuery, monitorPlanInput)
 }
 
-func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath string) error {
+func (r *RunnerAction) MonitorBeforePlan(
+	config *runner.Config,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	// get the state as JSON
+	if !commandExists("terraform") {
+		return nil, fmt.Errorf("terraform cli command does not exist")
+	}
+
+	vals, err := r.getModuleValues(config)
+
+	if err != nil {
+		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
+		return nil, err
+	}
+
+	monitorBeforePlanInput := map[string]interface{}{
+		"variables": vals,
+	}
+
+	// load opa query
+	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
+
+	if err != nil {
+		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+	}
+
+	return opa.RunMonitorQuery(opaQuery, monitorBeforePlanInput)
+}
+
+func (r *RunnerAction) downloadModuleValuesToFile(config *runner.Config, relPath string) error {
 	// download values
-	vals, _, err := config.APIClient.ModulesApi.GetCurrentModuleValues(
-		context.Background(),
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
-		&swagger.ModulesApiGetCurrentModuleValuesOpts{
-			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
-		},
-	)
+	vals, err := r.getModuleValues(config)
 
 	if err != nil {
 		return err
@@ -273,6 +296,23 @@ func (r *RunnerAction) downloadModuleValues(config *runner.Config, relPath strin
 	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, relPath), fileBytes, 0666)
 
 	return err
+}
+
+func (r *RunnerAction) getModuleValues(config *runner.Config) (map[string]interface{}, error) {
+	vals, _, err := config.APIClient.ModulesApi.GetCurrentModuleValues(
+		context.Background(),
+		config.ConfigFile.TeamID,
+		config.ConfigFile.ModuleID,
+		&swagger.ModulesApiGetCurrentModuleValuesOpts{
+			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return vals, nil
 }
 
 func (r *RunnerAction) reInit(config *runner.Config) error {
