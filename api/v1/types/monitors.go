@@ -38,6 +38,9 @@ type ModuleMonitorMeta struct {
 
 	// whether this monitor is a default for all modules in the team
 	IsDefault bool `json:"is_default"`
+
+	// whether the monitor is currently disabled
+	Disabled bool `json:"disabled"`
 }
 
 // swagger:model
@@ -102,6 +105,10 @@ type CreateMonitorRequest struct {
 	CronSchedule string            `json:"cron_schedule" form:"omitempty,required_if=Kind plan,required_if=Kind state,cron"`
 	PolicyBytes  string            `json:"policy_bytes" form:"required"`
 
+	// Whether the monitor is disabled. In order to turn the monitor off for all modules, set
+	// disabled=true. Passing in an empty module list will trigger this monitor for all modules.
+	Disabled bool `json:"disabled"`
+
 	// A list of module ids. If empty or omitted, this monitor targets all modules.
 	Modules []string `json:"modules,omitempty"`
 }
@@ -116,6 +123,10 @@ type UpdateMonitorRequest struct {
 	Kind         ModuleMonitorKind `json:"kind" form:"omitempty,oneof=plan state before_plan after_plan before_apply after_apply before_destroy after_destroy"`
 	CronSchedule string            `json:"cron_schedule" form:"omitempty,cron"`
 	PolicyBytes  string            `json:"policy_bytes" form:"omitempty"`
+
+	// Whether the monitor is disabled. In order to turn the monitor off for all modules, set
+	// disabled=true. Passing in an empty module list will trigger this monitor for all modules.
+	Disabled *bool `json:"disabled,omitempty"`
 
 	// A list of module ids. If empty or omitted, this monitor targets all modules.
 	Modules []string `json:"modules,omitempty"`

@@ -5,7 +5,6 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/queryutils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ModuleMonitorRepository struct {
@@ -51,8 +50,20 @@ func (repo *ModuleMonitorRepository) ListModuleMonitorsByTeamID(teamID string, o
 }
 
 func (repo *ModuleMonitorRepository) UpdateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, repository.RepositoryError) {
-	if err := repo.db.Omit(clause.Associations).Save(monitor).Error; err != nil {
+	if err := repo.db.Omit("Modules").Save(monitor).Error; err != nil {
 		return nil, err
+	}
+
+	return monitor, nil
+}
+
+func (repo *ModuleMonitorRepository) ReplaceModuleMonitorModules(monitor *models.ModuleMonitor, modules []*models.Module) (*models.ModuleMonitor, repository.RepositoryError) {
+	if err := repo.db.Model(monitor).Omit("CurrentMonitorPolicyBytesVersion").Association("Modules").Clear(); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	if err := repo.db.Model(monitor).Omit("CurrentMonitorPolicyBytesVersion").Association("Modules").Append(modules); err != nil {
+		return nil, toRepoError(repo.db, err)
 	}
 
 	return monitor, nil

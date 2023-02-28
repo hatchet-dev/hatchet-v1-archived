@@ -20,6 +20,7 @@ import { currTeamAtom } from "shared/atoms/atoms";
 import SelectGitSource from "components/module/selectgitpath";
 import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
+import Checkbox from "components/checkbox";
 
 type Props = {
   submit: (req: CreateMonitorRequest) => void;
@@ -49,6 +50,7 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
   const [kind, setKind] = useState("plan");
   const [schedule, setSchedule] = useState("");
   const [moduleOptions, setModuleOptions] = useState<Selection[]>([]);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const [currTeam] = useAtom(currTeamAtom);
 
@@ -59,8 +61,9 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
       kind: kind,
       cron_schedule: schedule,
       modules: moduleOptions?.map((option) => option.value) || [],
+      disabled: isDisabled,
     };
-  }, [name, description, kind, schedule, moduleOptions]);
+  }, [name, description, kind, schedule, moduleOptions, isDisabled]);
 
   useQuery({
     queryKey: ["modules", currTeam?.id],
@@ -186,6 +189,11 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
 
             setModuleOptions(newOptions);
           }}
+        />
+        <HorizontalSpacer spacepixels={12} />
+        <Checkbox
+          text="Disable this monitor"
+          setChecked={(v) => setIsDisabled(v)}
         />
       </SectionArea>
       <HorizontalSpacer spacepixels={30} />

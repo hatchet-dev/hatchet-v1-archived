@@ -10,6 +10,7 @@ import {
   P,
 } from "@hatchet-dev/hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import Checkbox from "components/checkbox";
 import React, { useState } from "react";
 import api from "shared/api";
 import {
@@ -22,14 +23,17 @@ type Props = {
   team_id: string;
   monitor: ModuleMonitor;
   setMonitorModules: (modules: string[]) => void;
+  setDisabled: (v: boolean) => void;
 };
 
 const UpdateMonitorFilters: React.FC<Props> = ({
   team_id,
   monitor,
   setMonitorModules,
+  setDisabled,
 }) => {
   const [moduleOptions, setModuleOptions] = useState<Selection[]>([]);
+  const [isDisabled, setIsDisabled] = useState(monitor.disabled);
 
   useQuery({
     queryKey: ["modules", team_id],
@@ -81,6 +85,15 @@ const UpdateMonitorFilters: React.FC<Props> = ({
               .map((option) => option.value)
           );
         }}
+      />
+      <HorizontalSpacer spacepixels={12} />
+      <Checkbox
+        text="Disable this monitor"
+        setChecked={(v) => {
+          setDisabled(v);
+          setIsDisabled(v);
+        }}
+        initialValue={isDisabled}
       />
     </>
   );

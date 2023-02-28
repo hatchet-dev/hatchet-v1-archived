@@ -47,15 +47,25 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	var targetModules []*models.Module
+
 	if req.Modules != nil {
-		targetModules, reqErr := getMonitorModulesFromRequest(m.Config(), team, req.Modules)
+		targetModules = make([]*models.Module, 0)
+
+		gotModules, reqErr := getMonitorModulesFromRequest(m.Config(), team, req.Modules)
 
 		if reqErr != nil {
 			m.HandleAPIError(w, r, reqErr)
 			return
 		}
 
-		monitor.Modules = targetModules
+		for _, gotModule := range gotModules {
+			targetModules = append(targetModules, &gotModule)
+		}
+	}
+
+	if req.Disabled != nil {
+		monitor.Disabled = *req.Disabled
 	}
 
 	if req.CronSchedule != "" {
@@ -101,6 +111,18 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
 		return
+	}
+
+	if targetModules != nil {
+		_monitor, err := m.Repo().ModuleMonitor().ReplaceModuleMonitorModules(monitor, targetModules)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
+
+		monitor.Modules = _monitor.Modules
 	}
 
 	if req.CronSchedule != "" {

@@ -23,6 +23,9 @@ type ModuleMonitorRepository interface {
 	// UpdateModuleMonitor updates a module monitor in the database
 	UpdateModuleMonitor(monitor *models.ModuleMonitor) (*models.ModuleMonitor, RepositoryError)
 
+	// ReplaceModuleMonitorModules replaces module monitors in the database
+	ReplaceModuleMonitorModules(monitor *models.ModuleMonitor, modules []*models.Module) (*models.ModuleMonitor, RepositoryError)
+
 	// ListModuleMonitorsByTeamID lists the module monitors by the team id
 	ListModuleMonitorsByTeamID(teamID string, opts ...QueryOption) ([]*models.ModuleMonitor, *PaginatedResult, RepositoryError)
 

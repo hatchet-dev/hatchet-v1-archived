@@ -62,6 +62,7 @@ func (m *MonitorCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		Description:  req.Description,
 		Kind:         models.ModuleMonitorKind(req.Kind),
 		CronSchedule: req.CronSchedule,
+		Disabled:     req.Disabled,
 		Modules:      targetModules,
 		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
 			Version:     1,

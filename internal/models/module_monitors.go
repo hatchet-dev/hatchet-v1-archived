@@ -43,6 +43,9 @@ type ModuleMonitor struct {
 	// it cannot be configured from the dashboard.
 	IsDefault bool
 
+	// Whether the monitor is disabled
+	Disabled bool
+
 	MatchChildModules []byte
 	MatchProviders    []byte
 	MatchResources    []byte
@@ -56,6 +59,7 @@ func (m *ModuleMonitor) ToAPITypeMeta() *types.ModuleMonitorMeta {
 		Kind:            types.ModuleMonitorKind(m.Kind),
 		CronSchedule:    m.CronSchedule,
 		IsDefault:       m.IsDefault,
+		Disabled:        m.Disabled,
 	}
 }
 
@@ -74,6 +78,10 @@ func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
 }
 
 func (m *ModuleMonitor) ShouldRunForModule(modID string) bool {
+	if m.Disabled {
+		return false
+	}
+
 	if m.Modules == nil || len(m.Modules) == 0 {
 		return true
 	}

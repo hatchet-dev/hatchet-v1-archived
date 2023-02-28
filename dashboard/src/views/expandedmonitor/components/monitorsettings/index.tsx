@@ -44,6 +44,7 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
   const [kind, setKind] = useState<ModuleMonitorKind>("");
   const [schedule, setSchedule] = useState("");
   const [modules, setModules] = useState<string[]>();
+  const [disabled, setDisabled] = useState(monitor.disabled);
   const [err, setErr] = useState("");
 
   const { refetch } = useQuery({
@@ -60,6 +61,14 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
   const kindModified = useIsModified(kind, monitor.kind);
   const scheduleModified = useIsModified(schedule, monitor.cron_schedule);
   const descriptionModified = useIsModified(description, monitor.description);
+  const disabledModified = useIsModified(
+    {
+      disabled: disabled,
+    },
+    {
+      disabled: monitor.disabled,
+    }
+  );
 
   const request = useMemo<UpdateMonitorRequest>(() => {
     let req: UpdateMonitorRequest = {};
@@ -84,6 +93,10 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
       req.modules = modules;
     }
 
+    if (disabledModified.isModified) {
+      req.disabled = disabled;
+    }
+
     return req;
   }, [
     name,
@@ -96,6 +109,8 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
     scheduleModified,
     modules,
     modulesModified,
+    disabled,
+    disabledModified,
   ]);
 
   const mutation = useMutation({
@@ -154,6 +169,7 @@ const MonitorSettings: React.FC<Props> = ({ team_id, monitor }) => {
             team_id={team_id}
             monitor={monitor}
             setMonitorModules={setModules}
+            setDisabled={setDisabled}
           />
         </ExpandableSettings>
         <HorizontalSpacer spacepixels={24} />
