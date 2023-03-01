@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "shared/api";
 import { Module, ModuleRun } from "shared/api/generated/data-contracts";
-import ExpandedRun from "../expandedrun";
+import ExpandedRun from "../../../../components/run/expandedrun";
 import ModuleRunsList from "../modulerunslist";
 
 type Props = {
@@ -23,15 +23,17 @@ const RunsTab: React.FC<Props> = ({ team_id, module }) => {
 
   const mutation = useMutation({
     mutationKey: ["create_module_run", team_id, module_id],
-    mutationFn: () => {
-      return api.createModuleRun(team_id, module_id);
+    mutationFn: async () => {
+      const res = await api.createModuleRun(team_id, module_id);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

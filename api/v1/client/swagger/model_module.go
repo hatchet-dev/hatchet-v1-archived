@@ -15,9 +15,13 @@ import (
 type Module struct {
 	// the time that this resource was created
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	CurrentEnvVarsVersionId string `json:"current_env_vars_version_id,omitempty"`
+	CurrentValuesVersionId string `json:"current_values_version_id,omitempty"`
 	Deployment *ModuleDeploymentConfig `json:"deployment,omitempty"`
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
+	LockId string `json:"lock_id,omitempty"`
+	LockKind string `json:"lock_kind,omitempty"`
 	// the name for the module
 	Name string `json:"name,omitempty"`
 	// the time that this resource was last updated

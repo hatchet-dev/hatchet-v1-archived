@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **GithubPullRequest** | [***GithubPullRequest**](GithubPullRequest.md) |  | [optional] [default to null]
 **Id** | **string** | the id of this resource, in UUID format | [optional] [default to null]
 **Kind** | **string** |  | [optional] [default to null]
+**MonitorResults** | [**[]ModuleMonitorResult**](ModuleMonitorResult.md) |  | [optional] [default to null]
+**Monitors** | [**[]ModuleMonitor**](ModuleMonitor.md) |  | [optional] [default to null]
 **Status** | **string** |  | [optional] [default to null]
 **StatusDescription** | **string** |  | [optional] [default to null]
 **UpdatedAt** | [**time.Time**](time.Time.md) | the time that this resource was last updated | [optional] [default to null]

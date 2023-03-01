@@ -10,12 +10,21 @@ import (
 
 type ProvisionOpts struct {
 	Env []string
+
+	WaitForRunFinished bool
 }
 
 type Provisioner interface {
 	RunPlan(opts *ProvisionOpts) error
 	RunApply(opts *ProvisionOpts) error
 	RunDestroy(opts *ProvisionOpts) error
+
+	RunStateMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunPlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunBeforePlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunAfterPlanMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunBeforeApplyMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
+	RunAfterApplyMonitor(opts *ProvisionOpts, monitorID string, policy []byte) error
 }
 
 type GetEnvOpts struct {

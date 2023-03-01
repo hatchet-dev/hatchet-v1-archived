@@ -30,18 +30,30 @@ Class | Method | HTTP request | Description
 *MetadataApi* | [**GetServerMetadata**](docs/MetadataApi.md#getservermetadata) | **Get** /api/v1/metadata | Get server metadata
 *ModulesApi* | [**CreateModule**](docs/ModulesApi.md#createmodule) | **Post** /api/v1/teams/{team_id}/modules | Create Module
 *ModulesApi* | [**CreateModuleRun**](docs/ModulesApi.md#createmodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs | Create Module Run
+*ModulesApi* | [**CreateMonitorResult**](docs/ModulesApi.md#createmonitorresult) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/monitor_result | Create Monitor Result
 *ModulesApi* | [**CreateTerraformPlan**](docs/ModulesApi.md#createterraformplan) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan | Create Terraform plan
+*ModulesApi* | [**CreateTerraformState**](docs/ModulesApi.md#createterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
+*ModulesApi* | [**DeleteModule**](docs/ModulesApi.md#deletemodule) | **Delete** /api/v1/teams/{team_id}/modules/{module_id} | Delete Module
 *ModulesApi* | [**FinalizeModuleRun**](docs/ModulesApi.md#finalizemodulerun) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/finalize | Finalize module run
+*ModulesApi* | [**ForceUnlockModule**](docs/ModulesApi.md#forceunlockmodule) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/force_unlock | Unlock Module
 *ModulesApi* | [**GetCurrentModuleValues**](docs/ModulesApi.md#getcurrentmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/current | Get Current Module Values
 *ModulesApi* | [**GetModule**](docs/ModulesApi.md#getmodule) | **Get** /api/v1/teams/{team_id}/modules/{module_id} | Get module
 *ModulesApi* | [**GetModuleEnvVars**](docs/ModulesApi.md#getmoduleenvvars) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} | Get Module Env Vars
 *ModulesApi* | [**GetModuleRun**](docs/ModulesApi.md#getmodulerun) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} | Get module run
+*ModulesApi* | [**GetModuleRunLogs**](docs/ModulesApi.md#getmodulerunlogs) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs | Get logs
 *ModulesApi* | [**GetModuleRunPlanSummary**](docs/ModulesApi.md#getmodulerunplansummary) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary | Get plan summary
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
 *ModulesApi* | [**GetModuleValues**](docs/ModulesApi.md#getmodulevalues) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/values/{module_values_id} | Get Module Values
-*ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Post** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
+*ModulesApi* | [**GetTerraformState**](docs/ModulesApi.md#getterraformstate) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate | Create or Update Terraform State
 *ModulesApi* | [**ListModuleRuns**](docs/ModulesApi.md#listmoduleruns) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs | List Module Runs
 *ModulesApi* | [**ListModules**](docs/ModulesApi.md#listmodules) | **Get** /api/v1/teams/{team_id}/modules | List Modules
+*ModulesApi* | [**UpdateModule**](docs/ModulesApi.md#updatemodule) | **Post** /api/v1/teams/{team_id}/modules/{module_id} | Update Module Run
+*MonitorsApi* | [**CreateMonitor**](docs/MonitorsApi.md#createmonitor) | **Post** /api/v1/teams/{team_id}/monitors | Create Monitor
+*MonitorsApi* | [**DeleteMonitor**](docs/MonitorsApi.md#deletemonitor) | **Delete** /api/v1/teams/{team_id}/monitors/{monitor_id} | Delete Monitor
+*MonitorsApi* | [**GetMonitor**](docs/MonitorsApi.md#getmonitor) | **Get** /api/v1/teams/{team_id}/monitors/{monitor_id} | Get Monitor
+*MonitorsApi* | [**ListMonitorResults**](docs/MonitorsApi.md#listmonitorresults) | **Get** /api/v1/teams/{team_id}/monitor_results | List Monitor Results
+*MonitorsApi* | [**ListMonitors**](docs/MonitorsApi.md#listmonitors) | **Get** /api/v1/teams/{team_id}/monitors | List Monitors
+*MonitorsApi* | [**UpdateMonitor**](docs/MonitorsApi.md#updatemonitor) | **Post** /api/v1/teams/{team_id}/monitors/{monitor_id} | Update Monitor
 *OrganizationsApi* | [**AcceptOrgMemberInvite**](docs/OrganizationsApi.md#acceptorgmemberinvite) | **Post** /api/v1/invites/{org_member_invite_id}/{org_member_invite_tok} | Accept an organization invite.
 *OrganizationsApi* | [**CreateOrgMemberInvite**](docs/OrganizationsApi.md#createorgmemberinvite) | **Post** /api/v1/organizations/{org_id}/members | Create a member invite
 *OrganizationsApi* | [**CreateOrganization**](docs/OrganizationsApi.md#createorganization) | **Post** /api/v1/organizations | Create a new organization
@@ -98,6 +110,9 @@ Class | Method | HTTP request | Description
  - [CreateModuleRequestGithub](docs/CreateModuleRequestGithub.md)
  - [CreateModuleResponse](docs/CreateModuleResponse.md)
  - [CreateModuleValuesRequestGithub](docs/CreateModuleValuesRequestGithub.md)
+ - [CreateMonitorRequest](docs/CreateMonitorRequest.md)
+ - [CreateMonitorResponse](docs/CreateMonitorResponse.md)
+ - [CreateMonitorResultRequest](docs/CreateMonitorResultRequest.md)
  - [CreateOrgMemberInviteRequest](docs/CreateOrgMemberInviteRequest.md)
  - [CreateOrgMemberInviteResponse](docs/CreateOrgMemberInviteResponse.md)
  - [CreateOrganizationRequest](docs/CreateOrganizationRequest.md)
@@ -111,17 +126,22 @@ Class | Method | HTTP request | Description
  - [CreateTerraformStateRequest](docs/CreateTerraformStateRequest.md)
  - [CreateUserRequest](docs/CreateUserRequest.md)
  - [CreateUserResponse](docs/CreateUserResponse.md)
+ - [DeleteModuleResponse](docs/DeleteModuleResponse.md)
+ - [DeleteMonitorResponse](docs/DeleteMonitorResponse.md)
  - [DeleteOrganizationResponse](docs/DeleteOrganizationResponse.md)
  - [DeletePatResponse](docs/DeletePatResponse.md)
  - [DeleteTeamResponse](docs/DeleteTeamResponse.md)
  - [EmptyResponse](docs/EmptyResponse.md)
  - [FinalizeModuleRunRequest](docs/FinalizeModuleRunRequest.md)
  - [FinalizeModuleRunResponse](docs/FinalizeModuleRunResponse.md)
+ - [ForceUnlockModuleResponse](docs/ForceUnlockModuleResponse.md)
+ - [GetLogsResponse](docs/GetLogsResponse.md)
  - [GetModuleEnvVarsVersionResponse](docs/GetModuleEnvVarsVersionResponse.md)
  - [GetModuleResponse](docs/GetModuleResponse.md)
  - [GetModuleRunResponse](docs/GetModuleRunResponse.md)
  - [GetModuleTarballUrlResponse](docs/GetModuleTarballUrlResponse.md)
  - [GetModuleValuesResponse](docs/GetModuleValuesResponse.md)
+ - [GetMonitorResponse](docs/GetMonitorResponse.md)
  - [GetOrgMemberResponse](docs/GetOrgMemberResponse.md)
  - [GetOrganizationResponse](docs/GetOrganizationResponse.md)
  - [GetPatResponse](docs/GetPatResponse.md)
@@ -133,6 +153,8 @@ Class | Method | HTTP request | Description
  - [ListGithubAppInstallationsResponse](docs/ListGithubAppInstallationsResponse.md)
  - [ListModuleRunsResponse](docs/ListModuleRunsResponse.md)
  - [ListModulesResponse](docs/ListModulesResponse.md)
+ - [ListMonitorResultsResponse](docs/ListMonitorResultsResponse.md)
+ - [ListMonitorsResponse](docs/ListMonitorsResponse.md)
  - [ListOrgMembersResponse](docs/ListOrgMembersResponse.md)
  - [ListPatsResponse](docs/ListPatsResponse.md)
  - [ListTeamMembersResponse](docs/ListTeamMembersResponse.md)
@@ -147,11 +169,15 @@ Class | Method | HTTP request | Description
  - [ModuleDeploymentConfig](docs/ModuleDeploymentConfig.md)
  - [ModuleEnvVar](docs/ModuleEnvVar.md)
  - [ModuleEnvVarsVersion](docs/ModuleEnvVarsVersion.md)
+ - [ModuleMonitor](docs/ModuleMonitor.md)
+ - [ModuleMonitorMeta](docs/ModuleMonitorMeta.md)
+ - [ModuleMonitorResult](docs/ModuleMonitorResult.md)
  - [ModulePlannedChangeSummary](docs/ModulePlannedChangeSummary.md)
  - [ModuleRun](docs/ModuleRun.md)
  - [ModuleRunConfig](docs/ModuleRunConfig.md)
  - [ModuleRunOverview](docs/ModuleRunOverview.md)
  - [ModuleValues](docs/ModuleValues.md)
+ - [ModuleValuesGithubConfig](docs/ModuleValuesGithubConfig.md)
  - [Organization](docs/Organization.md)
  - [OrganizationInvite](docs/OrganizationInvite.md)
  - [OrganizationInviteSanitized](docs/OrganizationInviteSanitized.md)
@@ -177,6 +203,10 @@ Class | Method | HTTP request | Description
  - [TeamUpdateRequest](docs/TeamUpdateRequest.md)
  - [TeamUpdateResponse](docs/TeamUpdateResponse.md)
  - [TerraformLock](docs/TerraformLock.md)
+ - [UpdateModuleRequest](docs/UpdateModuleRequest.md)
+ - [UpdateModuleResponse](docs/UpdateModuleResponse.md)
+ - [UpdateMonitorRequest](docs/UpdateMonitorRequest.md)
+ - [UpdateMonitorResponse](docs/UpdateMonitorResponse.md)
  - [UpdateOrgMemberPoliciesRequest](docs/UpdateOrgMemberPoliciesRequest.md)
  - [UpdateOrgMemberPoliciesResponse](docs/UpdateOrgMemberPoliciesResponse.md)
  - [UpdateOrgOwnerRequest](docs/UpdateOrgOwnerRequest.md)

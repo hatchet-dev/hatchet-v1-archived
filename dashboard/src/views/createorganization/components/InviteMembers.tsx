@@ -33,16 +33,18 @@ const InviteMembers: React.FunctionComponent = () => {
 
   const mutation = useMutation({
     mutationKey: ["create_organization_invite", currOrg.id],
-    mutationFn: (invite: CreateOrgMemberInviteRequest) => {
-      return api.createOrgMemberInvite(currOrg.id, invite);
+    mutationFn: async (invite: CreateOrgMemberInviteRequest) => {
+      const res = await api.createOrgMemberInvite(currOrg.id, invite);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
       refetch();
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

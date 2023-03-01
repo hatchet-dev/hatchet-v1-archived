@@ -49,6 +49,13 @@ func (c *FileClient) GetPlanByCommitSHA(teamID, moduleID, moduleRunID string) (i
 	)
 }
 
+func (c *FileClient) GetMonitorPolicy(teamID, monitorID string) (io.ReadCloser, *types.APIError, error) {
+	return c.sendDownloadRequest(
+		fmt.Sprintf("/api/v1/teams/%s/monitors/%s/policy", teamID, monitorID),
+		nil,
+	)
+}
+
 func (c *FileClient) sendUploadRequest(relPath string, fileName string, fileBytes []byte) (*types.APIError, error) {
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)

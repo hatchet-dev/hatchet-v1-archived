@@ -26,17 +26,19 @@ const CreateModuleView: React.FunctionComponent = () => {
   const { step } = useParams<{ step: string }>();
 
   const mutation = useMutation({
-    mutationKey: ["create_organization_invite", currTeam?.id],
-    mutationFn: (req: CreateModuleRequest) => {
-      return api.createModule(currTeam.id, req);
+    mutationKey: ["create_module", currTeam?.id],
+    mutationFn: async (req: CreateModuleRequest) => {
+      const res = await api.createModule(currTeam.id, req);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
       history.push(`/team/${currTeam.id}/modules`);
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

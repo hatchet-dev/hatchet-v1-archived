@@ -30,3 +30,27 @@ func TestValidatorValidName(t *testing.T) {
 
 	assert.NoError(t, err, "no error")
 }
+
+type cronResource struct {
+	Cron string `form:"cron"`
+}
+
+func TestValidatorValidCron(t *testing.T) {
+	v := validator.New()
+
+	err := v.Struct(&cronResource{
+		Cron: "*/5 * * * *",
+	})
+
+	assert.NoError(t, err, "no error")
+}
+
+func TestValidatorInvalidCron(t *testing.T) {
+	v := validator.New()
+
+	err := v.Struct(&cronResource{
+		Cron: "*/5 * * *",
+	})
+
+	assert.ErrorContains(t, err, "validation for 'Cron' failed on the 'cron' tag", "should throw error on invalid cron")
+}

@@ -1,4 +1,4 @@
-package hatchet_org_presets.team_member
+package hatchet.team
 
 import future.keywords.contains
 import future.keywords.every

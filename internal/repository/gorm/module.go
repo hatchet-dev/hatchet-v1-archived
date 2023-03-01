@@ -77,6 +77,22 @@ func (repo *ModuleRepository) ListModulesByTeamID(teamID string, opts ...reposit
 	return mods, paginatedResult, nil
 }
 
+func (repo *ModuleRepository) ListModulesByIDs(teamID string, ids []string, opts ...repository.QueryOption) ([]*models.Module, *repository.PaginatedResult, repository.RepositoryError) {
+	var mods []*models.Module
+
+	db := repo.db.Model(&models.Module{}).Where("team_id = ? AND id IN (?)", teamID, ids)
+
+	paginatedResult := &repository.PaginatedResult{}
+
+	db = db.Scopes(queryutils.Paginate(opts, db, paginatedResult))
+
+	if err := db.Preload("DeploymentConfig").Find(&mods).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return mods, paginatedResult, nil
+}
+
 func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
 	var mods []*models.Module
 
@@ -100,7 +116,7 @@ func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.Mo
 func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND module_runs.id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("ModuleMonitorResults").Preload("Monitors").Joins("ModuleRunConfig").Where("module_id = ? AND module_runs.id = ?", moduleID, moduleRunID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -110,7 +126,7 @@ func (repo *ModuleRepository) ReadModuleRunByID(moduleID, moduleRunID string) (*
 func (repo *ModuleRepository) ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, repository.RepositoryError) {
 	mod := &models.ModuleRun{}
 
-	if err := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND lock_id != ''", moduleID).First(&mod).Error; err != nil {
+	if err := repo.db.Preload("ModuleMonitorResults").Preload("Monitors").Joins("ModuleRunConfig").Where("module_id = ? AND lock_id != ''", moduleID).First(&mod).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -133,8 +149,24 @@ func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA stri
 	return mods, nil
 }
 
+func (repo *ModuleRepository) AppendModuleRunMonitors(run *models.ModuleRun, monitors []*models.ModuleMonitor) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Model(run).Omit("ModuleRunConfig", "ModuleMonitorResults", "Monitors.*").Association("Monitors").Append(monitors); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
+func (repo *ModuleRepository) AppendModuleRunMonitorResult(run *models.ModuleRun, result *models.ModuleMonitorResult) (*models.ModuleRun, repository.RepositoryError) {
+	if err := repo.db.Model(run).Omit("ModuleRunConfig", "Monitors", "ModuleMonitorResults.*").Association("ModuleMonitorResults").Append(result); err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return run, nil
+}
+
 func (repo *ModuleRepository) UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
-	if err := repo.db.Omit("ModuleRunConfig").Save(run).Error; err != nil {
+	if err := repo.db.Omit("ModuleRunConfig", "Monitors", "ModuleMonitorResults").Save(run).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

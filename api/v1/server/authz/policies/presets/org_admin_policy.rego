@@ -1,4 +1,4 @@
-package hatchet_org_presets.org_admin
+package hatchet.organization
 
 import future.keywords.contains
 import future.keywords.every

@@ -18,9 +18,10 @@ type ConfigFile struct {
 	GRPCToken string `env:"GRPC_TOKEN"`
 
 	// The IDs that this run operates on
-	TeamID      string `env:"TEAM_ID"`
-	ModuleID    string `env:"MODULE_ID"`
-	ModuleRunID string `env:"MODULE_RUN_ID"`
+	TeamID          string `env:"TEAM_ID"`
+	ModuleID        string `env:"MODULE_ID"`
+	ModuleRunID     string `env:"MODULE_RUN_ID"`
+	ModuleMonitorID string `env:"MODULE_MONITOR_ID"`
 
 	// API client options
 	APIToken string `env:"API_TOKEN"`

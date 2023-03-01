@@ -18,7 +18,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { relativeDate } from "shared/utils";
-import RunsList from "components/runslist";
+import RunsList from "components/run/runslist";
 import usePagination from "shared/hooks/usepagination";
 import { ModuleRun } from "shared/api/generated/data-contracts";
 

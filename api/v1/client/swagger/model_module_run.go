@@ -20,6 +20,8 @@ type ModuleRun struct {
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
 	Kind string `json:"kind,omitempty"`
+	MonitorResults []ModuleMonitorResult `json:"monitor_results,omitempty"`
+	Monitors []ModuleMonitor `json:"monitors,omitempty"`
 	Status string `json:"status,omitempty"`
 	StatusDescription string `json:"status_description,omitempty"`
 	// the time that this resource was last updated

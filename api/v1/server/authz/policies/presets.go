@@ -38,19 +38,19 @@ var PresetTeamAdminPolicy []byte
 var PresetTeamMemberPolicy []byte
 
 func init() {
-	orgOwnerPolicy, err := opa.LoadQueryFromBytes("hatchet_org_presets.org_owner", PresetOrgOwnerPolicy)
+	orgOwnerPolicy, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_ORGANIZATION, PresetOrgOwnerPolicy)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	orgAdminPolicy, err := opa.LoadQueryFromBytes("hatchet_org_presets.org_admin", PresetOrgAdminPolicy)
+	orgAdminPolicy, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_ORGANIZATION, PresetOrgAdminPolicy)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	orgMemberPolicy, err := opa.LoadQueryFromBytes("hatchet_org_presets.org_member", PresetOrgMemberPolicy)
+	orgMemberPolicy, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_ORGANIZATION, PresetOrgMemberPolicy)
 
 	if err != nil {
 		log.Fatal(err)
@@ -60,13 +60,13 @@ func init() {
 	PresetOrgPolicies.OrgAdminPolicy = &Policy{orgAdminPolicy}
 	PresetOrgPolicies.OrgMemberPolicy = &Policy{orgMemberPolicy}
 
-	teamAdminPolicy, err := opa.LoadQueryFromBytes("hatchet_org_presets.team_admin", PresetTeamAdminPolicy)
+	teamAdminPolicy, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_TEAM, PresetTeamAdminPolicy)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	teamMemberPolicy, err := opa.LoadQueryFromBytes("hatchet_org_presets.team_member", PresetTeamMemberPolicy)
+	teamMemberPolicy, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_TEAM, PresetTeamMemberPolicy)
 
 	if err != nil {
 		log.Fatal(err)

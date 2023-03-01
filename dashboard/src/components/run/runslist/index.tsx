@@ -2,7 +2,7 @@ import { MaterialIcon, Spinner } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { ModuleRun } from "shared/api/generated/data-contracts";
 import { relativeDate } from "shared/utils";
-import ExpandedRun from "../../views/expandedmodule/components/expandedrun";
+import ExpandedRun from "../expandedrun";
 import {
   RunListWrapper,
   RunStatusWrapper,

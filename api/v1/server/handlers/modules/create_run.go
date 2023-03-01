@@ -9,6 +9,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/monitors"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/runutils"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
@@ -54,6 +55,21 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	run.StatusDescription = desc
 
 	run, err = m.Repo().Module().CreateModuleRun(run)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// get all monitors for this run
+	runMonitors, err := monitors.GetAllMonitorsForModuleRun(m.Repo(), module.TeamID, run)
+
+	if err != nil {
+		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	run, err = m.Repo().Module().AppendModuleRunMonitors(run, runMonitors)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

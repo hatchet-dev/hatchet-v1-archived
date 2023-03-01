@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -9,6 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/repository"
 )
 
 type ModuleUpdateHandler struct {
@@ -53,7 +55,7 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	valuesGithub := request.ValuesGithub
 	valuesRaw := request.ValuesRaw
-	var prevMVV *models.ModuleValuesVersion
+	var prevMVVVersion uint
 	var err error
 
 	if valuesGithub != nil && valuesRaw != nil {
@@ -68,16 +70,20 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if valuesGithub != nil || valuesRaw != nil {
-		prevMVV, err = m.Repo().ModuleValues().ReadModuleValuesVersionByID(module.ID, module.CurrentModuleValuesVersionID)
+		prevMVV, err := m.Repo().ModuleValues().ReadModuleValuesVersionByID(module.ID, module.CurrentModuleValuesVersionID)
 
-		if err != nil {
+		if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 			return
+		} else if prevMVV == nil {
+			prevMVVVersion = 0
+		} else {
+			prevMVVVersion = prevMVV.Version
 		}
 	}
 
 	if valuesGithub != nil {
-		mvv, err := createModuleValuesGithub(m.Config(), module, valuesGithub, prevMVV.Version)
+		mvv, err := createModuleValuesGithub(m.Config(), module, valuesGithub, prevMVVVersion)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -86,7 +92,7 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 		module.CurrentModuleValuesVersionID = mvv.ID
 	} else if valuesRaw != nil {
-		mvv, err := createModuleValuesRaw(m.Config(), module, request.ValuesRaw, prevMVV.Version)
+		mvv, err := createModuleValuesRaw(m.Config(), module, request.ValuesRaw, prevMVVVersion)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -99,12 +105,18 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if request.EnvVars != nil {
 		prevMEV, err := m.Repo().ModuleEnvVars().ReadModuleEnvVarsVersionByID(module.ID, module.CurrentModuleEnvVarsVersionID)
 
-		if err != nil {
+		var prevMEVVersion uint
+
+		if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 			return
+		} else if prevMEV != nil {
+			prevMEVVersion = prevMEV.Version
+		} else {
+			prevMEVVersion = 0
 		}
 
-		mev, err := models.NewModuleEnvVarsVersion(module.ID, prevMEV.Version, request.EnvVars)
+		mev, err := models.NewModuleEnvVarsVersion(module.ID, prevMEVVersion, request.EnvVars)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

@@ -6,7 +6,7 @@ import {
   P,
   GridCard,
 } from "@hatchet-dev/hatchet-components";
-import RunsList from "components/runslist";
+import RunsList from "components/run/runslist";
 import React from "react";
 
 const HomeView: React.FunctionComponent = () => {
@@ -25,14 +25,6 @@ const HomeView: React.FunctionComponent = () => {
       </Grid>
       <HorizontalSpacer spacepixels={24} />
       <H2>Recent Runs</H2>
-      <RunsList
-        runs={[
-          {
-            status: "deployed",
-            date: "7:09 AM on June 23rd, 2022",
-          },
-        ]}
-      />
     </>
   );
 };

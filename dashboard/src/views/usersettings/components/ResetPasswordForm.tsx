@@ -34,8 +34,9 @@ const UserMetaForm: React.FunctionComponent = () => {
       setSuccessText("You successfully changed your password.");
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);
@@ -43,10 +44,12 @@ const UserMetaForm: React.FunctionComponent = () => {
   });
 
   const sendEmailMutation = useMutation({
-    mutationFn: (resetReq: ResetPasswordEmailRequest) => {
-      return api.resetPasswordEmail(resetReq, {
+    mutationFn: async (resetReq: ResetPasswordEmailRequest) => {
+      const res = await api.resetPasswordEmail(resetReq, {
         credentials: "omit",
       });
+
+      return res;
     },
     onSuccess: () => {
       setSuccessText(
@@ -54,8 +57,9 @@ const UserMetaForm: React.FunctionComponent = () => {
       );
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

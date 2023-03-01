@@ -112,6 +112,7 @@ const (
 	ModuleRunKindPlan    ModuleRunKind = "plan"
 	ModuleRunKindApply   ModuleRunKind = "apply"
 	ModuleRunKindDestroy ModuleRunKind = "destroy"
+	ModuleRunKindMonitor ModuleRunKind = "monitor"
 )
 
 const LogLocationFileStorage string = "file"
@@ -143,6 +144,9 @@ type ModuleRun struct {
 	ModuleRunConfig ModuleRunConfig
 
 	LogLocation string
+
+	Monitors             []ModuleMonitor `gorm:"many2many:module_runs_to_monitors;"`
+	ModuleMonitorResults []ModuleMonitorResult
 }
 
 func (m *ModuleRun) AfterFind(tx *gorm.DB) (err error) {
@@ -187,6 +191,22 @@ func (m *ModuleRun) ToAPIType(pr *GithubPullRequest) *types.ModuleRun {
 			GithubCommitSHA: mc.GithubCommitSHA,
 			EnvVarVersionID: mc.ModuleEnvVarsVersionID,
 			ValuesVersionID: mc.ModuleValuesVersionID,
+		}
+	}
+
+	if m.Monitors != nil {
+		res.Monitors = make([]types.ModuleMonitor, 0)
+
+		for _, monitor := range m.Monitors {
+			res.Monitors = append(res.Monitors, *monitor.ToAPIType())
+		}
+	}
+
+	if m.ModuleMonitorResults != nil {
+		res.MonitorResults = make([]types.ModuleMonitorResult, 0)
+
+		for _, result := range m.ModuleMonitorResults {
+			res.MonitorResults = append(res.MonitorResults, *result.ToAPIType())
 		}
 	}
 

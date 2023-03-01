@@ -566,10 +566,16 @@ func (a *TeamsApiService) GithubIncomingWebhook(ctx context.Context, teamId stri
 TeamsApiService List team members
 Lists team members for a team.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param teamId The team id
+ * @param optional nil or *TeamsApiListTeamMembersOpts - Optional Parameters:
+     * @param "TeamId" (optional.Int64) -  The page to query for
 @return ListTeamMembersResponse
 */
-func (a *TeamsApiService) ListTeamMembers(ctx context.Context, teamId string) (ListTeamMembersResponse, *http.Response, error) {
+
+type TeamsApiListTeamMembersOpts struct {
+    TeamId optional.Int64
+}
+
+func (a *TeamsApiService) ListTeamMembers(ctx context.Context, localVarOptionals *TeamsApiListTeamMembersOpts) (ListTeamMembersResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
@@ -580,12 +586,14 @@ func (a *TeamsApiService) ListTeamMembers(ctx context.Context, teamId string) (L
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/members"
-	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if localVarOptionals != nil && localVarOptionals.TeamId.IsSet() {
+		localVarQueryParams.Add("team_id", parameterToString(localVarOptionals.TeamId.Value(), ""))
+	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}
 
@@ -671,10 +679,16 @@ func (a *TeamsApiService) ListTeamMembers(ctx context.Context, teamId string) (L
 TeamsApiService List teams.
 Lists teams for an organization.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param orgId The org id
+ * @param optional nil or *TeamsApiListTeamsOpts - Optional Parameters:
+     * @param "OrgId" (optional.Int64) -  The page to query for
 @return ListTeamsResponse
 */
-func (a *TeamsApiService) ListTeams(ctx context.Context, orgId string) (ListTeamsResponse, *http.Response, error) {
+
+type TeamsApiListTeamsOpts struct {
+    OrgId optional.Int64
+}
+
+func (a *TeamsApiService) ListTeams(ctx context.Context, localVarOptionals *TeamsApiListTeamsOpts) (ListTeamsResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
@@ -685,12 +699,14 @@ func (a *TeamsApiService) ListTeams(ctx context.Context, orgId string) (ListTeam
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/api/v1/organizations/{org_id}/teams"
-	localVarPath = strings.Replace(localVarPath, "{"+"org_id"+"}", fmt.Sprintf("%v", orgId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if localVarOptionals != nil && localVarOptionals.OrgId.IsSet() {
+		localVarQueryParams.Add("org_id", parameterToString(localVarOptionals.OrgId.Value(), ""))
+	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}
 

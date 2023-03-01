@@ -18,8 +18,9 @@ const UserOrgs: React.FunctionComponent = () => {
 
   const leaveOrgMutation = useMutation({
     mutationKey: ["leave_organization"],
-    mutationFn: (orgId: string) => {
-      return api.leaveOrg(orgId);
+    mutationFn: async (orgId: string) => {
+      const res = await api.leaveOrg(orgId);
+      return res;
     },
     onSuccess: (data) => {
       orgQuery.refetch();

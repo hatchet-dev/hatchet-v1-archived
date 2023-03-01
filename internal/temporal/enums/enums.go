@@ -18,4 +18,6 @@ const (
 	WorkflowTypeNameCheckModuleQueue string = "ScheduleFromQueue"
 	WorkflowTypeNameCheckAllQueues   string = "CheckQueues"
 	WorkflowTypeNameProvision        string = "Provision"
+	WorkflowTypeNameDispatchMonitors string = "DispatchMonitors"
+	WorkflowTypeNameRunMonitor       string = "RunMonitor"
 )

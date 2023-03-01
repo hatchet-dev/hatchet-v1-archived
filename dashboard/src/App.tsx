@@ -34,6 +34,8 @@ import TeamSettingsView from "views/teamsettings/TeamSettingsView";
 import TeamsList from "views/teamslist/TeamsList";
 import CreateTeam from "views/createteam/CreateTeam";
 import UserAccountsView from "views/useraccounts/UserAccountsView";
+import CreateMonitorView from "views/createmonitor/CreateMonitorView";
+import ExpandedMonitorView from "views/expandedmonitor/ExpandedMonitorView";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -83,8 +85,8 @@ const DashboardTeamSidebarLinks: SidebarLink[] = [
     href: "/modules",
   },
   {
-    name: "Monitoring",
-    href: "/monitoring",
+    name: "Monitors",
+    href: "/monitors",
   },
   {
     name: "Templates",
@@ -270,7 +272,23 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/monitoring"
+            path="/team/:team/monitors/create/:step"
+            render={() => (
+              <WrappedTeamContents>
+                <CreateMonitorView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/monitors/:monitor"
+            render={() => (
+              <WrappedTeamContents>
+                <ExpandedMonitorView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/team/:team/monitors"
             render={() => (
               <WrappedTeamContents>
                 <MonitoringView />

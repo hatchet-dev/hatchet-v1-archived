@@ -51,6 +51,8 @@ type APIClient struct {
 
 	ModulesApi *ModulesApiService
 
+	MonitorsApi *MonitorsApiService
+
 	OrganizationsApi *OrganizationsApiService
 
 	TeamsApi *TeamsApiService
@@ -77,6 +79,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.GithubAppsApi = (*GithubAppsApiService)(&c.common)
 	c.MetadataApi = (*MetadataApiService)(&c.common)
 	c.ModulesApi = (*ModulesApiService)(&c.common)
+	c.MonitorsApi = (*MonitorsApiService)(&c.common)
 	c.OrganizationsApi = (*OrganizationsApiService)(&c.common)
 	c.TeamsApi = (*TeamsApiService)(&c.common)
 	c.UsersApi = (*UsersApiService)(&c.common)

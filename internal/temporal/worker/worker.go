@@ -5,6 +5,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/logflusher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulerunner"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/monitordispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/queuechecker"
 	"go.temporal.io/sdk/worker"
 
@@ -31,9 +32,11 @@ func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
 
 	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL)
 	qc := queuechecker.NewQueueChecker(config.DB.Repository, mqc)
+	md := monitordispatcher.NewMonitorDispatcher(config.DefaultLogStore, config.DB, *config.TokenOpts, config.ServerURL)
 
 	backgroundWorker.RegisterWorkflow(mqc.ScheduleFromQueue)
 	backgroundWorker.RegisterWorkflow(qc.CheckQueues)
+	backgroundWorker.RegisterWorkflow(md.DispatchMonitors)
 
 	return backgroundWorker.Start()
 }
@@ -51,6 +54,10 @@ func StartRunnerWorker(config *hatchetworker.RunnerConfig) error {
 
 	runnerWorker.RegisterWorkflow(mr.Provision)
 	runnerWorker.RegisterActivity(mr.Run)
+
+	// TODO: name of workflow vs activity is confusing
+	runnerWorker.RegisterWorkflow(mr.RunMonitor)
+	runnerWorker.RegisterActivity(mr.Monitor)
 
 	return runnerWorker.Start()
 }

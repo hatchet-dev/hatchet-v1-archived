@@ -7,6 +7,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/monitors"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/provisioner/provisionerutils"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
@@ -124,12 +125,39 @@ func (mqc *ModuleQueueChecker) ScheduleFromQueue(ctx workflow.Context, input Che
 		ParentClosePolicy:        enums.PARENT_CLOSE_POLICY_ABANDON,
 	}
 
+	// monitors, _, err := repo.ModuleMonitor().ListModuleMonitorsByTeamID(team.ID)
+	before := make([]modulerunner.MonitorIDAndKind, 0)
+	after := make([]modulerunner.MonitorIDAndKind, 0)
+
+	beforeMonitors, afterMonitors, err := monitors.GetInlineMonitorsForModuleRun(repo, team.ID, currModuleRun)
+
+	if err != nil {
+		return "", err
+	}
+
+	for _, beforeMonitor := range beforeMonitors {
+		before = append(before, modulerunner.MonitorIDAndKind{
+			ID:   beforeMonitor.ID,
+			Kind: beforeMonitor.Kind,
+		})
+	}
+
+	for _, afterMonitor := range afterMonitors {
+		after = append(after, modulerunner.MonitorIDAndKind{
+			ID:   afterMonitor.ID,
+			Kind: afterMonitor.Kind,
+		})
+	}
+
 	childCtx := workflow.WithChildOptions(ctx, cwo)
 
 	childWorkflowFuture := workflow.ExecuteChildWorkflow(childCtx, hatchetenums.WorkflowTypeNameProvision, modulerunner.RunInput{
-		Kind: currModuleRun.Kind,
+		BeforeMonitors: before,
+		AfterMonitors:  after,
+		Kind:           currModuleRun.Kind,
 		Opts: &provisioner.ProvisionOpts{
-			Env: env,
+			Env:                env,
+			WaitForRunFinished: true,
 		},
 	})
 

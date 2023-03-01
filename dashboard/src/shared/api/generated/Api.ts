@@ -17,6 +17,9 @@ import {
   APIServerMetadata,
   CreateModuleRequest,
   CreateModuleResponse,
+  CreateMonitorRequest,
+  CreateMonitorResponse,
+  CreateMonitorResultRequest,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   CreateOrgMemberInviteRequest,
@@ -29,6 +32,7 @@ import {
   CreateUserRequest,
   CreateUserResponse,
   DeleteModuleResponse,
+  DeleteMonitorResponse,
   DeleteOrganizationResponse,
   DeletePATResponse,
   DeleteTeamResponse,
@@ -44,6 +48,7 @@ import {
   GetModuleTarballURLResponse,
   GetModuleValuesCurrentResponse,
   GetModuleValuesResponse,
+  GetMonitorResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -53,6 +58,8 @@ import {
   ListGithubReposResponse,
   ListModuleRunsResponse,
   ListModulesResponse,
+  ListMonitorResultsResponse,
+  ListMonitorsResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
   ListTeamMembersResponse,
@@ -69,6 +76,7 @@ import {
   TeamAddMemberResponse,
   TeamUpdateResponse,
   UpdateModuleResponse,
+  UpdateMonitorResponse,
   UpdateOrganizationRequest,
   UpdateOrgMemberPoliciesResponse,
   UpdateOrgResponse,
@@ -816,6 +824,30 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
+   * @description Reports a monitor result.
+   *
+   * @tags Modules
+   * @name CreateMonitorResult
+   * @summary Create Monitor Result
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/monitor_result
+   * @secure
+   */
+  createMonitorResult = (
+    teamId: string,
+    moduleId: string,
+    moduleRunId: string,
+    data: CreateMonitorResultRequest,
+    params: RequestParams = {},
+  ) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/monitor_result`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
    * @description Creates a `POST` request for a Terraform plan. **Should only be called by Terraform in automation.**
    *
    * @tags Modules
@@ -862,11 +894,27 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @tags Modules
    * @name GetTerraformState
    * @summary Create or Update Terraform State
-   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
+   * @request GET:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
    * @secure
    */
   getTerraformState = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
     this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/tfstate`,
+      method: "GET",
+      secure: true,
+      ...params,
+    });
+  /**
+   * @description Creates a `POST` request for Terraform state. **Should only be called by Terraform in automation.**
+   *
+   * @tags Modules
+   * @name CreateTerraformState
+   * @summary Create or Update Terraform State
+   * @request POST:/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/tfstate
+   * @secure
+   */
+  createTerraformState = (teamId: string, moduleId: string, moduleRunId: string, params: RequestParams = {}) =>
+    this.request<void, APIErrorBadRequestExample | APIErrorForbiddenExample | void>({
       path: `/api/v1/teams/${teamId}/modules/${moduleId}/runs/${moduleRunId}/tfstate`,
       method: "POST",
       secure: true,
@@ -944,6 +992,138 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: "GET",
       query: query,
       secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists monitor results for a given team, optionally filtered by module or monitor id.
+   *
+   * @tags Monitors
+   * @name ListMonitorResults
+   * @summary List Monitor Results
+   * @request GET:/api/v1/teams/{team_id}/monitor_results
+   * @secure
+   */
+  listMonitorResults = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+      /** The monitor id to filter by */
+      module_monitor_id?: string;
+      /** The module id to filter by */
+      module_id?: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListMonitorResultsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitor_results`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists monitors for a given team.
+   *
+   * @tags Monitors
+   * @name ListMonitors
+   * @summary List Monitors
+   * @request GET:/api/v1/teams/{team_id}/monitors
+   * @secure
+   */
+  listMonitors = (
+    teamId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      page?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListMonitorsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors`,
+      method: "GET",
+      query: query,
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Creates a new monitor.
+   *
+   * @tags Monitors
+   * @name CreateMonitor
+   * @summary Create Monitor
+   * @request POST:/api/v1/teams/{team_id}/monitors
+   * @secure
+   */
+  createMonitor = (teamId: string, data?: CreateMonitorRequest, params: RequestParams = {}) =>
+    this.request<CreateMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Deletes a monitor.
+   *
+   * @tags Monitors
+   * @name DeleteMonitor
+   * @summary Delete Monitor
+   * @request DELETE:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  deleteMonitor = (teamId: string, monitorId: string, params: RequestParams = {}) =>
+    this.request<DeleteMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "DELETE",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets a monitor by id.
+   *
+   * @tags Monitors
+   * @name GetMonitor
+   * @summary Get Monitor
+   * @request GET:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  getMonitor = (teamId: string, monitorId: string, params: RequestParams = {}) =>
+    this.request<GetMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "GET",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Updates a monitor.
+   *
+   * @tags Monitors
+   * @name UpdateMonitor
+   * @summary Update Monitor
+   * @request POST:/api/v1/teams/{team_id}/monitors/{monitor_id}
+   * @secure
+   */
+  updateMonitor = (teamId: string, monitorId: string, data?: CreateMonitorRequest, params: RequestParams = {}) =>
+    this.request<UpdateMonitorResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/monitors/${monitorId}`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.Json,
       format: "json",
       ...params,
     });

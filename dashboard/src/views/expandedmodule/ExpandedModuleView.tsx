@@ -23,7 +23,7 @@ import { useHistory, useParams } from "react-router-dom";
 import api from "shared/api";
 import { currTeamAtom } from "shared/atoms/atoms";
 import { relativeDate } from "shared/utils";
-import RunsList from "../../components/runslist";
+import RunsList from "../../components/run/runslist";
 import ModuleRunsList from "./components/modulerunslist";
 import ModuleSettings from "./components/modulesettings";
 import ExpandedModuleMonitors from "./components/monitors";
@@ -65,7 +65,12 @@ const ExpandedModuleView: React.FunctionComponent = () => {
       case "Resource Explorer":
         return <HeirarchyGraph width={100} height={100} />;
       case "Monitors":
-        return <ExpandedModuleMonitors />;
+        return (
+          <ExpandedModuleMonitors
+            team_id={currTeam.id}
+            module_id={data?.data.id}
+          />
+        );
       default:
         return <ModuleSettings team_id={currTeam.id} module={data?.data} />;
     }

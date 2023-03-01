@@ -31,8 +31,9 @@ const TeamMetaForm: React.FunctionComponent = () => {
 
   const { mutate, isLoading } = useMutation({
     mutationKey: ["update_team", currTeam.id],
-    mutationFn: (teamUpdate: TeamUpdateRequest) => {
-      return api.updateTeam(currTeam.id, teamUpdate);
+    mutationFn: async (teamUpdate: TeamUpdateRequest) => {
+      const res = await api.updateTeam(currTeam.id, teamUpdate);
+      return res;
     },
     onSuccess: (data) => {
       if (data?.data) {
@@ -40,8 +41,9 @@ const TeamMetaForm: React.FunctionComponent = () => {
       }
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

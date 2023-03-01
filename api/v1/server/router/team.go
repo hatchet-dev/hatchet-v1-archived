@@ -11,7 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters listTeamMembers addTeamMember updateTeam deleteTeam createModule listModules
+// swagger:parameters listTeamMembers addTeamMember updateTeam deleteTeam createModule listModules createMonitor listMonitors
 type teamPathParams struct {
 	// The team id
 	// in: path

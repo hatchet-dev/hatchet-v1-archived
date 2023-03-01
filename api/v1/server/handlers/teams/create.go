@@ -10,6 +10,8 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/monitors"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 )
 
 type TeamCreateHandler struct {
@@ -131,6 +133,31 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	team.ServiceAccountRunnerID = saUser.ID
 
 	team, err = t.Repo().Team().UpdateTeam(team)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	// create a default drift detection monitor for the team
+	monitor := &models.ModuleMonitor{
+		TeamID:           team.ID,
+		Kind:             models.MonitorKindPlan,
+		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
+		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{
+			Version:     1,
+			PolicyBytes: monitors.PresetDriftDetectionPolicy,
+		},
+	}
+
+	monitor, err = t.Repo().ModuleMonitor().CreateModuleMonitor(monitor)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	err = dispatcher.DispatchCronMonitor(t.Config().TemporalClient, team.ID, monitor.ID, "0 */6 * * *")
 
 	if err != nil {
 		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))

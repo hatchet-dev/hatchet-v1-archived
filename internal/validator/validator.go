@@ -10,6 +10,8 @@ import (
 
 var NameRegex = regexp.MustCompile("^[a-zA-Z0-9\\.\\-_]+$")
 
+var CronRegex = regexp.MustCompile(`(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})`)
+
 // New creates a new instance of validator and sets the tag name
 // to "form", instead of "validate"
 func New() *validator.Validate {
@@ -26,6 +28,10 @@ func New() *validator.Validate {
 
 	validate.RegisterValidation("uuid", func(fl validator.FieldLevel) bool {
 		return uuidutils.IsValidUUID(fl.Field().String())
+	})
+
+	validate.RegisterValidation("cron", func(fl validator.FieldLevel) bool {
+		return CronRegex.MatchString(fl.Field().String())
 	})
 
 	return validate

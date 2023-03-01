@@ -27,8 +27,9 @@ const VerifyEmailPromptView: React.FunctionComponent = () => {
       setSuccess(true);
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);

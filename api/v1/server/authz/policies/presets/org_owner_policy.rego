@@ -1,3 +1,3 @@
-package hatchet_org_presets.org_owner
+package hatchet.organization
 
 allow := true

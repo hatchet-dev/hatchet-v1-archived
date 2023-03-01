@@ -189,6 +189,34 @@ export interface CreateModuleValuesRequestGithub {
   path: string;
 }
 
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","kind":"kind","name":"name","description":"description","disabled":true,"modules":["modules","modules"]} */
+export interface CreateMonitorRequest {
+  cron_schedule?: string;
+  description?: string;
+  /**
+   * Whether the monitor is disabled. In order to turn the monitor off for all modules, set
+   * disabled=true. Passing in an empty module list will trigger this monitor for all modules.
+   */
+  disabled?: boolean;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
+  name?: string;
+  policy_bytes?: string;
+}
+
+export type CreateMonitorResponse = ModuleMonitor;
+
+/** @example {"severity":"severity","monitor_id":"monitor_id","success_message":"success_message","title":"title","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
+export interface CreateMonitorResultRequest {
+  failure_messages?: string[];
+  monitor_id?: string;
+  severity?: string;
+  status?: string;
+  success_message?: string;
+  title?: string;
+}
+
 /** @example {"invitee_email":"user1@gmail.com","invitee_policies":[{"name":"name","id":"id"},{"name":"name","id":"id"}]} */
 export interface CreateOrgMemberInviteRequest {
   /**
@@ -277,6 +305,8 @@ export type CreateUserResponse = User;
 
 export type DeleteModuleResponse = Module;
 
+export type DeleteMonitorResponse = ModuleMonitor;
+
 export type DeleteOrganizationResponse = Organization;
 
 export type DeletePATResponse = PersonalAccessToken;
@@ -317,6 +347,8 @@ export interface GetModuleTarballURLResponse {
 export type GetModuleValuesCurrentResponse = Record<string, object>;
 
 export type GetModuleValuesResponse = ModuleValues;
+
+export type GetMonitorResponse = ModuleMonitor;
 
 export type GetOrgMemberResponse = OrganizationMember;
 
@@ -398,6 +430,18 @@ export interface ListModuleRunsResponse {
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
   rows?: Module[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}]} */
+export interface ListMonitorResultsResponse {
+  pagination?: PaginationResponse;
+  rows?: ModuleMonitorResult[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true},{"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true}]} */
+export interface ListMonitorsResponse {
+  pagination?: PaginationResponse;
+  rows?: ModuleMonitorMeta[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
@@ -544,6 +588,117 @@ export interface ModuleEnvVarsVersion {
 
 export type ModuleLockKind = string;
 
+/** @example {"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]} */
+export interface ModuleMonitor {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /** the cron schedule for the monitor */
+  cron_schedule?: string;
+  /**
+   * the description for the monitor
+   * @example "detects drift"
+   */
+  description?: string;
+  /** whether the monitor is currently disabled */
+  disabled?: boolean;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** whether this monitor is a default for all modules in the team */
+  is_default?: boolean;
+  kind?: string;
+  /** The list of modules that this monitor filters for */
+  modules?: string[];
+  /**
+   * the name for the monitor
+   * @example "drift"
+   */
+  name?: string;
+  /** the policy bytes for the monitor */
+  policy_bytes?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+export type ModuleMonitorKind = string;
+
+/** @example {"cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true} */
+export interface ModuleMonitorMeta {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /** the cron schedule for the monitor */
+  cron_schedule?: string;
+  /**
+   * the description for the monitor
+   * @example "detects drift"
+   */
+  description?: string;
+  /** whether the monitor is currently disabled */
+  disabled?: boolean;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** whether this monitor is a default for all modules in the team */
+  is_default?: boolean;
+  kind?: string;
+  /**
+   * the name for the monitor
+   * @example "drift"
+   */
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"} */
+export interface ModuleMonitorResult {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  message?: string;
+  module_id?: string;
+  module_monitor_id?: string;
+  module_name?: string;
+  module_run_id?: string;
+  severity?: string;
+  status?: string;
+  title?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
 export type ModulePlanSummary = ModulePlannedChangeSummary[];
 
 /** @example {"address":"address","actions":["actions","actions"]} */
@@ -552,7 +707,7 @@ export interface ModulePlannedChangeSummary {
   address?: string;
 }
 
-/** @example {"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"status":"status"} */
+/** @example {"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"} */
 export interface ModuleRun {
   config?: ModuleRunConfig;
   /**
@@ -568,6 +723,8 @@ export interface ModuleRun {
    */
   id?: string;
   kind?: string;
+  monitor_results?: ModuleMonitorResult[];
+  monitors?: ModuleMonitor[];
   status?: string;
   status_description?: string;
   /**
@@ -650,6 +807,10 @@ export interface ModuleValuesGithubConfig {
   github_repo_owner?: string;
   path?: string;
 }
+
+export type MonitorResultSeverity = string;
+
+export type MonitorResultStatus = string;
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {
@@ -1103,6 +1264,23 @@ export interface UpdateModuleRequest {
 
 export type UpdateModuleResponse = Module;
 
+export interface UpdateMonitorRequest {
+  cron_schedule?: string;
+  description?: string;
+  /**
+   * Whether the monitor is disabled. In order to turn the monitor off for all modules, set
+   * disabled=true. Passing in an empty module list will trigger this monitor for all modules.
+   */
+  disabled?: boolean;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
+  name?: string;
+  policy_bytes?: string;
+}
+
+export type UpdateMonitorResponse = ModuleMonitor;
+
 export interface UpdateOrgMemberPoliciesRequest {
   /** the set of policies for this user */
   policies: OrganizationPolicyReference[];
@@ -1266,11 +1444,35 @@ export interface FinalizeModuleRunRequest {
   status: string;
 }
 
+export interface CreateMonitorResultRequest {
+  failure_messages?: string[];
+  monitor_id?: string;
+  severity?: string;
+  status?: string;
+  success_message?: string;
+  title?: string;
+}
+
 export interface CreateTerraformPlanRequest {
   /** the JSON contents of the plan */
   plan_json: string;
   /** the prettified contents of the plan */
   plan_pretty: string;
+}
+
+export interface CreateMonitorRequest {
+  cron_schedule?: string;
+  description?: string;
+  /**
+   * Whether the monitor is disabled. In order to turn the monitor off for all modules, set
+   * disabled=true. Passing in an empty module list will trigger this monitor for all modules.
+   */
+  disabled?: boolean;
+  kind?: string;
+  /** A list of module ids. If empty or omitted, this monitor targets all modules. */
+  modules?: string[];
+  name?: string;
+  policy_bytes?: string;
 }
 
 export interface CreateUserRequest {

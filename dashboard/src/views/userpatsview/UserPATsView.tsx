@@ -32,16 +32,18 @@ const UserPATsView: React.FunctionComponent = () => {
 
   const revokeMutation = useMutation({
     mutationKey: ["revoke_pat"],
-    mutationFn: (id: string) => {
-      return api.revokePersonalAccessToken(id);
+    mutationFn: async (id: string) => {
+      const res = await api.revokePersonalAccessToken(id);
+      return res;
     },
     onSuccess: (data) => {
       setErr("");
       refetch();
     },
     onError: (err: any) => {
-      if (!err.error.errors || err.error.errors.length == 0) {
+      if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
+        return;
       }
 
       setErr(err.error.errors[0].description);
