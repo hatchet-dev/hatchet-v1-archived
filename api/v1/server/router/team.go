@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/notifications"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/teams"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
@@ -42,6 +43,21 @@ type githubIncomingWebhookParams struct {
 	// required: true
 	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
 	WebhookID string `json:"github_incoming_webhook_id"`
+}
+
+// swagger:parameters getNotification
+type notifPathParams struct {
+	// The team id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Team string `json:"team_id"`
+
+	// The notification id
+	// in: path
+	// required: true
+	// example: 322346f9-54b4-497d-bc9a-c54b5aaa4400
+	Notification string `json:"notification_id"`
 }
 
 func NewTeamRouteRegisterer(children ...*router.Registerer) *router.Registerer {
@@ -510,6 +526,62 @@ func GetTeamRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: githubIncomingWebhookEndpoint,
 		Handler:  githubIncomingWebhookHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/notifications/{notification_id} -> notifications.NewNotificationGetHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/notifications/{notification_id} getNotification
+	//
+	// ### Description
+	//
+	// Gets a notification by id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get notification
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: team_id
+	// responses:
+	//   '200':
+	//     description: Successfully got the notification
+	//     schema:
+	//       $ref: '#/definitions/GetNotificationResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getNotificationEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/teams/{%s}/notifications/{%s}", string(types.URLParamTeamID), string(types.URLParamNotificationID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.NotificationScope,
+			},
+		},
+	)
+
+	getNotificationHandler := notifications.NewNotificationGetHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getNotificationEndpoint,
+		Handler:  getNotificationHandler,
 		Router:   r,
 	})
 

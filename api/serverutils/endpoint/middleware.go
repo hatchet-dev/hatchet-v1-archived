@@ -95,6 +95,8 @@ func getRequestActionForEndpoint(
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamModuleValuesID)
 		case types.MonitorScope:
 			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamMonitorID)
+		case types.NotificationScope:
+			resourceID, reqErr = handlerutils.GetURLParamString(r, types.URLParamNotificationID)
 		}
 
 		if reqErr != nil {

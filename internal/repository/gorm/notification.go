@@ -1,6 +1,8 @@
 package gorm
 
 import (
+	"fmt"
+
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"github.com/hatchet-dev/hatchet/internal/repository/gorm/queryutils"
@@ -106,13 +108,17 @@ func (repo *NotificationRepository) ListNotifications(
 	return results, paginatedResult, nil
 }
 
-func (repo *NotificationRepository) ListNotificationsByTeamID(
-	teamID string,
+func (repo *NotificationRepository) ListNotificationsByTeamIDs(
+	teamIDs []string,
 	filterOpts *repository.ListNotificationOpts,
 	opts ...repository.QueryOption) ([]*models.Notification, *repository.PaginatedResult, repository.RepositoryError) {
+	if teamIDs == nil || len(teamIDs) == 0 {
+		return nil, nil, repository.UnknownRepositoryError(fmt.Errorf("must pass in at least one team id to ListNotificationsByTeamIDs"))
+	}
+
 	var results []*models.Notification
 
-	query := repo.db.Preload("Module").Model(&models.Notification{}).Where("team_id = ?", teamID)
+	query := repo.db.Preload("Module").Model(&models.Notification{}).Where("team_id IN (?)", teamIDs)
 
 	if filterOpts.AutoResolved != nil {
 		query = query.Where("auto_resolved = ?", *filterOpts.AutoResolved)

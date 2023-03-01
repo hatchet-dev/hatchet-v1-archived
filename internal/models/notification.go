@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/hatchet-dev/hatchet/api/v1/types"
+)
 
 type NotificationInbox struct {
 	Base
@@ -36,3 +40,62 @@ type Notification struct {
 	ModuleID string
 	Module   Module `gorm:"foreignKey:ModuleID"`
 }
+
+func (n *Notification) ToAPITypeMeta() *types.NotificationMeta {
+	return &types.NotificationMeta{
+		APIResourceMeta: n.ToAPITypeMetadata(),
+		TeamID:          n.TeamID,
+		NotificationID:  n.NotificationID,
+		Title:           n.Title,
+		Message:         n.Message,
+		LastNotified:    n.LastNotified,
+		Resolved:        n.Resolved,
+		ModuleID:        n.ModuleID,
+	}
+}
+
+func (n *Notification) ToAPIType() *types.Notification {
+	res := &types.Notification{
+		NotificationMeta: n.ToAPITypeMeta(),
+		Module:           *n.Module.ToAPIType(),
+	}
+
+	if n.Runs != nil {
+		runs := make([]*types.ModuleRun, 0)
+
+		for _, run := range n.Runs {
+			runs = append(runs, run.ToAPIType(nil))
+		}
+	}
+
+	if n.MonitorResults != nil {
+		results := make([]*types.ModuleMonitorResult, 0)
+
+		for _, result := range n.MonitorResults {
+			results = append(results, result.ToAPIType())
+		}
+	}
+
+	return res
+}
+
+// type NotificationMeta struct {
+// 	*APIResourceMeta
+
+// 	TeamID         string     `json:"team_id"`
+// 	NotificationID string     `json:"notification_id"`
+// 	Title          string     `json:"title"`
+// 	Message        string     `json:"message"`
+// 	LastNotified   *time.Time `json:"last_notified"`
+// 	Resolved       bool       `json:"resolved"`
+// 	ModuleID       string     `json:"module_id"`
+// }
+
+// // swagger:model
+// type Notification struct {
+// 	*NotificationMeta
+
+// 	Runs           []ModuleRun           `json:"runs"`
+// 	MonitorResults []ModuleMonitorResult `json:"monitor_results"`
+// 	Module         Module                `json:"module"`
+// }

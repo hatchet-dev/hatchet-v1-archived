@@ -49,6 +49,7 @@ import {
   GetModuleValuesCurrentResponse,
   GetModuleValuesResponse,
   GetMonitorResponse,
+  GetNotificationResponse,
   GetOrganizationResponse,
   GetOrgMemberResponse,
   GetPATResponse,
@@ -60,6 +61,7 @@ import {
   ListModulesResponse,
   ListMonitorResultsResponse,
   ListMonitorsResponse,
+  ListNotificationsResponse,
   ListOrgMembersResponse,
   ListPATsResponse,
   ListTeamMembersResponse,
@@ -416,6 +418,34 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     this.request<UpdateOrgMemberPoliciesResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
       path: `/api/v1/organizations/${orgId}/members/${orgMemberId}/update_policies`,
       method: "POST",
+      secure: true,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Lists notifications for an organization, optionally filtered by team id.
+   *
+   * @tags Teams
+   * @name ListNotifications
+   * @summary List notifications
+   * @request GET:/api/v1/organizations/{org_id}/notifications
+   * @secure
+   */
+  listNotifications = (
+    orgId: string,
+    query?: {
+      /**
+       * The page to query for
+       * @format int64
+       */
+      org_id?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ListNotificationsResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/organizations/${orgId}/notifications`,
+      method: "GET",
+      query: query,
       secure: true,
       format: "json",
       ...params,
@@ -1124,6 +1154,23 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       body: data,
       secure: true,
       type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Gets a notification by id.
+   *
+   * @tags Teams
+   * @name GetNotification
+   * @summary Get notification
+   * @request GET:/api/v1/teams/{team_id}/notifications/{notification_id}
+   * @secure
+   */
+  getNotification = (teamId: string, notificationId: string, params: RequestParams = {}) =>
+    this.request<GetNotificationResponse, APIErrorBadRequestExample | APIErrorForbiddenExample>({
+      path: `/api/v1/teams/${teamId}/notifications/${notificationId}`,
+      method: "GET",
+      secure: true,
       format: "json",
       ...params,
     });

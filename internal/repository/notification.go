@@ -40,8 +40,8 @@ type NotificationRepository interface {
 	// NOTE: this should only be called by internal workflows. Any team-scoped handlers should use ListNotificationsByTeamID
 	ListNotifications(filterOpts *ListNotificationOpts, opts ...QueryOption) ([]*models.Notification, *PaginatedResult, RepositoryError)
 
-	// ListNotificationsByTeamID lists notifications (paginated)
-	ListNotificationsByTeamID(teamID string, filterOpts *ListNotificationOpts, opts ...QueryOption) ([]*models.Notification, *PaginatedResult, RepositoryError)
+	// ListNotificationsByTeamIDs lists notifications (paginated)
+	ListNotificationsByTeamIDs(teamIDs []string, filterOpts *ListNotificationOpts, opts ...QueryOption) ([]*models.Notification, *PaginatedResult, RepositoryError)
 
 	// UpdateNotification updates any modified values for a notification
 	UpdateNotification(notif *models.Notification) (*models.Notification, RepositoryError)

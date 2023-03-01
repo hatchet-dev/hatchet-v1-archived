@@ -36,6 +36,7 @@ import CreateTeam from "views/createteam/CreateTeam";
 import UserAccountsView from "views/useraccounts/UserAccountsView";
 import CreateMonitorView from "views/createmonitor/CreateMonitorView";
 import ExpandedMonitorView from "views/expandedmonitor/ExpandedMonitorView";
+import Notifications from "views/notifications/Notifications";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -260,6 +261,22 @@ const AppContents: React.FunctionComponent = () => {
             render={() => (
               <WrappedTeamContents>
                 <TeamsList />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/notifications/teams/:team/:notification"
+            render={() => (
+              <WrappedTeamContents>
+                <Notifications />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/notifications"
+            render={() => (
+              <WrappedTeamContents>
+                <Notifications />
               </WrappedTeamContents>
             )}
           ></Route>
