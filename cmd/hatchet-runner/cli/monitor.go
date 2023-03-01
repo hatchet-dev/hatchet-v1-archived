@@ -146,7 +146,7 @@ func runMonitorFunc(f action.MonitorFunc) error {
 	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
 		context.Background(),
 		swagger.CreateMonitorResultRequest{
-			MonitorID:       rc.ConfigFile.ModuleMonitorID,
+			MonitorId:       rc.ConfigFile.ModuleMonitorID,
 			FailureMessages: res.FailureMessages,
 			SuccessMessage:  res.SuccessMessage,
 			Severity:        res.Severity,

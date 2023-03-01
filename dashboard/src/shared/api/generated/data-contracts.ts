@@ -207,10 +207,10 @@ export interface CreateMonitorRequest {
 
 export type CreateMonitorResponse = ModuleMonitor;
 
-/** @example {"severity":"severity","success_message":"success_message","title":"title","MonitorID":"MonitorID","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
+/** @example {"severity":"severity","monitor_id":"monitor_id","success_message":"success_message","title":"title","failure_messages":["failure_messages","failure_messages"],"status":"status"} */
 export interface CreateMonitorResultRequest {
-  MonitorID?: string;
   failure_messages?: string[];
+  monitor_id?: string;
   severity?: string;
   status?: string;
   success_message?: string;
@@ -1445,8 +1445,8 @@ export interface FinalizeModuleRunRequest {
 }
 
 export interface CreateMonitorResultRequest {
-  MonitorID?: string;
   failure_messages?: string[];
+  monitor_id?: string;
   severity?: string;
   status?: string;
   success_message?: string;

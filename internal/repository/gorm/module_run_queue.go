@@ -28,7 +28,7 @@ func (repo *ModuleRunQueueRepository) CreateModuleRunQueue(mod *models.Module, q
 
 func (repo *ModuleRunQueueRepository) ReadModuleRunQueueByID(moduleID, moduleRunQueueID, lockID string) (*models.ModuleRunQueue, repository.RepositoryError) {
 	queue := &models.ModuleRunQueue{}
-	query := repo.db.Debug()
+	query := repo.db
 
 	query = query.Preload("Items", func(db *gorm.DB) *gorm.DB {
 		db = db.

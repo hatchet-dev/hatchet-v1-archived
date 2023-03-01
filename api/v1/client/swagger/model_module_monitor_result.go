@@ -12,18 +12,19 @@ import (
 	"time"
 )
 
-type ModuleRun struct {
-	Config *ModuleRunConfig `json:"config,omitempty"`
+type ModuleMonitorResult struct {
 	// the time that this resource was created
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	GithubPullRequest *GithubPullRequest `json:"github_pull_request,omitempty"`
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
-	Kind string `json:"kind,omitempty"`
-	MonitorResults []ModuleMonitorResult `json:"monitor_results,omitempty"`
-	Monitors []ModuleMonitor `json:"monitors,omitempty"`
+	Message string `json:"message,omitempty"`
+	ModuleId string `json:"module_id,omitempty"`
+	ModuleMonitorId string `json:"module_monitor_id,omitempty"`
+	ModuleName string `json:"module_name,omitempty"`
+	ModuleRunId string `json:"module_run_id,omitempty"`
+	Severity string `json:"severity,omitempty"`
 	Status string `json:"status,omitempty"`
-	StatusDescription string `json:"status_description,omitempty"`
+	Title string `json:"title,omitempty"`
 	// the time that this resource was last updated
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

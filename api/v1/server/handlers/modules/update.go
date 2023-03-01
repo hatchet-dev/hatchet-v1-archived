@@ -55,7 +55,7 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	valuesGithub := request.ValuesGithub
 	valuesRaw := request.ValuesRaw
-	var prevMVV *models.ModuleValuesVersion
+	var prevMVVVersion uint
 	var err error
 
 	if valuesGithub != nil && valuesRaw != nil {
@@ -70,16 +70,20 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if valuesGithub != nil || valuesRaw != nil {
-		prevMVV, err = m.Repo().ModuleValues().ReadModuleValuesVersionByID(module.ID, module.CurrentModuleValuesVersionID)
+		prevMVV, err := m.Repo().ModuleValues().ReadModuleValuesVersionByID(module.ID, module.CurrentModuleValuesVersionID)
 
-		if err != nil {
+		if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 			return
+		} else if prevMVV == nil {
+			prevMVVVersion = 0
+		} else {
+			prevMVVVersion = prevMVV.Version
 		}
 	}
 
 	if valuesGithub != nil {
-		mvv, err := createModuleValuesGithub(m.Config(), module, valuesGithub, prevMVV.Version)
+		mvv, err := createModuleValuesGithub(m.Config(), module, valuesGithub, prevMVVVersion)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -88,7 +92,7 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 		module.CurrentModuleValuesVersionID = mvv.ID
 	} else if valuesRaw != nil {
-		mvv, err := createModuleValuesRaw(m.Config(), module, request.ValuesRaw, prevMVV.Version)
+		mvv, err := createModuleValuesRaw(m.Config(), module, request.ValuesRaw, prevMVVVersion)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

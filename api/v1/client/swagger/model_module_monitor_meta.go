@@ -12,18 +12,22 @@ import (
 	"time"
 )
 
-type ModuleRun struct {
-	Config *ModuleRunConfig `json:"config,omitempty"`
+type ModuleMonitorMeta struct {
 	// the time that this resource was created
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	GithubPullRequest *GithubPullRequest `json:"github_pull_request,omitempty"`
+	// the cron schedule for the monitor
+	CronSchedule string `json:"cron_schedule,omitempty"`
+	// the description for the monitor
+	Description string `json:"description,omitempty"`
+	// whether the monitor is currently disabled
+	Disabled bool `json:"disabled,omitempty"`
 	// the id of this resource, in UUID format
 	Id string `json:"id,omitempty"`
+	// whether this monitor is a default for all modules in the team
+	IsDefault bool `json:"is_default,omitempty"`
 	Kind string `json:"kind,omitempty"`
-	MonitorResults []ModuleMonitorResult `json:"monitor_results,omitempty"`
-	Monitors []ModuleMonitor `json:"monitors,omitempty"`
-	Status string `json:"status,omitempty"`
-	StatusDescription string `json:"status_description,omitempty"`
+	// the name for the monitor
+	Name string `json:"name,omitempty"`
 	// the time that this resource was last updated
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

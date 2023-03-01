@@ -10,8 +10,8 @@
 package swagger
 
 type CreateMonitorResultRequest struct {
-	MonitorID string `json:"MonitorID,omitempty"`
 	FailureMessages []string `json:"failure_messages,omitempty"`
+	MonitorId string `json:"monitor_id,omitempty"`
 	Severity string `json:"severity,omitempty"`
 	Status string `json:"status,omitempty"`
 	SuccessMessage string `json:"success_message,omitempty"`

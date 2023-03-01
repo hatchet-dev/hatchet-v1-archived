@@ -77,6 +77,14 @@ func (m *ModuleMonitor) ToAPIType() *types.ModuleMonitor {
 	}
 }
 
+func (m *ModuleMonitor) IsCronKind() bool {
+	return IsCronKind(m.Kind)
+}
+
+func IsCronKind(kind ModuleMonitorKind) bool {
+	return kind == MonitorKindPlan || kind == MonitorKindState
+}
+
 func (m *ModuleMonitor) ShouldRunForModule(modID string) bool {
 	if m.Disabled {
 		return false

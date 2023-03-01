@@ -25,32 +25,32 @@ var (
 	_ context.Context
 )
 
-type TeamsApiService service
+type MonitorsApiService service
 /*
-TeamsApiService Add team member
-Add a team member from the organization members to the team.
+MonitorsApiService Create Monitor
+Creates a new monitor.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
- * @param optional nil or *TeamsApiAddTeamMemberOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of AddTeamMemberRequest) -  The team member to add
-@return TeamAddMemberResponse
+ * @param optional nil or *MonitorsApiCreateMonitorOpts - Optional Parameters:
+     * @param "Body" (optional.Interface of CreateMonitorRequest) -  The monitor to create
+@return CreateMonitorResponse
 */
 
-type TeamsApiAddTeamMemberOpts struct {
+type MonitorsApiCreateMonitorOpts struct {
     Body optional.Interface
 }
 
-func (a *TeamsApiService) AddTeamMember(ctx context.Context, teamId string, localVarOptionals *TeamsApiAddTeamMemberOpts) (TeamAddMemberResponse, *http.Response, error) {
+func (a *MonitorsApiService) CreateMonitor(ctx context.Context, teamId string, localVarOptionals *MonitorsApiCreateMonitorOpts) (CreateMonitorResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		localVarReturnValue TeamAddMemberResponse
+		localVarReturnValue CreateMonitorResponse
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/members"
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitors"
 	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
 
 	localVarHeaderParams := make(map[string]string)
@@ -110,7 +110,7 @@ func (a *TeamsApiService) AddTeamMember(ctx context.Context, teamId string, loca
 			error: localVarHttpResponse.Status,
 		}
 		if localVarHttpResponse.StatusCode == 200 {
-			var v TeamAddMemberResponse
+			var v CreateMonitorResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
@@ -145,142 +145,26 @@ func (a *TeamsApiService) AddTeamMember(ctx context.Context, teamId string, loca
 	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
-TeamsApiService Create a new team.
-Creates a new team, with the authenticated user set as a team admin.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param orgId The org id
- * @param optional nil or *TeamsApiCreateTeamOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of CreateTeamRequest) -  The team to create
-@return CreateTeamResponse
-*/
-
-type TeamsApiCreateTeamOpts struct {
-    Body optional.Interface
-}
-
-func (a *TeamsApiService) CreateTeam(ctx context.Context, orgId string, localVarOptionals *TeamsApiCreateTeamOpts) (CreateTeamResponse, *http.Response, error) {
-	var (
-		localVarHttpMethod = strings.ToUpper("Post")
-		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
-		localVarReturnValue CreateTeamResponse
-	)
-
-	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/organizations/{org_id}/teams"
-	localVarPath = strings.Replace(localVarPath, "{"+"org_id"+"}", fmt.Sprintf("%v", orgId), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
-	// body params
-	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
-		
-		localVarOptionalBody:= localVarOptionals.Body.Value()
-		localVarPostBody = &localVarOptionalBody
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
-		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-		if err == nil { 
-			return localVarReturnValue, localVarHttpResponse, err
-		}
-	}
-
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body: localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 201 {
-			var v CreateTeamResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ApiErrorBadRequestExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		if localVarHttpResponse.StatusCode == 403 {
-			var v ApiErrorForbiddenExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		return localVarReturnValue, localVarHttpResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHttpResponse, nil
-}
-/*
-TeamsApiService Delete team.
-Delete a team. This operation cannot be undone.
+MonitorsApiService Delete Monitor
+Deletes a monitor.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
-@return DeleteTeamResponse
+ * @param monitorId The monitor id
+@return DeleteMonitorResponse
 */
-func (a *TeamsApiService) DeleteTeam(ctx context.Context, teamId string) (DeleteTeamResponse, *http.Response, error) {
+func (a *MonitorsApiService) DeleteMonitor(ctx context.Context, teamId string, monitorId string) (DeleteMonitorResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		localVarReturnValue DeleteTeamResponse
+		localVarReturnValue DeleteMonitorResponse
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}"
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitors/{monitor_id}"
 	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"monitor_id"+"}", fmt.Sprintf("%v", monitorId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -333,7 +217,7 @@ func (a *TeamsApiService) DeleteTeam(ctx context.Context, teamId string) (Delete
 			error: localVarHttpResponse.Status,
 		}
 		if localVarHttpResponse.StatusCode == 200 {
-			var v DeleteTeamResponse
+			var v DeleteMonitorResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
@@ -368,232 +252,31 @@ func (a *TeamsApiService) DeleteTeam(ctx context.Context, teamId string) (Delete
 	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
-TeamsApiService Delete team member
-Delete a team member.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param teamId The team member id
-@return EmptyResponse
-*/
-func (a *TeamsApiService) DeleteTeamMember(ctx context.Context, teamId string) (EmptyResponse, *http.Response, error) {
-	var (
-		localVarHttpMethod = strings.ToUpper("Delete")
-		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
-		localVarReturnValue EmptyResponse
-	)
-
-	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/members/{team_member_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
-		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-		if err == nil { 
-			return localVarReturnValue, localVarHttpResponse, err
-		}
-	}
-
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body: localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 201 {
-			var v EmptyResponse
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ApiErrorBadRequestExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		if localVarHttpResponse.StatusCode == 403 {
-			var v ApiErrorForbiddenExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarReturnValue, localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarReturnValue, localVarHttpResponse, newErr
-		}
-		return localVarReturnValue, localVarHttpResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHttpResponse, nil
-}
-/*
-TeamsApiService Github incoming webhook endpoint
-Github incoming webhook handler.
+MonitorsApiService Get Monitor
+Gets a monitor by id.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
- * @param githubIncomingWebhookId The incoming webhook id
-
+ * @param monitorId The monitor id
+@return GetMonitorResponse
 */
-func (a *TeamsApiService) GithubIncomingWebhook(ctx context.Context, teamId string, githubIncomingWebhookId string) (*http.Response, error) {
-	var (
-		localVarHttpMethod = strings.ToUpper("Post")
-		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
-		
-	)
-
-	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"github_incoming_webhook_id"+"}", fmt.Sprintf("%v", githubIncomingWebhookId), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarHttpResponse, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarHttpResponse, err
-	}
-
-
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body: localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		if localVarHttpResponse.StatusCode == 400 {
-			var v ApiErrorBadRequestExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarHttpResponse, newErr
-		}
-		if localVarHttpResponse.StatusCode == 403 {
-			var v ApiErrorForbiddenExample
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
-				if err != nil {
-					newErr.error = err.Error()
-					return localVarHttpResponse, newErr
-				}
-				newErr.model = v
-				return localVarHttpResponse, newErr
-		}
-		return localVarHttpResponse, newErr
-	}
-
-	return localVarHttpResponse, nil
-}
-/*
-TeamsApiService List team members
-Lists team members for a team.
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *TeamsApiListTeamMembersOpts - Optional Parameters:
-     * @param "TeamId" (optional.Int64) -  The page to query for
-@return ListTeamMembersResponse
-*/
-
-type TeamsApiListTeamMembersOpts struct {
-    TeamId optional.Int64
-}
-
-func (a *TeamsApiService) ListTeamMembers(ctx context.Context, localVarOptionals *TeamsApiListTeamMembersOpts) (ListTeamMembersResponse, *http.Response, error) {
+func (a *MonitorsApiService) GetMonitor(ctx context.Context, teamId string, monitorId string) (GetMonitorResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		localVarReturnValue ListTeamMembersResponse
+		localVarReturnValue GetMonitorResponse
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/members"
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitors/{monitor_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"monitor_id"+"}", fmt.Sprintf("%v", monitorId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.TeamId.IsSet() {
-		localVarQueryParams.Add("team_id", parameterToString(localVarOptionals.TeamId.Value(), ""))
-	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}
 
@@ -641,7 +324,7 @@ func (a *TeamsApiService) ListTeamMembers(ctx context.Context, localVarOptionals
 			error: localVarHttpResponse.Status,
 		}
 		if localVarHttpResponse.StatusCode == 200 {
-			var v ListTeamMembersResponse
+			var v GetMonitorResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
@@ -676,36 +359,46 @@ func (a *TeamsApiService) ListTeamMembers(ctx context.Context, localVarOptionals
 	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
-TeamsApiService List teams.
-Lists teams for an organization.
+MonitorsApiService List Monitor Results
+Lists monitor results for a given team, optionally filtered by module or monitor id.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *TeamsApiListTeamsOpts - Optional Parameters:
-     * @param "OrgId" (optional.Int64) -  The page to query for
-@return ListTeamsResponse
+ * @param optional nil or *MonitorsApiListMonitorResultsOpts - Optional Parameters:
+     * @param "Page" (optional.Int64) -  The page to query for
+     * @param "ModuleMonitorId" (optional.String) -  The monitor id to filter by
+     * @param "ModuleId" (optional.String) -  The module id to filter by
+@return ListMonitorResultsResponse
 */
 
-type TeamsApiListTeamsOpts struct {
-    OrgId optional.Int64
+type MonitorsApiListMonitorResultsOpts struct {
+    Page optional.Int64
+    ModuleMonitorId optional.String
+    ModuleId optional.String
 }
 
-func (a *TeamsApiService) ListTeams(ctx context.Context, localVarOptionals *TeamsApiListTeamsOpts) (ListTeamsResponse, *http.Response, error) {
+func (a *MonitorsApiService) ListMonitorResults(ctx context.Context, localVarOptionals *MonitorsApiListMonitorResultsOpts) (ListMonitorResultsResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		localVarReturnValue ListTeamsResponse
+		localVarReturnValue ListMonitorResultsResponse
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/organizations/{org_id}/teams"
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitor_results"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.OrgId.IsSet() {
-		localVarQueryParams.Add("org_id", parameterToString(localVarOptionals.OrgId.Value(), ""))
+	if localVarOptionals != nil && localVarOptionals.Page.IsSet() {
+		localVarQueryParams.Add("page", parameterToString(localVarOptionals.Page.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ModuleMonitorId.IsSet() {
+		localVarQueryParams.Add("module_monitor_id", parameterToString(localVarOptionals.ModuleMonitorId.Value(), ""))
+	}
+	if localVarOptionals != nil && localVarOptionals.ModuleId.IsSet() {
+		localVarQueryParams.Add("module_id", parameterToString(localVarOptionals.ModuleId.Value(), ""))
 	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}
@@ -754,7 +447,7 @@ func (a *TeamsApiService) ListTeams(ctx context.Context, localVarOptionals *Team
 			error: localVarHttpResponse.Status,
 		}
 		if localVarHttpResponse.StatusCode == 200 {
-			var v ListTeamsResponse
+			var v ListMonitorResultsResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
@@ -789,31 +482,148 @@ func (a *TeamsApiService) ListTeams(ctx context.Context, localVarOptionals *Team
 	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
-TeamsApiService Update team
-Updates a team.
+MonitorsApiService List Monitors
+Lists monitors for a given team.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
- * @param optional nil or *TeamsApiUpdateTeamOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of CreateTeamRequest) -  The team parameters to update
-@return TeamUpdateResponse
+ * @param optional nil or *MonitorsApiListMonitorsOpts - Optional Parameters:
+     * @param "Page" (optional.Int64) -  The page to query for
+@return ListMonitorsResponse
 */
 
-type TeamsApiUpdateTeamOpts struct {
+type MonitorsApiListMonitorsOpts struct {
+    Page optional.Int64
+}
+
+func (a *MonitorsApiService) ListMonitors(ctx context.Context, teamId string, localVarOptionals *MonitorsApiListMonitorsOpts) (ListMonitorsResponse, *http.Response, error) {
+	var (
+		localVarHttpMethod = strings.ToUpper("Get")
+		localVarPostBody   interface{}
+		localVarFileName   string
+		localVarFileBytes  []byte
+		localVarReturnValue ListMonitorsResponse
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitors"
+	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if localVarOptionals != nil && localVarOptionals.Page.IsSet() {
+		localVarQueryParams.Add("page", parameterToString(localVarOptionals.Page.Value(), ""))
+	}
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+		if err == nil { 
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body: localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+		if localVarHttpResponse.StatusCode == 200 {
+			var v ListMonitorsResponse
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 400 {
+			var v ApiErrorBadRequestExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 403 {
+			var v ApiErrorForbiddenExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+/*
+MonitorsApiService Update Monitor
+Updates a monitor.
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param teamId The team id
+ * @param monitorId The monitor id
+ * @param optional nil or *MonitorsApiUpdateMonitorOpts - Optional Parameters:
+     * @param "Body" (optional.Interface of CreateMonitorRequest) -  The monitor to update
+@return UpdateMonitorResponse
+*/
+
+type MonitorsApiUpdateMonitorOpts struct {
     Body optional.Interface
 }
 
-func (a *TeamsApiService) UpdateTeam(ctx context.Context, teamId string, localVarOptionals *TeamsApiUpdateTeamOpts) (TeamUpdateResponse, *http.Response, error) {
+func (a *MonitorsApiService) UpdateMonitor(ctx context.Context, teamId string, monitorId string, localVarOptionals *MonitorsApiUpdateMonitorOpts) (UpdateMonitorResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		localVarReturnValue TeamUpdateResponse
+		localVarReturnValue UpdateMonitorResponse
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}"
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/monitors/{monitor_id}"
 	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"monitor_id"+"}", fmt.Sprintf("%v", monitorId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -872,7 +682,7 @@ func (a *TeamsApiService) UpdateTeam(ctx context.Context, teamId string, localVa
 			error: localVarHttpResponse.Status,
 		}
 		if localVarHttpResponse.StatusCode == 200 {
-			var v TeamUpdateResponse
+			var v UpdateMonitorResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()

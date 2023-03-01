@@ -78,7 +78,7 @@ func (repo *ModuleMonitorRepository) DeleteModuleMonitor(monitor *models.ModuleM
 }
 
 func (repo *ModuleMonitorRepository) CreateModuleMonitorResult(monitor *models.ModuleMonitor, result *models.ModuleMonitorResult) (*models.ModuleMonitorResult, repository.RepositoryError) {
-	if err := repo.db.Debug().Omit("Module.*").Create(result).Error; err != nil {
+	if err := repo.db.Omit("Module.*").Create(result).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

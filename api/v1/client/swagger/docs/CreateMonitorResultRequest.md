@@ -3,8 +3,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**MonitorID** | **string** |  | [optional] [default to null]
 **FailureMessages** | **[]string** |  | [optional] [default to null]
+**MonitorId** | **string** |  | [optional] [default to null]
 **Severity** | **string** |  | [optional] [default to null]
 **Status** | **string** |  | [optional] [default to null]
 **SuccessMessage** | **string** |  | [optional] [default to null]

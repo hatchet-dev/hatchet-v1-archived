@@ -69,6 +69,16 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	if req.CronSchedule != "" {
+		// make sure cron schedule is only set for cron kinds
+		if (req.Kind == "" && !monitor.IsCronKind()) || (req.Kind != "" && !models.IsCronKind(models.ModuleMonitorKind(req.Kind))) {
+			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: fmt.Sprintf("Cannot set cron schedule when monitor kind is not a scheduled monitor"),
+			}, http.StatusBadRequest))
+
+			return
+		}
+
 		monitor.CronSchedule = req.CronSchedule
 	}
 
@@ -80,7 +90,11 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		monitor.DisplayName = req.Name
 	}
 
+	var shouldCreateCron bool
+
 	if req.Kind != "" {
+		shouldCreateCron = !monitor.IsCronKind() && models.IsCronKind(models.ModuleMonitorKind(req.Kind))
+
 		monitor.Kind = models.ModuleMonitorKind(req.Kind)
 	}
 
@@ -125,7 +139,15 @@ func (m *MonitorUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		monitor.Modules = _monitor.Modules
 	}
 
-	if req.CronSchedule != "" {
+	if shouldCreateCron {
+		err = dispatcher.DispatchCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, monitor.CronSchedule)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
+	} else if req.CronSchedule != "" {
 		// update the workflow
 		err = dispatcher.UpdateCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID, monitor.CronSchedule)
 

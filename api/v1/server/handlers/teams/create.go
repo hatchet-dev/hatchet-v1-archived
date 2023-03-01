@@ -157,7 +157,7 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dispatcher.DispatchCronMonitor(t.Config().TemporalClient, team.ID, monitor.ID, "*/5 * * * *")
+	err = dispatcher.DispatchCronMonitor(t.Config().TemporalClient, team.ID, monitor.ID, "0 */6 * * *")
 
 	if err != nil {
 		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))

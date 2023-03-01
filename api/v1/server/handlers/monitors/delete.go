@@ -48,13 +48,15 @@ func (m *MonitorDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// terminate the workflow
-	err = dispatcher.DeleteCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID)
+	if monitor.IsCronKind() {
+		// terminate the workflow
+		err = dispatcher.DeleteCronMonitor(m.Config().TemporalClient, team.ID, monitor.ID)
 
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 
-		return
+			return
+		}
 	}
 
 	m.WriteResult(w, r, monitor.ToAPIType())
