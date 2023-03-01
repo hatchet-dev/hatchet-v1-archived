@@ -6,6 +6,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
+	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 )
@@ -18,6 +19,16 @@ type BackgroundConfigFile struct {
 	S3StateStore shared.FileStorageConfigFile
 
 	RedisLogStore shared.RedisConfigFile
+
+	// Notification options
+
+	// RestrictedEmailDomains sets the restricted email domains for the instance.
+	RestrictedEmailDomains []string `env:"RESTRICTED_EMAIL_DOMAINS"`
+
+	// Sendgrid notifier options
+	SendgridAPIKey             string `env:"SENDGRID_API_KEY"`
+	SendgridIncidentTemplateID string `env:"SENDGRID_INCIDENT_TEMPLATE_ID"`
+	SendgridSenderEmail        string `env:"SENDGRID_SENDER_EMAIL"`
 }
 
 type BackgroundConfig struct {
@@ -34,6 +45,8 @@ type BackgroundConfig struct {
 	DefaultLogStore logstorage.LogStorageBackend
 
 	ModuleRunQueueManager queuemanager.ModuleRunQueueManager
+
+	IncidentNotifier notifier.IncidentNotifier
 }
 
 type RunnerConfigFile struct {

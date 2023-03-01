@@ -331,6 +331,21 @@ func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromConfigFile(
 
 	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
 
+	var notifier notifier.IncidentNotifier
+
+	if wc.SendgridAPIKey != "" && wc.SendgridSenderEmail != "" && wc.SendgridIncidentTemplateID != "" {
+		notifier = sendgrid.NewIncidentNotifier(&sendgrid.IncidentNotifierOpts{
+			SharedOpts: &sendgrid.SharedOpts{
+				APIKey:                 wc.SendgridAPIKey,
+				SenderEmail:            wc.SendgridSenderEmail,
+				RestrictedEmailDomains: wc.RestrictedEmailDomains,
+			},
+			IncidentTemplateID: wc.SendgridIncidentTemplateID,
+		})
+	} else {
+		notifier = noop.NewNoOpIncidentNotifier()
+	}
+
 	return &worker.BackgroundConfig{
 		Config:                *sharedConfig,
 		DB:                    *dbConfig,
@@ -339,6 +354,7 @@ func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromConfigFile(
 		DefaultFileStore:      storageManager,
 		DefaultLogStore:       logManager,
 		ModuleRunQueueManager: queueManager,
+		IncidentNotifier:      notifier,
 	}, nil
 }
 

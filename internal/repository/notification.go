@@ -36,6 +36,10 @@ type NotificationRepository interface {
 	// NOTE: this is NOT the UUID (use ReadNotificationByID for that)
 	ReadNotificationByNotificationID(teamID, notificationID string, opts *ReadNotificationOpts) (*models.Notification, RepositoryError)
 
+	// ListNotifications lists notifications (paginated)
+	// NOTE: this should only be called by internal workflows. Any team-scoped handlers should use ListNotificationsByTeamID
+	ListNotifications(filterOpts *ListNotificationOpts, opts ...QueryOption) ([]*models.Notification, *PaginatedResult, RepositoryError)
+
 	// ListNotificationsByTeamID lists notifications (paginated)
 	ListNotificationsByTeamID(teamID string, filterOpts *ListNotificationOpts, opts ...QueryOption) ([]*models.Notification, *PaginatedResult, RepositoryError)
 

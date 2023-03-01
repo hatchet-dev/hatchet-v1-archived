@@ -32,4 +32,7 @@ type Notification struct {
 
 	// A list of monitor results for monitor failures
 	MonitorResults []ModuleMonitorResult `gorm:"many2many:notification_to_monitor_results;"`
+
+	ModuleID string
+	Module   Module `gorm:"foreignKey:ModuleID"`
 }

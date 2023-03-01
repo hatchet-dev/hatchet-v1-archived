@@ -22,3 +22,14 @@ func (s *UserNotifier) SendVerificationEmail(opts *notifier.SendVerificationEmai
 func (s *UserNotifier) SendInviteLinkEmail(opts *notifier.SendInviteLinkEmailOpts) error {
 	return nil
 }
+
+type IncidentNotifier struct {
+}
+
+func NewNoOpIncidentNotifier() notifier.IncidentNotifier {
+	return &IncidentNotifier{}
+}
+
+func (s *IncidentNotifier) SendIncidentNotification(opts *notifier.SendIncidentNotificationOpts) error {
+	return nil
+}

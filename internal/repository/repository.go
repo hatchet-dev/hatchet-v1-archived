@@ -21,6 +21,7 @@ type Repository interface {
 	ModuleEnvVars() ModuleEnvVarsRepository
 	ModuleRunQueue() ModuleRunQueueRepository
 	ModuleMonitor() ModuleMonitorRepository
+	Notification() NotificationRepository
 }
 
 var (
@@ -39,4 +40,8 @@ type RepositoryErrorUnknown struct {
 
 func (r *RepositoryErrorUnknown) Error() string {
 	return fmt.Sprintf("unknown repository error: %v", r.err)
+}
+
+func BoolPointer(b bool) *bool {
+	return &b
 }

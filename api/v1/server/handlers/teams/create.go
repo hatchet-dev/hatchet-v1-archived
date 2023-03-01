@@ -139,6 +139,18 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// create notification inbox
+	inbox := &models.NotificationInbox{
+		TeamID: team.ID,
+	}
+
+	inbox, err = t.Repo().Notification().CreateNotificationInbox(inbox)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
 	// create a default drift detection monitor for the team
 	monitor := &models.ModuleMonitor{
 		TeamID:           team.ID,
