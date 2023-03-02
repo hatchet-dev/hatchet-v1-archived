@@ -10,6 +10,9 @@ migrate:
 start-dev:
 	sh ./hack/dev/start.sh
 
+start-temporal:
+	sh ./hack/dev/start-temporal.sh
+
 start-ngrok:
 	ngrok http 8081
 
