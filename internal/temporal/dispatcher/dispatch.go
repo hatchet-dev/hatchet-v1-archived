@@ -12,6 +12,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/logflusher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/monitordispatcher"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/notifier"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/queuechecker"
 	"go.temporal.io/sdk/client"
 
@@ -51,6 +52,20 @@ func DispatchBackgroundTasks(c *temporal.Client) error {
 	}
 
 	_, err = tc.ExecuteWorkflow(context.Background(), logFlusherOptions, enums.WorkflowTypeNameLogFlush, logFlusherInput)
+
+	if err != nil {
+		return err
+	}
+
+	notifierInput := notifier.NotifierInput{}
+
+	notifierOptions := client.StartWorkflowOptions{
+		ID:           enums.BackgroundNotifierID,
+		TaskQueue:    enums.BackgroundQueueName,
+		CronSchedule: "* * * * *",
+	}
+
+	_, err = tc.ExecuteWorkflow(context.Background(), notifierOptions, enums.WorkflowTypeNameNotifier, notifierInput)
 
 	if err != nil {
 		return err

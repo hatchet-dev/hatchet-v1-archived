@@ -6,12 +6,13 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/notifications"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/orgs"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 )
 
-// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization leaveOrg createTeam listTeams
+// swagger:parameters getOrganization createOrgMemberInvite updateOrgOwner updateOrganization leaveOrg createTeam listTeams listNotifications
 type orgPathParams struct {
 	// The org id
 	// in: path
@@ -763,6 +764,61 @@ func GetOrganizationRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: deleteOrgEndpoint,
 		Handler:  deleteOrgHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/organizations/{org_id}/notifications -> notifications.NewNotificationListHandler
+	// swagger:operation GET /api/v1/organizations/{org_id}/notifications listNotifications
+	//
+	// ### Description
+	//
+	// Lists notifications for an organization, optionally filtered by team id.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: List notifications
+	// tags:
+	// - Teams
+	// parameters:
+	//   - name: org_id
+	// responses:
+	//   '200':
+	//     description: Successfully listed notifications
+	//     schema:
+	//       $ref: '#/definitions/ListNotificationsResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	listNotificationsEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbList,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/organizations/{%s}/notifications", string(types.URLParamOrgID)),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.OrgScope,
+			},
+		},
+	)
+
+	listNotificationsHandler := notifications.NewNotificationListHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: listNotificationsEndpoint,
+		Handler:  listNotificationsHandler,
 		Router:   r,
 	})
 

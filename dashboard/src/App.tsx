@@ -36,6 +36,7 @@ import CreateTeam from "views/createteam/CreateTeam";
 import UserAccountsView from "views/useraccounts/UserAccountsView";
 import CreateMonitorView from "views/createmonitor/CreateMonitorView";
 import ExpandedMonitorView from "views/expandedmonitor/ExpandedMonitorView";
+import Notifications from "views/notifications/Notifications";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -264,7 +265,23 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/settings"
+            path="/notifications/teams/:team/:notification"
+            render={() => (
+              <WrappedTeamContents>
+                <Notifications />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/notifications"
+            render={() => (
+              <WrappedTeamContents>
+                <Notifications />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/teams/:team/settings"
             render={() => (
               <WrappedTeamContents>
                 <TeamSettingsView />
@@ -272,7 +289,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/monitors/create/:step"
+            path="/teams/:team/monitors/create/:step"
             render={() => (
               <WrappedTeamContents>
                 <CreateMonitorView />
@@ -280,7 +297,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/monitors/:monitor"
+            path="/teams/:team/monitors/:monitor"
             render={() => (
               <WrappedTeamContents>
                 <ExpandedMonitorView />
@@ -288,7 +305,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/monitors"
+            path="/teams/:team/monitors"
             render={() => (
               <WrappedTeamContents>
                 <MonitoringView />
@@ -296,7 +313,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/modules/create/:step"
+            path="/teams/:team/modules/create/:step"
             render={() => (
               <WrappedTeamContents>
                 <CreateModuleView />
@@ -304,7 +321,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/modules/:module"
+            path="/teams/:team/modules/:module"
             render={() => (
               <WrappedTeamContents>
                 <ExpandedModuleView />
@@ -312,7 +329,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/modules"
+            path="/teams/:team/modules"
             render={() => (
               <WrappedTeamContents>
                 <ModulesView />
@@ -320,7 +337,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/templates/:template"
+            path="/teams/:team/templates/:template"
             render={() => (
               <WrappedTeamContents>
                 <ExpandedTemplateView />
@@ -328,7 +345,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/templates"
+            path="/teams/:team/templates"
             render={() => (
               <WrappedTeamContents>
                 <TemplatesView />
@@ -336,7 +353,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team/environments"
+            path="/teams/:team/environments"
             render={() => (
               <WrappedTeamContents>
                 <EnvironmentsView />
@@ -344,7 +361,7 @@ const AppContents: React.FunctionComponent = () => {
             )}
           ></Route>
           <Route
-            path="/team/:team"
+            path="/teams/:team"
             render={() => (
               <WrappedTeamContents>
                 <HomeView />

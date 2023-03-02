@@ -6,6 +6,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulerunner"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/monitordispatcher"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/notifier"
 	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/queuechecker"
 	"go.temporal.io/sdk/worker"
 
@@ -29,6 +30,10 @@ func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
 
 	backgroundWorker.RegisterWorkflow(lf.FlushLogs)
 	backgroundWorker.RegisterActivity(lf.Flush)
+
+	notifier := notifier.NewNotifier(config)
+
+	backgroundWorker.RegisterWorkflow(notifier.NotifyWorkflow)
 
 	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL)
 	qc := queuechecker.NewQueueChecker(config.DB.Repository, mqc)

@@ -25,7 +25,7 @@ const CreateMonitorView: React.FunctionComponent = () => {
     },
     onSuccess: () => {
       setErr("");
-      history.push(`/team/${currTeam.id}/monitors`);
+      history.push(`/teams/${currTeam.id}/monitors`);
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {
@@ -40,7 +40,7 @@ const CreateMonitorView: React.FunctionComponent = () => {
   const submitStepOne = (req: CreateMonitorRequest) => {
     setSubmittedStepOne(true);
     setRequest(req);
-    history.push(`/team/${currTeam.id}/monitors/create/step_2`);
+    history.push(`/teams/${currTeam.id}/monitors/create/step_2`);
   };
 
   const submitStepTwo = (req: CreateMonitorRequest) => {

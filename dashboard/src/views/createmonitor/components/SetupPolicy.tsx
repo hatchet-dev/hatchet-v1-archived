@@ -36,15 +36,15 @@ const SetupPolicy: React.FC<Props> = ({ req, submit, err }) => {
   const breadcrumbs = [
     {
       label: "Monitors",
-      link: `/team/${currTeam.id}/monitors`,
+      link: `/teams/${currTeam.id}/monitors`,
     },
     {
       label: "Step 1: Monitor Metadata",
-      link: `/team/${currTeam.id}/monitors/create/step_1`,
+      link: `/teams/${currTeam.id}/monitors/create/step_1`,
     },
     {
       label: "Step 2: Configure Policy",
-      link: `/team/${currTeam.id}/monitors/create/step_2`,
+      link: `/teams/${currTeam.id}/monitors/create/step_2`,
     },
   ];
 

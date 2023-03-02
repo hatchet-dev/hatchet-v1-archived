@@ -3,31 +3,35 @@ import {
   altTextFontStack,
   SmallSpan,
 } from "@hatchet-dev/hatchet-components";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export const StatusContainer = styled(FlexRowLeft)<{
-  width?: string;
-  color?: string;
-}>`
-  ${altTextFontStack}
+export const StatusContainerStyles = css`
   color: ${(props) => props.theme.text.default};
   font-size: 13px;
   border: ${(props) => props.theme.line.default};
   padding: 2px 8px;
   border-radius: 5px;
   cursor: default;
-  width: ${(props) => props.width || "fit-content"};
+
   :hover {
     background: ${(props) => props.theme.bg.hover};
   }
-
-  ${(props) => props.color && `border-color: ${props.color};`}
 
   > i {
     color: ${(props) => props.theme.text.default};
     font-size: 16px;
     margin-right: 10px;
   }
+`;
+
+export const StatusContainer = styled(FlexRowLeft)<{
+  width?: string;
+  color?: string;
+}>`
+  ${altTextFontStack}
+  ${StatusContainerStyles}
+  width: ${(props) => props.width || "fit-content"};
+  ${(props) => props.color && `border-color: ${props.color};`}
 `;
 
 export const StatusText = styled(SmallSpan)<{ color?: string }>`

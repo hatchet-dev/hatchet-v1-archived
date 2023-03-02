@@ -350,6 +350,8 @@ export type GetModuleValuesResponse = ModuleValues;
 
 export type GetMonitorResponse = ModuleMonitor;
 
+export type GetNotificationResponse = Notification;
+
 export type GetOrgMemberResponse = OrganizationMember;
 
 export type GetOrganizationResponse = Organization;
@@ -442,6 +444,12 @@ export interface ListMonitorResultsResponse {
 export interface ListMonitorsResponse {
   pagination?: PaginationResponse;
   rows?: ModuleMonitorMeta[];
+}
+
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","notification_id":"notification_id","team_id":"team_id","last_notified":"2000-01-23T04:56:07.000Z","message":"message","title":"title","resolved":true},{"module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","notification_id":"notification_id","team_id":"team_id","last_notified":"2000-01-23T04:56:07.000Z","message":"message","title":"title","resolved":true}]} */
+export interface ListNotificationsResponse {
+  pagination?: PaginationResponse;
+  rows?: NotificationMeta[];
 }
 
 /** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}},{"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},"user":{"display_name":"User 1","email":"user1@gmail.com"}}]} */
@@ -811,6 +819,67 @@ export interface ModuleValuesGithubConfig {
 export type MonitorResultSeverity = string;
 
 export type MonitorResultStatus = string;
+
+/** @example {"module":{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},"created_at":"2022-12-13T20:06:48.888Z","notification_id":"notification_id","team_id":"team_id","message":"message","title":"title","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","last_notified":"2000-01-23T04:56:07.000Z","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"runs":[{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"},{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"}],"resolved":true} */
+export interface Notification {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** @format date-time */
+  last_notified?: string;
+  message?: string;
+  module?: Module;
+  module_id?: string;
+  monitor_results?: ModuleMonitorResult[];
+  notification_id?: string;
+  resolved?: boolean;
+  runs?: ModuleRun[];
+  team_id?: string;
+  title?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","notification_id":"notification_id","team_id":"team_id","last_notified":"2000-01-23T04:56:07.000Z","message":"message","title":"title","resolved":true} */
+export interface NotificationMeta {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  /** @format date-time */
+  last_notified?: string;
+  message?: string;
+  module_id?: string;
+  notification_id?: string;
+  resolved?: boolean;
+  team_id?: string;
+  title?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
 
 /** @example {"owner":{"display_name":"User 1","email":"user1@gmail.com"},"updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","display_name":"Organization 1"} */
 export interface Organization {

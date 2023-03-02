@@ -158,6 +158,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 
 	gaiFactory := authz.NewGithubAppInstallationScopedFactory(config)
 
+	notifFactory := authz.NewNotificationScopedFactory(config)
+
 	contentTypeFactory := ContentTypeMiddleware
 
 	for _, route := range routes {
@@ -211,6 +213,8 @@ func registerRoutes(config *server.Config, routes []*router.Route) {
 				atomicGroup.Use(moduleValuesFactory.Middleware)
 			case types.MonitorScope:
 				atomicGroup.Use(monitorFactory.Middleware)
+			case types.NotificationScope:
+				atomicGroup.Use(notifFactory.Middleware)
 			}
 		}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/notifications"
 	"github.com/hatchet-dev/hatchet/internal/runutils"
 )
 
@@ -95,4 +96,11 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	w.WriteHeader(http.StatusOK)
+
+	err = notifications.CreateNotificationFromMonitorResult(m.Config(), team.ID, result)
+
+	if err != nil {
+		m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
 }

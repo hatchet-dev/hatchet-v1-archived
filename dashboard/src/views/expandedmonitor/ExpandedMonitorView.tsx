@@ -38,7 +38,7 @@ const ExpandedMonitorView: React.FunctionComponent = () => {
 
   useEffect(() => {
     if (!params?.monitor) {
-      history.push(`/team/${currTeam?.id}/monitors`);
+      history.push(`/teams/${currTeam?.id}/monitors`);
     }
   }, [params]);
 
@@ -55,10 +55,7 @@ const ExpandedMonitorView: React.FunctionComponent = () => {
     switch (selectedTab) {
       case "Recent Results":
         return (
-          <ResultsList
-            team_id={currTeam?.id}
-            module_monitor_id={data?.data.id}
-          />
+          <ResultsList team_id={currTeam?.id} module_monitor={data?.data} />
         );
       case "Policy":
         return <PolicyTab team_id={currTeam?.id} monitor={data?.data} />;
@@ -81,7 +78,7 @@ const ExpandedMonitorView: React.FunctionComponent = () => {
         breadcrumbs={[
           {
             label: "Monitors",
-            link: `/team/${currTeam.id}/monitors`,
+            link: `/teams/${currTeam.id}/monitors`,
           },
           {
             label: data?.data.name,

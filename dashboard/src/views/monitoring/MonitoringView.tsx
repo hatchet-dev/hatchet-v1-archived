@@ -78,11 +78,11 @@ const MonitoringView: React.FunctionComponent = () => {
   ];
 
   const handleResourceClick = (row: any) => {
-    history.push(`/team/${currTeam.id}/monitors/${row.original.id}`);
+    history.push(`/teams/${currTeam.id}/monitors/${row.original.id}`);
   };
 
   const handleCreateMonitorClick = () => {
-    history.push(`/team/${currTeam.id}/monitors/create/step_1`);
+    history.push(`/teams/${currTeam.id}/monitors/create/step_1`);
   };
 
   const tableData =

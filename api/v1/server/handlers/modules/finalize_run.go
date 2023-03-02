@@ -13,6 +13,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/notifications"
 	"github.com/hatchet-dev/hatchet/internal/runutils"
 
 	githubsdk "github.com/google/go-github/v49/github"
@@ -167,5 +168,13 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 			return
 		}
+	}
+
+	// add notification if necessary
+	err = notifications.CreateNotificationFromModuleRun(m.Config(), module.TeamID, run)
+
+	if err != nil {
+		m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
 	}
 }

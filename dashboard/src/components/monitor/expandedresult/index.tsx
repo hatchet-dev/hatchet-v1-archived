@@ -19,21 +19,25 @@ import React, { useState } from "react";
 import api from "shared/api";
 import {
   ModuleRun,
+  ModuleMonitor,
   ModuleMonitorResult,
 } from "shared/api/generated/data-contracts";
 import usePagination from "shared/hooks/usepagination";
 import theme from "shared/theme";
 import { capitalize, relativeDate } from "shared/utils";
+import ExpandedResultOverview from "../expandedresultoverview";
 import { ExpandedResultContainer, ResultSectionCard } from "./styles";
 
 export type Props = {
   team_id: string;
+  module_monitor: ModuleMonitor;
   module_monitor_result: ModuleMonitorResult;
   back: () => void;
 };
 
 const ExpandedResult: React.FC<Props> = ({
   team_id,
+  module_monitor,
   module_monitor_result,
   back,
 }) => {
@@ -55,6 +59,49 @@ const ExpandedResult: React.FC<Props> = ({
     retry: false,
   });
 
+  const moduleQuery = useQuery({
+    queryKey: ["module", team_id, module_monitor_result.module_id],
+    queryFn: async () => {
+      const res = await api.getModule(team_id, module_monitor_result.module_id);
+      return res;
+    },
+    retry: false,
+  });
+
+  const getTriggerDescription = () => {
+    switch (module_monitor.kind) {
+      case "plan":
+        return "scheduled plan check";
+      case "state":
+        return "scheduled state check";
+      case "before_plan":
+        return "before plan";
+      case "after_plan":
+        return "after plan";
+      case "before_apply":
+        return "before apply";
+      case "after_apply":
+        return "after apply";
+    }
+  };
+
+  const renderTrigger = () => {
+    if (moduleQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
+    return (
+      <P>
+        Triggered by {getTriggerDescription()} for module{" "}
+        {moduleQuery?.data?.data?.name}
+      </P>
+    );
+  };
+
   if (moduleRunQuery.isLoading) {
     return (
       <Placeholder>
@@ -68,25 +115,10 @@ const ExpandedResult: React.FC<Props> = ({
       <HorizontalSpacer spacepixels={24} />
       <BackText text="All Results" back={back} />
       <HorizontalSpacer spacepixels={24} />
-      <ResultSectionCard>
-        <FlexRow>
-          <H4>Overview</H4>
-          <FlexRowRight gap="8px">
-            <Status
-              kind="color"
-              color={
-                module_monitor_result.status == "succeeded"
-                  ? theme.text.default
-                  : "#ff385d"
-              }
-              status_text={capitalize(module_monitor_result.status)}
-            />
-          </FlexRowRight>
-        </FlexRow>
-        <HorizontalSpacer spacepixels={12} />
-        <P>{module_monitor_result.message}</P>
-        <HorizontalSpacer spacepixels={20} />
-      </ResultSectionCard>
+      <ExpandedResultOverview
+        team_id={team_id}
+        module_monitor_result={module_monitor_result}
+      />
       <ConfigurationSection
         team_id={team_id}
         module_id={module_monitor_result.module_id}

@@ -34,7 +34,7 @@ const DeleteModuleForm: React.FC<Props> = ({ team_id, module }) => {
       return res;
     },
     onSuccess: (data) => {
-      history.push(`/team/${team_id}/modules`);
+      history.push(`/teams/${team_id}/modules`);
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {

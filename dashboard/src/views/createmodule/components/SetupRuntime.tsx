@@ -50,15 +50,15 @@ const SetupRuntime: React.FC<Props> = ({ req, submit, err }) => {
   const breadcrumbs = [
     {
       label: "Modules",
-      link: `/team/${currTeam.id}/modules`,
+      link: `/teams/${currTeam.id}/modules`,
     },
     {
       label: "Step 1: Choose Git Source",
-      link: `/team/${currTeam.id}/modules/create/step_1`,
+      link: `/teams/${currTeam.id}/modules/create/step_1`,
     },
     {
       label: "Step 2: Configure Runtime",
-      link: `/team/${currTeam.id}/modules/create/step_2`,
+      link: `/teams/${currTeam.id}/modules/create/step_2`,
     },
   ];
 

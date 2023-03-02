@@ -106,7 +106,7 @@ func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, rep
 }
 
 func (repo *ModuleRepository) CreateModuleRun(run *models.ModuleRun) (*models.ModuleRun, repository.RepositoryError) {
-	if err := repo.db.Create(run).Error; err != nil {
+	if err := repo.db.Omit("ModuleRunConfig.ModuleValuesVersion", "ModuleRunConfig.ModuleEnvVarsVersion").Create(run).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 

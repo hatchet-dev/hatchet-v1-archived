@@ -51,7 +51,7 @@ const ExpandableTeam: React.FunctionComponent<Props> = ({
       <TeamLinkWrapper>
         {isExpanded &&
           links.map((val) => {
-            const nestedLink = `/team/${team.id}${val.href}`;
+            const nestedLink = `/teams/${team.id}${val.href}`;
             return (
               <StyledSidebarLink
                 key={val.name}

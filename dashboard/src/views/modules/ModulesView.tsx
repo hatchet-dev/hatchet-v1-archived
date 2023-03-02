@@ -90,11 +90,11 @@ const ModulesView: React.FunctionComponent = () => {
   ];
 
   const handleResourceClick = (row: any) => {
-    history.push(`/team/${currTeam.id}/modules/${row.original.id}`);
+    history.push(`/teams/${currTeam.id}/modules/${row.original.id}`);
   };
 
   const handleCreateModuleClick = () => {
-    history.push(`/team/${currTeam.id}/modules/create/step_1`);
+    history.push(`/teams/${currTeam.id}/modules/create/step_1`);
   };
 
   const moduleData = listModulesQuery.data?.data.rows.map((module) => {

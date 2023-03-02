@@ -105,11 +105,11 @@ const MonitorMeta: React.FunctionComponent<Props> = ({ submit }) => {
   const breadcrumbs = [
     {
       label: "Monitors",
-      link: `/team/${currTeam.id}/monitors`,
+      link: `/teams/${currTeam.id}/monitors`,
     },
     {
       label: "Step 1: Monitor Metadata",
-      link: `/team/${currTeam.id}/monitors/create/step_1`,
+      link: `/teams/${currTeam.id}/monitors/create/step_1`,
     },
   ];
 
