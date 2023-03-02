@@ -109,7 +109,7 @@ func (repo *TeamRepository) ReadTeamMemberByOrgMemberID(teamID, orgMemberID stri
 func (repo *TeamRepository) ListTeamMembersByTeamID(teamID string, isSARunner bool, opts ...repository.QueryOption) ([]*models.TeamMember, *repository.PaginatedResult, repository.RepositoryError) {
 	var members []*models.TeamMember
 
-	db := repo.db.Debug().Preload("OrgMember").Preload("TeamPolicies").Preload("OrgMember.User").Model(&models.TeamMember{}).Where("team_id = ? AND team_members.is_service_account_runner = ?", teamID, isSARunner)
+	db := repo.db.Preload("OrgMember").Preload("TeamPolicies").Preload("OrgMember.User").Model(&models.TeamMember{}).Where("team_id = ? AND team_members.is_service_account_runner = ?", teamID, isSARunner)
 
 	paginatedResult := &repository.PaginatedResult{}
 
