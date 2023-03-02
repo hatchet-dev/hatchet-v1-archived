@@ -25,21 +25,16 @@ import {
 import usePagination from "shared/hooks/usepagination";
 import theme from "shared/theme";
 import { capitalize, relativeDate } from "shared/utils";
-import ExpandedResultOverview from "../expandedresultoverview";
-import { ExpandedResultContainer, ResultSectionCard } from "./styles";
+import { ResultSectionCard } from "../expandedresult/styles";
 
 export type Props = {
   team_id: string;
-  module_monitor: ModuleMonitor;
   module_monitor_result: ModuleMonitorResult;
-  back: () => void;
 };
 
-const ExpandedResult: React.FC<Props> = ({
+const ExpandedResultOverview: React.FC<Props> = ({
   team_id,
-  module_monitor,
   module_monitor_result,
-  back,
 }) => {
   const moduleRunQuery = useQuery({
     queryKey: [
@@ -68,8 +63,20 @@ const ExpandedResult: React.FC<Props> = ({
     retry: false,
   });
 
+  const moduleMonitorQuery = useQuery({
+    queryKey: ["monitor", team_id, module_monitor_result.module_monitor_id],
+    queryFn: async () => {
+      const res = await api.getMonitor(
+        team_id,
+        module_monitor_result.module_monitor_id
+      );
+      return res;
+    },
+    retry: false,
+  });
+
   const getTriggerDescription = () => {
-    switch (module_monitor.kind) {
+    switch (moduleMonitorQuery.data.data.kind) {
       case "plan":
         return "scheduled plan check";
       case "state":
@@ -86,7 +93,7 @@ const ExpandedResult: React.FC<Props> = ({
   };
 
   const renderTrigger = () => {
-    if (moduleQuery.isLoading) {
+    if (moduleQuery.isLoading || moduleMonitorQuery.isLoading) {
       return (
         <Placeholder>
           <Spinner />
@@ -111,21 +118,32 @@ const ExpandedResult: React.FC<Props> = ({
   }
 
   return (
-    <ExpandedResultContainer>
-      <HorizontalSpacer spacepixels={24} />
-      <BackText text="All Results" back={back} />
-      <HorizontalSpacer spacepixels={24} />
-      <ExpandedResultOverview
-        team_id={team_id}
-        module_monitor_result={module_monitor_result}
-      />
-      <ConfigurationSection
-        team_id={team_id}
-        module_id={module_monitor_result.module_id}
-        module_run={moduleRunQuery.data.data}
-      />
-    </ExpandedResultContainer>
+    <ResultSectionCard>
+      <FlexRow>
+        <H4>Overview</H4>
+        <FlexRowRight gap="8px">
+          <Status
+            status_text={relativeDate(module_monitor_result.created_at)}
+            material_icon="schedule"
+          />
+          <Status
+            kind="color"
+            color={
+              module_monitor_result.status == "succeeded"
+                ? theme.text.default
+                : "#ff385d"
+            }
+            status_text={capitalize(module_monitor_result.status)}
+          />
+        </FlexRowRight>
+      </FlexRow>
+      <HorizontalSpacer spacepixels={12} />
+      <P>{module_monitor_result.message}</P>
+      <HorizontalSpacer spacepixels={20} />
+      {renderTrigger()}
+      <HorizontalSpacer spacepixels={20} />
+    </ResultSectionCard>
   );
 };
 
-export default ExpandedResult;
+export default ExpandedResultOverview;

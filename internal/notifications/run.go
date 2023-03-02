@@ -32,11 +32,17 @@ func CreateNotificationFromModuleRun(config *server.Config, teamID string, run *
 	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
 		return err
 	} else if errors.Is(err, repository.RepositoryErrorNotFound) {
+		title, err := getNotificationTitleFromRun(config, teamID, run)
+
+		if err != nil {
+			return err
+		}
+
 		notif := &models.Notification{
 			TeamID:              teamID,
 			NotificationInboxID: inbox.ID,
 			NotificationID:      notificationID,
-			Title:               "Run failed",
+			Title:               title,
 			Message:             run.StatusDescription,
 			ModuleID:            run.ModuleID,
 		}
@@ -54,5 +60,15 @@ func CreateNotificationFromModuleRun(config *server.Config, teamID string, run *
 }
 
 func getNotificationIDFromRun(run *models.ModuleRun) string {
-	return ToSnake(fmt.Sprintf("run-%s-%s", run.ID, string(run.Kind)))
+	return fmt.Sprintf("run-%s-%s", run.ID, string(run.Kind))
+}
+
+func getNotificationTitleFromRun(config *server.Config, teamID string, run *models.ModuleRun) (string, error) {
+	module, err := config.DB.Repository.Module().ReadModuleByID(teamID, run.ModuleID)
+
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Running %s for module %s failed", string(run.Kind), module.Name), nil
 }

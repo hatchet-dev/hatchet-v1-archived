@@ -13,6 +13,7 @@ import React, { useState } from "react";
 import api from "shared/api";
 import {
   ModuleRun,
+  ModuleMonitor,
   ModuleMonitorResult,
 } from "shared/api/generated/data-contracts";
 import usePagination from "shared/hooks/usepagination";
@@ -23,13 +24,13 @@ import ExpandedResult from "../expandedresult";
 export type Props = {
   team_id: string;
   module_id?: string;
-  module_monitor_id?: string;
+  module_monitor?: ModuleMonitor;
 };
 
 const ResultsList: React.FC<Props> = ({
   team_id,
   module_id,
-  module_monitor_id,
+  module_monitor,
 }) => {
   const [selectedResult, setSelectedResult] = useState<ModuleMonitorResult>();
 
@@ -47,13 +48,13 @@ const ResultsList: React.FC<Props> = ({
       team_id,
       currentPage,
       module_id,
-      module_monitor_id,
+      module_monitor?.id,
     ],
     queryFn: async () => {
       const res = await api.listMonitorResults(team_id, {
         page: currentPage,
         module_id: module_id,
-        module_monitor_id: module_monitor_id,
+        module_monitor_id: module_monitor?.id,
       });
 
       return res;
@@ -125,6 +126,7 @@ const ResultsList: React.FC<Props> = ({
     return (
       <ExpandedResult
         team_id={team_id}
+        module_monitor={module_monitor}
         module_monitor_result={selectedResult}
         back={() => setSelectedResult(null)}
       />

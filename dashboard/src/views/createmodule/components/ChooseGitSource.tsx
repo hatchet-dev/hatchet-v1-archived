@@ -41,11 +41,11 @@ const ChooseGitSource: React.FunctionComponent<Props> = ({ submit }) => {
   const breadcrumbs = [
     {
       label: "Modules",
-      link: `/team/${currTeam.id}/modules`,
+      link: `/teams/${currTeam.id}/modules`,
     },
     {
       label: "Step 1: Choose Git Source",
-      link: `/team/${currTeam.id}/modules/create/step_1`,
+      link: `/teams/${currTeam.id}/modules/create/step_1`,
     },
   ];
 

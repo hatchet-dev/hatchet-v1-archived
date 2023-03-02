@@ -45,7 +45,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
 
   useEffect(() => {
     if (!params?.module) {
-      history.push(`/team/${currTeam?.id}/modules`);
+      history.push(`/teams/${currTeam?.id}/modules`);
     }
   }, [params]);
 
@@ -113,7 +113,7 @@ const ExpandedModuleView: React.FunctionComponent = () => {
         breadcrumbs={[
           {
             label: "Modules",
-            link: `/team/${currTeam.id}/modules`,
+            link: `/teams/${currTeam.id}/modules`,
           },
           {
             label: `${data.data.name}`,

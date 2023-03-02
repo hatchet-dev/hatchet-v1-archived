@@ -22,7 +22,12 @@ import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useHistory } from "react-router-dom";
 import { NotificationMeta } from "shared/api/generated/data-contracts";
-import { NotificationListContainer, NotificationMetaContainer } from "./styles";
+import {
+  NotificationDate,
+  NotificationListContainer,
+  NotificationMetaContainer,
+  NotificationTitle,
+} from "./styles";
 import theme from "shared/theme";
 import { css } from "styled-components";
 
@@ -46,8 +51,10 @@ const NotificationsList: React.FC<Props> = ({ notifications }) => {
             onClick={() => selectNotification(notif)}
           >
             <FlexRow>
-              <SmallSpan>{notif.title}</SmallSpan>
-              <SmallSpan>{relativeDate(notif.updated_at)}</SmallSpan>{" "}
+              <NotificationTitle>{notif.title}</NotificationTitle>
+              <NotificationDate>
+                {relativeDate(notif.updated_at)}
+              </NotificationDate>
             </FlexRow>
             <HorizontalSpacer spacepixels={20} />
             <FlexRow>

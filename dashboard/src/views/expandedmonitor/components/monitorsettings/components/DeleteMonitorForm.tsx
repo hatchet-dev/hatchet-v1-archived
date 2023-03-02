@@ -34,7 +34,7 @@ const DeleteMonitorForm: React.FC<Props> = ({ team_id, monitor }) => {
       return res;
     },
     onSuccess: (data) => {
-      history.push(`/team/${team_id}/monitors`);
+      history.push(`/teams/${team_id}/monitors`);
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {

@@ -1,4 +1,8 @@
-import { FlexCol, FlexColScroll } from "@hatchet-dev/hatchet-components";
+import {
+  FlexCol,
+  FlexColScroll,
+  SmallSpan,
+} from "@hatchet-dev/hatchet-components";
 import styled from "styled-components";
 
 export const NotificationListContainer = styled(FlexColScroll)`
@@ -16,4 +20,15 @@ export const NotificationMetaContainer = styled(FlexCol)`
   :hover {
     background: ${(props) => props.theme.bg.shadetwo};
   }
+`;
+
+export const NotificationTitle = styled(SmallSpan)`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+`;
+
+export const NotificationDate = styled(SmallSpan)`
+  white-space: nowrap;
 `;

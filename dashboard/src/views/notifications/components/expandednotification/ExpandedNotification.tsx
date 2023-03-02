@@ -14,6 +14,7 @@ import {
   H4,
   FlexColScroll,
   SmallSpan,
+  FlexRowLeft,
 } from "@hatchet-dev/hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -27,6 +28,9 @@ import { ExpandedNotificationContainer } from "./styles";
 import theme from "shared/theme";
 import { css } from "styled-components";
 import Status from "components/status";
+import LinkButton from "components/linkbutton";
+import ExpandedResultOverview from "components/monitor/expandedresultoverview";
+import ExpandedRunOverview from "components/run/expandedrunoverview";
 
 type Props = {};
 
@@ -67,6 +71,56 @@ const ExpandedNotification: React.FC<Props> = () => {
       );
     }
 
+    const getModuleLink = () => {
+      return `/teams/${params.team}/modules/${notif.module_id}`;
+    };
+
+    const renderResolvedStatus = () => {
+      if (notif.resolved) {
+        return <Status status_text="Resolved" material_icon="check" />;
+      }
+
+      return <Status status_text="Unresolved" material_icon="error" />;
+    };
+
+    const renderMonitorLink = () => {
+      if (notif.monitor_results && notif.monitor_results.length > 0) {
+        const result = notif.monitor_results[0];
+
+        return (
+          <LinkButton
+            text="Monitor"
+            link={`/teams/${params.team}/monitors/${result.module_monitor_id}`}
+          />
+        );
+      }
+    };
+
+    const renderDetails = () => {
+      if (notif.monitor_results && notif.monitor_results.length > 0) {
+        const result = notif.monitor_results[0];
+
+        return (
+          <ExpandedResultOverview
+            team_id={params.team}
+            module_monitor_result={result}
+          />
+        );
+      }
+
+      if (notif.runs && notif.runs.length > 0) {
+        const run = notif.runs[0];
+
+        return (
+          <ExpandedRunOverview
+            team_id={params.team}
+            module={notif.module}
+            module_run={run}
+          />
+        );
+      }
+    };
+
     return (
       <FlexCol>
         <FlexRow>
@@ -76,11 +130,18 @@ const ExpandedNotification: React.FC<Props> = () => {
               status_text={relativeDate(notif.updated_at)}
               material_icon="schedule"
             />
-            <Status status_text="Resolved" material_icon="check" />
+            {renderResolvedStatus()}
           </FlexRowRight>
         </FlexRow>
         <HorizontalSpacer spacepixels={30} />
+        <FlexRowLeft gap="8px">
+          <LinkButton text="Module" link={getModuleLink()} />
+          {renderMonitorLink()}
+        </FlexRowLeft>
+        <HorizontalSpacer spacepixels={30} />
         <P>{notif.message}</P>
+        <HorizontalSpacer spacepixels={30} />
+        {renderDetails()}
       </FlexCol>
     );
   };

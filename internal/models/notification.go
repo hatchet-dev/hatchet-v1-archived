@@ -61,19 +61,23 @@ func (n *Notification) ToAPIType() *types.Notification {
 	}
 
 	if n.Runs != nil {
-		runs := make([]*types.ModuleRun, 0)
+		runs := make([]types.ModuleRun, 0)
 
 		for _, run := range n.Runs {
-			runs = append(runs, run.ToAPIType(nil))
+			runs = append(runs, *run.ToAPIType(nil))
 		}
+
+		res.Runs = runs
 	}
 
 	if n.MonitorResults != nil {
-		results := make([]*types.ModuleMonitorResult, 0)
+		results := make([]types.ModuleMonitorResult, 0)
 
 		for _, result := range n.MonitorResults {
-			results = append(results, result.ToAPIType())
+			results = append(results, *result.ToAPIType())
 		}
+
+		res.MonitorResults = results
 	}
 
 	return res

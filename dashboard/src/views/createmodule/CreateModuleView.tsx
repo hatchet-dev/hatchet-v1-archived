@@ -33,7 +33,7 @@ const CreateModuleView: React.FunctionComponent = () => {
     },
     onSuccess: (data) => {
       setErr("");
-      history.push(`/team/${currTeam.id}/modules`);
+      history.push(`/teams/${currTeam.id}/modules`);
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {
@@ -47,14 +47,14 @@ const CreateModuleView: React.FunctionComponent = () => {
 
   useEffect(() => {
     if (location.pathname.includes("step_2") && !submittedStepOne) {
-      history.push(`/team/${currTeam.id}/modules/create/step_1`);
+      history.push(`/teams/${currTeam.id}/modules/create/step_1`);
     }
   }, [submittedStepOne, location.pathname]);
 
   const submitStepOne = (req: CreateModuleRequest) => {
     setSubmittedStepOne(true);
     setRequest(req);
-    history.push(`/team/${currTeam.id}/modules/create/step_2`);
+    history.push(`/teams/${currTeam.id}/modules/create/step_2`);
   };
 
   const submitStepTwo = (req: CreateModuleRequest) => {

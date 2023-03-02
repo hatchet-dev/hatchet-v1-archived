@@ -58,7 +58,7 @@ func (repo *NotificationRepository) CreateNotification(notif *models.Notificatio
 func (repo *NotificationRepository) ReadNotificationByID(teamID, id string) (*models.Notification, repository.RepositoryError) {
 	notif := &models.Notification{}
 
-	if err := repo.db.Preload("Module").Where("team_id = ? AND id = ?", teamID, id).First(&notif).Error; err != nil {
+	if err := repo.db.Debug().Preload("Module").Preload("MonitorResults").Preload("Runs").Where("team_id = ? AND id = ?", teamID, id).First(&notif).Error; err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -148,7 +148,7 @@ func (repo *NotificationRepository) UpdateNotification(notif *models.Notificatio
 }
 
 func (repo *NotificationRepository) AppendModuleRun(notif *models.Notification, run *models.ModuleRun) (*models.Notification, repository.RepositoryError) {
-	if err := repo.db.Model(notif).Omit("MonitorResults", "Runs.*", "Module").Association("Runs").Append(run); err != nil {
+	if err := repo.db.Debug().Model(notif).Omit("MonitorResults", "Runs.*", "Module").Association("Runs").Append(run); err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
@@ -156,7 +156,7 @@ func (repo *NotificationRepository) AppendModuleRun(notif *models.Notification, 
 }
 
 func (repo *NotificationRepository) AppendModuleRunMonitorResult(notif *models.Notification, result *models.ModuleMonitorResult) (*models.Notification, repository.RepositoryError) {
-	if err := repo.db.Model(notif).Omit("MonitorResults.*", "Runs", "Module").Association("MonitorResults").Append(result); err != nil {
+	if err := repo.db.Debug().Model(notif).Omit("MonitorResults.*", "Runs", "Module").Association("MonitorResults").Append(result); err != nil {
 		return nil, toRepoError(repo.db, err)
 	}
 
