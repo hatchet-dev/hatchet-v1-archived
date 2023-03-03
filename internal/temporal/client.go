@@ -2,6 +2,9 @@ package temporal
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"fmt"
 	"os"
 
@@ -19,9 +22,13 @@ type Client struct {
 type ClientOpts struct {
 	HostPort         string
 	Namespace        string
-	AuthHeaderKey    string
-	AuthHeaderVal    string
+	BearerToken      string
 	DefaultQueueName string
+
+	ClientKeyFile  string
+	ClientCertFile string
+	RootCAFile     string
+	TLSServerName  string
 }
 
 func NewTemporalClient(opts *ClientOpts) (*Client, error) {
@@ -49,12 +56,44 @@ func clientFromOpts(opts *ClientOpts, taskQueueName string) (client.Client, erro
 		Identity:  fmt.Sprintf("%d@%s@%s", os.Getpid(), getHostName(), taskQueueName),
 	}
 
-	if opts.AuthHeaderKey != "" && opts.AuthHeaderVal != "" {
+	if opts.BearerToken != "" {
 		tOpts.HeadersProvider = authHeadersProvider{
 			headers: map[string]string{
-				opts.AuthHeaderKey: opts.AuthHeaderVal,
+				"Authorization": fmt.Sprintf("Bearer %s", opts.BearerToken),
 			},
 		}
+	}
+
+	if opts.ClientCertFile != "" && opts.ClientKeyFile != "" && opts.RootCAFile != "" {
+		tlsConfig := &tls.Config{
+			ServerName: opts.TLSServerName,
+		}
+
+		cert, err := tls.LoadX509KeyPair(
+			opts.ClientCertFile,
+			opts.ClientKeyFile,
+		)
+
+		tlsConfig.Certificates = []tls.Certificate{cert}
+
+		caPool := x509.NewCertPool()
+		var caBytes []byte
+
+		caBytes, err = os.ReadFile(
+			opts.RootCAFile,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("unable to load CA cert from file: %v", err)
+		}
+
+		if !caPool.AppendCertsFromPEM(caBytes) {
+			return nil, errors.New("unknown failure constructing cert pool for ca")
+		}
+
+		tlsConfig.RootCAs = caPool
+
+		tOpts.ConnectionOptions.TLS = tlsConfig
 	}
 
 	return client.Dial(tOpts)

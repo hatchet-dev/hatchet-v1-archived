@@ -17,7 +17,9 @@ const (
 	PersistenceStoreName = "sqlite-default"
 )
 
-func GetTemporalServerConfig(configfile *temporalconfig.TemporalConfigFile) (*config.Config, error) {
+func GetTemporalServerConfig(tconfig *temporalconfig.Config) (*config.Config, error) {
+	configfile := tconfig.ConfigFile
+
 	baseConfig := &config.Config{}
 
 	sqlConfig, err := getSQLConfig(configfile)
@@ -25,6 +27,14 @@ func GetTemporalServerConfig(configfile *temporalconfig.TemporalConfigFile) (*co
 	if err != nil {
 		return nil, err
 	}
+
+	tlsConfig, err := getTLSConfig(configfile)
+
+	if err != nil {
+		return nil, err
+	}
+
+	baseConfig.Global.TLS = *tlsConfig
 
 	baseConfig.Global.Membership = config.Membership{
 		MaxJoinDuration:  30 * time.Second,
@@ -140,4 +150,61 @@ func getService(configfile *temporalconfig.TemporalConfigFile, frontendPortOffse
 			BindOnIP:        configfile.TemporalAddress,
 		},
 	}
+}
+
+func getTLSConfig(configfile *temporalconfig.TemporalConfigFile) (*config.RootTLS, error) {
+	res := &config.RootTLS{}
+
+	if configfile.TemporalInternodeTLSCertFile != "" && configfile.TemporalInternodeTLSKeyFile != "" {
+		res.Internode = config.GroupTLS{
+			Server: config.ServerTLS{
+				RequireClientAuth: true,
+				CertFile:          configfile.TemporalInternodeTLSCertFile,
+				KeyFile:           configfile.TemporalInternodeTLSKeyFile,
+				ClientCAFiles: []string{
+					configfile.TemporalInternodeTLSRootCAFile,
+				},
+			},
+			Client: config.ClientTLS{
+				ServerName: configfile.TemporalInternodeTLSServerName,
+				RootCAFiles: []string{
+					configfile.TemporalInternodeTLSRootCAFile,
+				},
+			},
+		}
+	}
+
+	if configfile.TemporalFrontendTLSCertFile != "" && configfile.TemporalFrontendTLSKeyFile != "" {
+		res.Frontend = config.GroupTLS{
+			Server: config.ServerTLS{
+				RequireClientAuth: true,
+				CertFile:          configfile.TemporalFrontendTLSCertFile,
+				KeyFile:           configfile.TemporalFrontendTLSKeyFile,
+				ClientCAFiles: []string{
+					configfile.TemporalFrontendTLSRootCAFile,
+				},
+			},
+			Client: config.ClientTLS{
+				ServerName: configfile.TemporalFrontendTLSServerName,
+				RootCAFiles: []string{
+					configfile.TemporalFrontendTLSRootCAFile,
+				},
+			},
+		}
+	}
+
+	if configfile.TemporalWorkerTLSCertFile != "" && configfile.TemporalWorkerTLSKeyFile != "" {
+		res.SystemWorker = config.WorkerTLS{
+			CertFile: configfile.TemporalWorkerTLSCertFile,
+			KeyFile:  configfile.TemporalWorkerTLSKeyFile,
+			Client: config.ClientTLS{
+				ServerName: configfile.TemporalWorkerTLSServerName,
+				RootCAFiles: []string{
+					configfile.TemporalWorkerTLSRootCAFile,
+				},
+			},
+		}
+	}
+
+	return res, nil
 }

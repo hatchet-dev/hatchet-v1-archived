@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	s, err := server.NewTemporalServer(tc.ConfigFile)
+	s, err := server.NewTemporalServer(tc)
 
 	if err != nil {
 		goLog.Fatal(err)

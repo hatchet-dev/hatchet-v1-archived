@@ -1,8 +1,8 @@
 package server
 
 import (
-	"fmt"
-	goLog "log"
+	// "fmt"
+	// goLog "log"
 
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
@@ -10,43 +10,34 @@ import (
 	"go.temporal.io/server/temporal"
 
 	temporalconfig "github.com/hatchet-dev/hatchet/internal/config/temporal"
+	"github.com/hatchet-dev/hatchet/internal/temporal/server/authorizer"
 )
 
-func NewTemporalServer(configfile *temporalconfig.TemporalConfigFile) (temporal.Server, error) {
+func NewTemporalServer(tconfig *temporalconfig.Config) (temporal.Server, error) {
+	configfile := tconfig.ConfigFile
+
 	logger := log.NewZapLogger(log.BuildZapLogger(log.Config{
 		Stdout:     true,
 		Level:      configfile.TemporalLogLevel,
 		OutputFile: "",
 	}))
 
-	cfg, err := GetTemporalServerConfig(configfile)
+	cfg, err := GetTemporalServerConfig(tconfig)
 
 	if err != nil {
 		return nil, err
 	}
 
-	authorizer, err := authorization.GetAuthorizerFromConfig(
-		&cfg.Global.Authorization,
-	)
-
-	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to instantiate authorizer. Error: %v", err))
-	}
-
-	claimMapper, err := authorization.GetClaimMapperFromConfig(&cfg.Global.Authorization, logger)
-
-	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to instantiate claim mapper: %v.", err))
-	}
+	authorizerAndClaimMapper := authorizer.NewHatchetAuthorizer(tconfig, &cfg.Global.Authorization, logger)
 
 	return temporal.NewServer(
 		temporal.ForServices(temporal.Services),
 		temporal.WithConfig(cfg),
 		temporal.WithLogger(logger),
 		temporal.InterruptOn(temporal.InterruptCh()),
-		temporal.WithAuthorizer(authorizer),
+		temporal.WithAuthorizer(authorizerAndClaimMapper),
 		temporal.WithClaimMapper(func(cfg *config.Config) authorization.ClaimMapper {
-			return claimMapper
+			return authorizerAndClaimMapper
 		}),
 	)
 }

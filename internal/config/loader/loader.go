@@ -144,10 +144,13 @@ func (e *EnvConfigLoader) LoadSharedConfigFromConfigFile(sharedC *shared.ConfigF
 
 	if sharedC.TemporalEnabled {
 		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
-			HostPort:      sharedC.TemporalHostPort,
-			Namespace:     sharedC.TemporalNamespace,
-			AuthHeaderKey: sharedC.TemporalAuthHeaderKey,
-			AuthHeaderVal: sharedC.TemporalAuthHeaderVal,
+			HostPort:       sharedC.TemporalHostPort,
+			Namespace:      sharedC.TemporalNamespace,
+			BearerToken:    sharedC.TemporalBearerToken,
+			ClientCertFile: sharedC.TemporalClientTLSCertFile,
+			ClientKeyFile:  sharedC.TemporalClientTLSKeyFile,
+			RootCAFile:     sharedC.TemporalClientTLSRootCAFile,
+			TLSServerName:  sharedC.TemporalTLSServerName,
 		})
 
 		if err != nil {
@@ -384,8 +387,27 @@ func (e *EnvConfigLoader) LoadTemporalWorkerConfigFromEnv() (res *temporalconfig
 func (e *EnvConfigLoader) LoadTemporalConfigFromConfigFile(
 	tc *temporalconfig.TemporalConfigFile,
 ) (res *temporalconfig.Config, err error) {
+	authConfig := &temporalconfig.InternalAuthConfig{
+		InternalNamespace:  tc.TemporalInternalNamespace,
+		InternalSigningKey: []byte(tc.TemporalInternalSigningKey),
+	}
+
+	tokenOpts := &token.TokenOpts{
+		Issuer:   tc.TemporalInternalTokenIssuerURL,
+		Audience: tc.TemporalInternalTokenAudience,
+	}
+
+	if tc.TemporalInternalTokenIssuerURL == "" {
+		tokenOpts.Issuer = tc.TemporalPublicURL
+	}
+
+	if len(tc.TemporalInternalTokenAudience) == 0 {
+		tokenOpts.Audience = []string{tc.TemporalPublicURL}
+	}
+
 	return &temporalconfig.Config{
-		ConfigFile: tc,
+		ConfigFile:         tc,
+		InternalAuthConfig: authConfig,
 	}, nil
 }
 
