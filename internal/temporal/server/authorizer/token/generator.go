@@ -1,6 +1,8 @@
 package token
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/hatchet-dev/hatchet/internal/config/temporal"
 )
@@ -14,9 +16,12 @@ type TemporalClaims struct {
 func GenerateInternalToken(authConfig *temporal.InternalAuthConfig) (string, error) {
 	claims := &TemporalClaims{
 		RegisteredClaims: &jwt.RegisteredClaims{
-			Audience: authConfig.InternalTokenOpts.Audience,
-			Issuer:   authConfig.InternalTokenOpts.Issuer,
-			Subject:  "internal-admin",
+			Audience:  authConfig.InternalTokenOpts.Audience,
+			Issuer:    authConfig.InternalTokenOpts.Issuer,
+			Subject:   "internal-admin",
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(90 * 24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
 		},
 		Permissions: []string{"system:admin"},
 	}
