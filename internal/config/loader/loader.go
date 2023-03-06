@@ -144,13 +144,14 @@ func (e *EnvConfigLoader) LoadSharedConfigFromConfigFile(sharedC *shared.ConfigF
 
 	if sharedC.TemporalEnabled {
 		temporalClient, err = temporal.NewTemporalClient(&temporal.ClientOpts{
-			HostPort:       sharedC.TemporalHostPort,
-			Namespace:      sharedC.TemporalNamespace,
-			BearerToken:    sharedC.TemporalBearerToken,
-			ClientCertFile: sharedC.TemporalClientTLSCertFile,
-			ClientKeyFile:  sharedC.TemporalClientTLSKeyFile,
-			RootCAFile:     sharedC.TemporalClientTLSRootCAFile,
-			TLSServerName:  sharedC.TemporalTLSServerName,
+			BroadcastAddress: sharedC.TemporalBroadcastAddress,
+			HostPort:         sharedC.TemporalHostPort,
+			Namespace:        sharedC.TemporalNamespace,
+			BearerToken:      sharedC.TemporalBearerToken,
+			ClientCertFile:   sharedC.TemporalClientTLSCertFile,
+			ClientKeyFile:    sharedC.TemporalClientTLSKeyFile,
+			RootCAFile:       sharedC.TemporalClientTLSRootCAFile,
+			TLSServerName:    sharedC.TemporalTLSServerName,
 		})
 
 		if err != nil {
@@ -375,17 +376,24 @@ func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromConfigFile(
 }
 
 func (e *EnvConfigLoader) LoadTemporalWorkerConfigFromEnv() (res *temporalconfig.Config, err error) {
+	dbConfig, err := e.LoadDatabaseConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load database config: %v", err)
+	}
+
 	tc, err := TemporalConfigFromEnv()
 
 	if err != nil {
 		return nil, fmt.Errorf("could not load temporal config from env: %v", err)
 	}
 
-	return e.LoadTemporalConfigFromConfigFile(tc)
+	return e.LoadTemporalConfigFromConfigFile(tc, dbConfig)
 }
 
 func (e *EnvConfigLoader) LoadTemporalConfigFromConfigFile(
 	tc *temporalconfig.TemporalConfigFile,
+	dbConfig *database.Config,
 ) (res *temporalconfig.Config, err error) {
 	authConfig := &temporalconfig.InternalAuthConfig{
 		InternalNamespace:  tc.TemporalInternalNamespace,
@@ -405,7 +413,10 @@ func (e *EnvConfigLoader) LoadTemporalConfigFromConfigFile(
 		tokenOpts.Audience = []string{tc.TemporalPublicURL}
 	}
 
+	authConfig.InternalTokenOpts = *tokenOpts
+
 	return &temporalconfig.Config{
+		DB:                 *dbConfig,
 		ConfigFile:         tc,
 		InternalAuthConfig: authConfig,
 	}, nil

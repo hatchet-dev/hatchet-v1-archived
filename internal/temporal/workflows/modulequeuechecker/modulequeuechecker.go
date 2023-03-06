@@ -119,6 +119,7 @@ func (mqc *ModuleQueueChecker) ScheduleFromQueue(ctx workflow.Context, input Che
 	}
 
 	cwo := workflow.ChildWorkflowOptions{
+		Namespace:                input.TeamID,
 		TaskQueue:                hatchetenums.ModuleRunQueueName,
 		WorkflowExecutionTimeout: 1 * time.Minute,
 		WorkflowTaskTimeout:      time.Minute,

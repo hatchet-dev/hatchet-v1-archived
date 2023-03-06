@@ -13,6 +13,10 @@ openssl genrsa -out $CERTS_DIR/cluster.key 4096
 openssl req -new -key $CERTS_DIR/cluster.key -out $CERTS_DIR/cluster.csr -config cluster-cert.conf
 openssl x509 -req -in $CERTS_DIR/cluster.csr -CA $CERTS_DIR/ca.cert -CAkey $CERTS_DIR/ca.key -CAcreateserial -out $CERTS_DIR/cluster.pem -days 365 -sha256 -extfile cluster-cert.conf -extensions req_ext
 
-# Generate a private key and a certificate for clients
-openssl req -newkey rsa:4096 -nodes -keyout "$CERTS_DIR/client-internal-admin.key" -out "$CERTS_DIR/client-internal-admin.csr" -config client-internal-admin-cert.conf
-openssl x509 -req -in $CERTS_DIR/client-internal-admin.csr -CA $CERTS_DIR/ca.cert -CAkey $CERTS_DIR/ca.key -CAcreateserial -out $CERTS_DIR/client-internal-admin.pem -days 365 -sha256 -extfile client-internal-admin-cert.conf -extensions req_ext
+# Generate a private key and a certificate for internal admin client
+openssl req -newkey rsa:4096 -nodes -keyout "$CERTS_DIR/client-internal-admin.key" -out "$CERTS_DIR/client-internal-admin.csr" -config internal-admin-client-cert.conf
+openssl x509 -req -in $CERTS_DIR/client-internal-admin.csr -CA $CERTS_DIR/ca.cert -CAkey $CERTS_DIR/ca.key -CAcreateserial -out $CERTS_DIR/client-internal-admin.pem -days 365 -sha256 -extfile internal-admin-client-cert.conf -extensions req_ext
+
+# Generate a private key and a certificate for worker client
+openssl req -newkey rsa:4096 -nodes -keyout "$CERTS_DIR/client-worker.key" -out "$CERTS_DIR/client-worker.csr" -config worker-client-cert.conf
+openssl x509 -req -in $CERTS_DIR/client-worker.csr -CA $CERTS_DIR/ca.cert -CAkey $CERTS_DIR/ca.key -CAcreateserial -out $CERTS_DIR/client-worker.pem -days 365 -sha256 -extfile worker-client-cert.conf -extensions req_ext

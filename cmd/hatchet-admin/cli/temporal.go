@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/internal/config/temporal"
+	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/temporal/server/authorizer/token"
 
 	"github.com/spf13/cobra"
@@ -18,53 +19,79 @@ var temporalCmd = &cobra.Command{
 	Short: "Command used to manage temporal settings and tokens",
 }
 
-var tokenCreateCmd = &cobra.Command{
-	Use:   "create-token",
+var internalTokenCreateCmd = &cobra.Command{
+	Use:   "create-internal-token",
 	Short: "Creates a new internal Temporal token",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runCreateTemporalToken()
+		err := runCreateTemporalInternalToken()
 
 		if err != nil {
 			red := color.New(color.FgRed)
-			red.Println("Error running [temporal create-token]:", err.Error())
+			red.Printf("Error running [%s]:%s\n", cmd.Use, err.Error())
+			os.Exit(1)
+		}
+	},
+}
+
+var workerTokenCreateCmd = &cobra.Command{
+	Use:   "create-worker-token",
+	Short: "Creates a new worker Temporal token",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := runCreateTemporalWorkerToken()
+
+		if err != nil {
+			red := color.New(color.FgRed)
+			red.Printf("Error running [%s]:%s\n", cmd.Use, err.Error())
 			os.Exit(1)
 		}
 	},
 }
 
 var tokenCreateSigningKey string
-var tokenIssuer string = "http://127.0.0.1:7223"
-var tokenAudience string = "http://127.0.0.1:7223"
+var tokenIssuer string
+var tokenAudience string
+
+var workerTokenTeamID string
 
 func init() {
 	rootCmd.AddCommand(temporalCmd)
-	temporalCmd.AddCommand(tokenCreateCmd)
+	temporalCmd.AddCommand(internalTokenCreateCmd)
+	temporalCmd.AddCommand(workerTokenCreateCmd)
 
-	tokenCreateCmd.PersistentFlags().StringVar(
+	internalTokenCreateCmd.PersistentFlags().StringVar(
 		&tokenCreateSigningKey,
 		"signing-key",
 		"",
 		"The signing key for the token.",
 	)
 
-	tokenCreateCmd.MarkPersistentFlagRequired("signing-key")
+	internalTokenCreateCmd.MarkPersistentFlagRequired("signing-key")
 
-	tokenCreateCmd.PersistentFlags().StringVar(
+	internalTokenCreateCmd.PersistentFlags().StringVar(
 		&tokenIssuer,
 		"iss",
-		"http://127.0.0.1:7223",
+		sc.Config.TemporalClient.GetBroadcastAddress(),
 		"The issuer URL for the token (includes the protocol).",
 	)
 
-	tokenCreateCmd.PersistentFlags().StringVar(
+	internalTokenCreateCmd.PersistentFlags().StringVar(
 		&tokenAudience,
 		"aud",
-		"http://127.0.0.1:7223",
+		sc.Config.TemporalClient.GetBroadcastAddress(),
 		"The audience URL for the token (includes the protocol).",
 	)
+
+	workerTokenCreateCmd.PersistentFlags().StringVar(
+		&workerTokenTeamID,
+		"team-id",
+		"",
+		"The team id to generate the worker token for",
+	)
+
+	workerTokenCreateCmd.MarkPersistentFlagRequired("team-id")
 }
 
-func runCreateTemporalToken() error {
+func runCreateTemporalInternalToken() error {
 	internalAuthConfig := &temporal.InternalAuthConfig{
 		InternalNamespace:  temporal.DefaultInternalNamespace,
 		InternalSigningKey: []byte(tokenCreateSigningKey),
@@ -75,6 +102,33 @@ func runCreateTemporalToken() error {
 	}
 
 	token, err := token.GenerateInternalToken(internalAuthConfig)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(token)
+
+	return nil
+}
+
+func runCreateTemporalWorkerToken() error {
+	wt, err := models.NewWorkerTokenFromTeamID(workerTokenTeamID)
+
+	if err != nil {
+		return err
+	}
+
+	token, err := hatchettoken.GenerateTokenFromWT(wt, &hatchettoken.TokenOpts{
+		Issuer:   tokenIssuer,
+		Audience: []string{tokenAudience},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	wt, err = sc.DB.Repository.WorkerToken().CreateWorkerToken(wt)
 
 	if err != nil {
 		return err

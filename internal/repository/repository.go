@@ -22,6 +22,7 @@ type Repository interface {
 	ModuleRunQueue() ModuleRunQueueRepository
 	ModuleMonitor() ModuleMonitorRepository
 	Notification() NotificationRepository
+	WorkerToken() WorkerTokenRepository
 }
 
 var (

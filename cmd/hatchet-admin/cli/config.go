@@ -11,9 +11,6 @@ import (
 var sc *server.Config
 
 func init() {
-	// set temporal enabled to false so client connection isn't required
-	os.Setenv("TEMPORAL_ENABLED", "false")
-
 	var err error
 	configLoader := &loader.EnvConfigLoader{}
 	sc, err = configLoader.LoadServerConfigFromEnv()

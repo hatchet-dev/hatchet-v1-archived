@@ -1,9 +1,12 @@
 package temporal
 
-import "github.com/hatchet-dev/hatchet/internal/auth/token"
+import (
+	"github.com/hatchet-dev/hatchet/internal/auth/token"
+	"github.com/hatchet-dev/hatchet/internal/config/database"
+)
 
 type TemporalConfigFile struct {
-	TemporalPublicURL string `env:"TEMPORAL_PUBLIC_URL,default=http:127.0.0.1:7233"`
+	TemporalPublicURL string `env:"TEMPORAL_PUBLIC_URL,default=http://127.0.0.1:7233"`
 
 	TemporalAddress               string `env:"TEMPORAL_ADDRESS,default=127.0.0.1"`
 	TemporalFrontendPort          int64  `env:"TEMPORAL_FRONTEND_PORT,default=7233"`
@@ -66,6 +69,8 @@ type InternalAuthConfig struct {
 }
 
 type Config struct {
+	DB database.Config
+
 	ConfigFile *TemporalConfigFile
 
 	InternalAuthConfig *InternalAuthConfig

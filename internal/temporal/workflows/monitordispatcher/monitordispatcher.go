@@ -126,6 +126,7 @@ func (md *MonitorDispatcher) DispatchMonitors(ctx workflow.Context, input Monito
 
 		cwo := workflow.ChildWorkflowOptions{
 			TaskQueue:                hatchetenums.ModuleRunQueueName,
+			Namespace:                input.TeamID,
 			WorkflowExecutionTimeout: 1 * time.Minute,
 			WorkflowTaskTimeout:      time.Minute,
 			ParentClosePolicy:        enums.PARENT_CLOSE_POLICY_ABANDON,

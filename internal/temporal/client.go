@@ -20,6 +20,7 @@ type Client struct {
 }
 
 type ClientOpts struct {
+	BroadcastAddress string
 	HostPort         string
 	Namespace        string
 	BearerToken      string
@@ -111,6 +112,10 @@ func (c *Client) GetClient(queueName string) (client.Client, error) {
 	}
 
 	return tc, nil
+}
+
+func (c *Client) GetBroadcastAddress() string {
+	return c.opts.BroadcastAddress
 }
 
 func (c *Client) newQueueClient(taskQueueName string) (client.Client, error) {

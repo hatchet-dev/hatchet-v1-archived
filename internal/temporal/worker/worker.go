@@ -46,7 +46,7 @@ func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
 	return backgroundWorker.Start()
 }
 
-func StartRunnerWorker(config *hatchetworker.RunnerConfig) error {
+func StartRunnerWorker(config *hatchetworker.RunnerConfig, blocking bool) error {
 	tc, err := config.TemporalClient.GetClient(enums.ModuleRunQueueName)
 
 	if err != nil {
@@ -63,6 +63,10 @@ func StartRunnerWorker(config *hatchetworker.RunnerConfig) error {
 	// TODO: name of workflow vs activity is confusing
 	runnerWorker.RegisterWorkflow(mr.RunMonitor)
 	runnerWorker.RegisterActivity(mr.Monitor)
+
+	if blocking {
+		return runnerWorker.Run(worker.InterruptCh())
+	}
 
 	return runnerWorker.Start()
 }
