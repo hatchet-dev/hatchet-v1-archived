@@ -75,6 +75,52 @@ func (r *RunnerAction) Apply(
 	return r.output(config)
 }
 
+func (r *RunnerAction) Destroy(
+	config *runner.Config,
+	vals map[string]interface{},
+) error {
+	if !commandExists("terraform") {
+		return fmt.Errorf("terraform cli command does not exist")
+	}
+
+	var planPath string
+
+	// download plan, if github commit sha is passed in
+	if config.ConfigFile.GithubSHA != "" {
+		planPath = "./plan.tfplan"
+
+		err := r.downloadPlanToFile(config, planPath)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
+
+	if err != nil {
+		r.errHandler(config, fmt.Sprintf("Could not download module values"))
+
+		return err
+	}
+
+	// re initialize
+	err = r.reInit(config)
+
+	if err != nil {
+		return r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+	}
+
+	err = r.destroy(config, planPath, "./tfvars.json")
+
+	if err != nil {
+		return r.errHandler(config, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
+	}
+
+	// get the output
+	return nil
+}
+
 func (r *RunnerAction) Plan(
 	config *runner.Config,
 	vals map[string]interface{},
@@ -428,6 +474,40 @@ func (r *RunnerAction) apply(
 	}
 
 	fmt.Printf("running apply with args: [%v]", args)
+
+	cmd := exec.Command("terraform", args...)
+	cmd.Dir = config.TerraformConf.TFDir
+
+	// writer := io.MultiWriter(streamer, os.Stdout, os.Stderr)
+	cmd.Stdout = r.writer
+	cmd.Stderr = r.writer
+
+	err := r.setBackendEnv(config, cmd)
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.Run()
+}
+
+func (r *RunnerAction) destroy(
+	config *runner.Config,
+	planPath string,
+	valsFilePath string,
+) error {
+	args := []string{"destroy", "-json", "-auto-approve"}
+
+	// var-file option can only be set when there is not a planned run
+	if valsFilePath != "" && planPath == "" {
+		args = append(args, fmt.Sprintf("-var-file=%s", valsFilePath))
+	}
+
+	if planPath != "" {
+		args = append(args, fmt.Sprintf("%s", planPath))
+	}
+
+	fmt.Printf("running destroy with args: [%v]", args)
 
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = config.TerraformConf.TFDir

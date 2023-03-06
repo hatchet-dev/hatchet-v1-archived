@@ -39,6 +39,18 @@ func (l *LocalProvisioner) RunApply(opts *provisioner.ProvisionOpts) error {
 	return nil
 }
 
+func (l *LocalProvisioner) RunDestroy(opts *provisioner.ProvisionOpts) error {
+	runFunc := l.getRunFunc(opts, "destroy")
+
+	if opts.WaitForRunFinished {
+		return runFunc()
+	} else {
+		go runFunc()
+	}
+
+	return nil
+}
+
 func (l *LocalProvisioner) RunStateMonitor(opts *provisioner.ProvisionOpts, monitorID string, policy []byte) error {
 	runFunc := l.getMonitorFunc(opts, monitorID, policy, "state")
 
@@ -156,8 +168,4 @@ func (l *LocalProvisioner) getMonitorFunc(opts *provisioner.ProvisionOpts, monit
 
 		return err
 	}
-}
-
-func (l *LocalProvisioner) RunDestroy(opts *provisioner.ProvisionOpts) error {
-	return nil
 }
