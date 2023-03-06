@@ -83,6 +83,16 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
+	// if this is a successful destroy, delete the module
+	if run.Kind == models.ModuleRunKindDestroy && run.Status == models.ModuleRunStatusCompleted {
+		module, err = m.Repo().Module().DeleteModule(module)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
+	}
+
 	m.WriteResult(w, r, run.ToAPITypeOverview())
 
 	// write github comment
