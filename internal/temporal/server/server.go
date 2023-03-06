@@ -1,9 +1,6 @@
 package server
 
 import (
-	// "fmt"
-	// goLog "log"
-
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"

@@ -1,7 +1,5 @@
 package server
 
-// This file should be the only one to import ui-server packages.
-// This is to avoid embedding the UI's static assets in the binary when the `headless` build tag is enabled.
 import (
 	"fmt"
 
