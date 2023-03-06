@@ -45,5 +45,6 @@ func AutoMigrate(db *gorm.DB, debug bool) error {
 		&models.ModuleMonitorResult{},
 		&models.NotificationInbox{},
 		&models.Notification{},
+		&models.WorkerToken{},
 	)
 }

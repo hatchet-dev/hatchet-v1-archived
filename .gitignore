@@ -17,6 +17,10 @@ bin
 openapi.yaml
 .idea
 dump.rdb
+.srl
+*.csr
+*.pfx
+*.cert
 
 node_modules
 

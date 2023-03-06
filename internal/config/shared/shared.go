@@ -12,11 +12,17 @@ type ConfigFile struct {
 	Debug bool `env:"DEBUG,default=false"`
 
 	// Temporal config options
-	TemporalEnabled       bool   `env:"TEMPORAL_ENABLED,default=true"`
-	TemporalHostPort      string `env:"TEMPORAL_HOST_PORT,default=127.0.0.1:7233"`
-	TemporalNamespace     string `env:"TEMPORAL_NAMESPACE,default=default"`
-	TemporalAuthHeaderKey string `env:"TEMPORAL_AUTH_HEADER_KEY"`
-	TemporalAuthHeaderVal string `env:"TEMPORAL_AUTH_HEADER_VAL"`
+	TemporalBroadcastAddress string `env:"TEMPORAL_BROADCAST_ADDRESS,default=http://127.0.0.1:7233"`
+	TemporalEnabled          bool   `env:"TEMPORAL_ENABLED,default=true"`
+	TemporalHostPort         string `env:"TEMPORAL_HOST_PORT,default=127.0.0.1:7233"`
+	TemporalNamespace        string `env:"TEMPORAL_NAMESPACE,default=default"`
+	TemporalBearerToken      string `env:"TEMPORAL_BEARER_TOKEN"`
+
+	// TLS options
+	TemporalClientTLSRootCAFile string `env:"TEMPORAL_CLIENT_TLS_ROOT_CA_FILE"`
+	TemporalClientTLSCertFile   string `env:"TEMPORAL_CLIENT_TLS_CERT_FILE"`
+	TemporalClientTLSKeyFile    string `env:"TEMPORAL_CLIENT_TLS_KEY_FILE"`
+	TemporalTLSServerName       string `env:"TEMPORAL_TLS_SERVER_NAME"`
 }
 
 type Config struct {

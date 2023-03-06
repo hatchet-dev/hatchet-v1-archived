@@ -71,21 +71,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO: move this out of the server binary
-	rwc, err := configLoader.LoadRunnerWorkerConfigFromEnv()
-
-	if err != nil {
-		fmt.Printf("Fatal: could not load runner worker config: %v", err)
-		os.Exit(1)
-	}
-
-	err = worker.StartRunnerWorker(rwc)
-
-	if err != nil {
-		fmt.Printf("Fatal: could not start worker: %v", err)
-		os.Exit(1)
-	}
-
 	grpcServer := grpc.NewServer()
 	pb.RegisterProvisionerServer(grpcServer, pgrpc.NewProvisionerServer(sc))
 
