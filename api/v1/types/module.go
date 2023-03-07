@@ -214,9 +214,13 @@ type ListModulesResponse struct {
 type ListModuleRunsRequest struct {
 	*PaginationRequest
 
-	// the status of the module run
+	// an optional list of statuses for the module run
 	// in: query
-	Status ModuleRunStatus `schema:"status" json:"status"`
+	Status []ModuleRunStatus `schema:"status" json:"status,omitempty"`
+
+	// an optional list of kinds for the module run
+	// in: query
+	Kind []ModuleRunKind `schema:"kind" json:"kind,omitempty"`
 }
 
 // swagger:model
@@ -224,6 +228,14 @@ type ListModuleRunsResponse struct {
 	Pagination *PaginationResponse  `json:"pagination"`
 	Rows       []*ModuleRunOverview `json:"rows"`
 }
+
+// swagger:model
+type CreateModuleRunRequest struct {
+	Kind ModuleRunKind `json:"kind" form:"required,oneof=plan apply"`
+}
+
+// swagger:model
+type CreateModuleRunResponse ModuleRun
 
 // swagger:model
 type CreateTerraformStateRequest struct {

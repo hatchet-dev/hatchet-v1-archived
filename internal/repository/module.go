@@ -2,6 +2,11 @@ package repository
 
 import "github.com/hatchet-dev/hatchet/internal/models"
 
+type ModuleRunsFilter struct {
+	Status []string
+	Kind   []string
+}
+
 // ModuleRepository represents the set of queries on the Module model
 type ModuleRepository interface {
 	// --- Module queries ---
@@ -46,7 +51,7 @@ type ModuleRepository interface {
 	ReadModuleRunWithStateLock(moduleID string) (*models.ModuleRun, RepositoryError)
 
 	// ListRunsByModuleID lists all runs for a module
-	ListRunsByModuleID(moduleID string, status *models.ModuleRunStatus, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
+	ListRunsByModuleID(moduleID string, filter *ModuleRunsFilter, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
 
 	// UpdateModuleRun updates any modified values for a module
 	UpdateModuleRun(run *models.ModuleRun) (*models.ModuleRun, RepositoryError)

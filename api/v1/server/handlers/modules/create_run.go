@@ -27,8 +27,13 @@ func NewRunCreateHandler(
 func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
-	// TODO: run kind should be set by request
-	run, reqErr := createManualRun(m.Config(), module, models.ModuleRunKindPlan)
+	req := &types.CreateModuleRunRequest{}
+
+	if ok := m.DecodeAndValidate(w, r, req); !ok {
+		return
+	}
+
+	run, reqErr := createManualRun(m.Config(), module, models.ModuleRunKind(req.Kind))
 
 	if reqErr != nil {
 		m.HandleAPIError(w, r, reqErr)
@@ -37,6 +42,5 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 
-	// TODO: typing should be set on router as well
 	m.WriteResult(w, r, run.ToAPIType(nil))
 }
