@@ -32,13 +32,17 @@ type Config struct {
 	TemporalClient *temporal.Client
 }
 
-// RedisConfigFile is used for initiating Redis connections
-type RedisConfigFile struct {
+// LogStoreConfigFile is used for initiating Redis connections
+type LogStoreConfigFile struct {
+	LogStorageKind string `env:"LOG_STORAGE_KIND,default=file"`
+
 	RedisHost     string `env:"REDIS_HOST,default=redis"`
 	RedisPort     string `env:"REDIS_PORT,default=6379"`
 	RedisUsername string `env:"REDIS_USER"`
 	RedisPassword string `env:"REDIS_PASS"`
 	RedisDB       int    `env:"REDIS_DB,default=0"`
+
+	FileDirectory string `env:"LOG_STORAGE_FILE_DIRECTORY,default=./tmp/logs"`
 }
 
 // FileStorageConfigFile is used for setting up a file storage backend

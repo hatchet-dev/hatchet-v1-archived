@@ -18,7 +18,7 @@ type BackgroundConfigFile struct {
 
 	S3StateStore shared.FileStorageConfigFile
 
-	RedisLogStore shared.RedisConfigFile
+	LogStoreConfig shared.LogStoreConfigFile
 
 	// Notification options
 

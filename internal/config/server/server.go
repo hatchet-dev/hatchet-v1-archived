@@ -69,7 +69,7 @@ type ConfigFile struct {
 
 	S3StateStore shared.FileStorageConfigFile
 
-	RedisLogStore shared.RedisConfigFile
+	LogStoreConfig shared.LogStoreConfigFile
 }
 
 type AuthConfig struct {

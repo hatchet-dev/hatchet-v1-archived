@@ -188,7 +188,7 @@ func (repo *ModuleRepository) DeleteModuleRun(run *models.ModuleRun) (*models.Mo
 func (repo *ModuleRepository) ListCompletedModuleRunsByLogLocation(location string, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
 	var runs []*models.ModuleRun
 
-	db := repo.db.Model(&models.ModuleRun{}).Where("status = ? AND log_location = ?", models.ModuleRunStatusCompleted, location)
+	db := repo.db.Model(&models.ModuleRun{}).Where("(status = ? OR status = ?) AND log_location = ?", models.ModuleRunStatusCompleted, models.ModuleRunStatusFailed, location)
 
 	paginatedResult := &repository.PaginatedResult{}
 

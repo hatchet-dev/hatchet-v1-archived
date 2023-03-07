@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hatchet-dev/hatchet/internal/repository"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -23,7 +24,7 @@ func (lf *LogFlusher) FlushLogs(ctx workflow.Context, input FlushLogsInput) (str
 		InitialInterval:    time.Second,
 		BackoffCoefficient: 2.0,
 		MaximumInterval:    100 * time.Second,
-		MaximumAttempts:    0,
+		MaximumAttempts:    5,
 	}
 
 	options := workflow.ActivityOptions{
@@ -53,9 +54,14 @@ func (lf *LogFlusher) FlushLogs(ctx workflow.Context, input FlushLogsInput) (str
 			}).Get(ctx, &flushOutput)
 
 			if flushErr != nil {
-				return "", flushErr
+				err = multierror.Append(err)
+				continue
 			}
 		}
+	}
+
+	if err != nil {
+		return "", err
 	}
 
 	return "success", nil
