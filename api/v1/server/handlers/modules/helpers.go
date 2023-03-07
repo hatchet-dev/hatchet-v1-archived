@@ -13,8 +13,73 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/db"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/monitors"
+	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/hatchet-dev/hatchet/internal/repository"
+	"github.com/hatchet-dev/hatchet/internal/runutils"
+	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
+	"github.com/hatchet-dev/hatchet/internal/temporal/workflows/modulequeuechecker"
 )
+
+func createManualRun(config *server.Config, module *models.Module, kind models.ModuleRunKind) (*models.ModuleRun, apierrors.RequestError) {
+	repo := config.DB.Repository
+
+	run := &models.ModuleRun{
+		ModuleID:    module.ID,
+		Status:      models.ModuleRunStatusQueued,
+		Kind:        kind,
+		LogLocation: config.DefaultLogStore.GetID(),
+		ModuleRunConfig: models.ModuleRunConfig{
+			TriggerKind:            models.ModuleRunTriggerKindManual,
+			ModuleValuesVersionID:  module.CurrentModuleValuesVersionID,
+			ModuleEnvVarsVersionID: module.CurrentModuleEnvVarsVersionID,
+		},
+	}
+
+	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	run.StatusDescription = desc
+
+	run, err = repo.Module().CreateModuleRun(run)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	// get all monitors for this run
+	runMonitors, err := monitors.GetAllMonitorsForModuleRun(repo, module.TeamID, run)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	run, err = repo.Module().AppendModuleRunMonitors(run, runMonitors)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	err = config.ModuleRunQueueManager.Enqueue(module, run, &queuemanager.LockOpts{})
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	err = dispatcher.DispatchModuleRunQueueChecker(config.TemporalClient, &modulequeuechecker.CheckQueueInput{
+		TeamID:   module.TeamID,
+		ModuleID: module.ID,
+	})
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	return run, nil
+}
 
 func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleRequestGithub, team *models.Team, user *models.User) (*models.ModuleDeploymentConfig, apierrors.RequestError) {
 	res := &models.ModuleDeploymentConfig{

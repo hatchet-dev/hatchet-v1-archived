@@ -130,7 +130,7 @@ func UpdateCronMonitor(c *temporal.Client, teamID, monitorID, cronSchedule strin
 		MonitorID: monitorID,
 	}
 
-	workflowID := fmt.Sprintf("%s/%s", teamID, monitorID)
+	workflowID := fmt.Sprintf("%s-%s", teamID, monitorID)
 
 	runMonitorOptions := client.StartWorkflowOptions{
 		ID:           workflowID,
@@ -139,11 +139,7 @@ func UpdateCronMonitor(c *temporal.Client, teamID, monitorID, cronSchedule strin
 	}
 
 	// delete/terminate the first workflow
-	err = tc.TerminateWorkflow(context.Background(), workflowID, "", "Terminated due to cron schedule update")
-
-	if err != nil {
-		return err
-	}
+	tc.TerminateWorkflow(context.Background(), workflowID, "", "Terminated due to cron schedule update")
 
 	_, err = tc.ExecuteWorkflow(context.Background(), runMonitorOptions, hatchetenums.WorkflowTypeNameDispatchMonitors, monitorInput)
 
@@ -158,7 +154,7 @@ func DeleteCronMonitor(c *temporal.Client, teamID, monitorID string) error {
 		return err
 	}
 
-	workflowID := fmt.Sprintf("%s/%s", teamID, monitorID)
+	workflowID := fmt.Sprintf("%s-%s", teamID, monitorID)
 
 	return tc.TerminateWorkflow(context.Background(), workflowID, "", "Terminated due to monitor deletion")
 }

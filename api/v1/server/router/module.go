@@ -324,7 +324,7 @@ func GetModuleRoutes(
 	//
 	// ### Description
 	//
-	// Deletes a module.
+	// Triggers module deletion. First triggers destroy for the Terraform module.
 	//
 	// ---
 	// produces:
@@ -336,8 +336,8 @@ func GetModuleRoutes(
 	//   - name: team_id
 	//   - name: module_id
 	// responses:
-	//   '200':
-	//     description: Successfully deleted the module
+	//   '202':
+	//     description: Successfully triggered deletion for the module.
 	//     schema:
 	//       $ref: '#/definitions/DeleteModuleResponse'
 	//   '400':

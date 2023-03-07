@@ -3,7 +3,6 @@ package modules
 import (
 	"net/http"
 
-	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
@@ -28,12 +27,13 @@ func NewModuleDeleteHandler(
 func (m *ModuleDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
-	module, err := m.Repo().Module().DeleteModule(module)
+	_, reqErr := createManualRun(m.Config(), module, models.ModuleRunKindDestroy)
 
-	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+	if reqErr != nil {
+		m.HandleAPIError(w, r, reqErr)
 		return
 	}
 
+	w.WriteHeader(http.StatusAccepted)
 	m.WriteResult(w, r, module.ToAPIType())
 }

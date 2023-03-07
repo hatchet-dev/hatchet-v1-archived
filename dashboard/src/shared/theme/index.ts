@@ -20,8 +20,8 @@ export const theme = {
     text: "Noto Sans Tai Le",
   },
   line: {
-    default: "1px solid #ffffff22",
-    thick: "2px solid #ffffff22",
+    default: "1px solid #25263a",
+    thick: "2px solid #25263a",
     selected: "1px solid #ffffffaa",
   },
   text: {

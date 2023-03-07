@@ -1,3 +1,3 @@
 #!/bin/bash
 
-env $(cat .env | xargs) go run ./cmd/hatchet-runner-worker 
+env $(cat worker.env | xargs) go run ./cmd/hatchet-runner-worker 
