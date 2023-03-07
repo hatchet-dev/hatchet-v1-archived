@@ -160,6 +160,13 @@ export interface CreateModuleRequestGithub {
 
 export type CreateModuleResponse = Module;
 
+/** @example {"kind":"kind"} */
+export interface CreateModuleRunRequest {
+  kind?: string;
+}
+
+export type CreateModuleRunResponse = ModuleRun;
+
 /** @example {"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"} */
 export interface CreateModuleValuesRequestGithub {
   /**
@@ -1505,6 +1512,10 @@ export interface CreateModuleRequest {
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
+}
+
+export interface CreateModuleRunRequest {
+  kind?: string;
 }
 
 export interface FinalizeModuleRunRequest {

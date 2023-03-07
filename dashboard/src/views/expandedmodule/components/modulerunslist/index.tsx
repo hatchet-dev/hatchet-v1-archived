@@ -46,7 +46,8 @@ const ModuleRunsList: React.FunctionComponent<Props> = ({
     queryFn: async () => {
       const res = await api.listModuleRuns(team_id, module_id, {
         page: currentPage,
-        status: "",
+        status: ["completed", "failed", "in_progress", "queued"],
+        kind: ["plan", "apply", "destroy"],
       });
       return res;
     },

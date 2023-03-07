@@ -228,13 +228,17 @@ func (repo *ModuleRepository) ListCompletedModuleRunsByLogLocation(location stri
 	return runs, paginatedResult, nil
 }
 
-func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, status *models.ModuleRunStatus, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
+func (repo *ModuleRepository) ListRunsByModuleID(moduleID string, filter *repository.ModuleRunsFilter, opts ...repository.QueryOption) ([]*models.ModuleRun, *repository.PaginatedResult, repository.RepositoryError) {
 	var runs []*models.ModuleRun
 
 	db := repo.db.Model(&models.ModuleRun{}).Where("module_id = ?", moduleID)
 
-	if status != nil && *status != "" {
-		db = db.Where("status = ?", *status)
+	if filter.Status != nil {
+		db = db.Where("status IN (?)", filter.Status)
+	}
+
+	if filter.Kind != nil {
+		db = db.Where("kind IN (?)", filter.Kind)
 	}
 
 	paginatedResult := &repository.PaginatedResult{}

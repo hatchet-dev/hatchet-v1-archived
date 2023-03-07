@@ -392,9 +392,16 @@ func GetModuleRoutes(
 	// parameters:
 	//   - name: team_id
 	//   - name: module_id
+	//   - in: body
+	//     name: CreateModuleRunRequest
+	//     description: The module run to create
+	//     schema:
+	//       $ref: '#/definitions/CreateModuleRunRequest'
 	// responses:
 	//   '201':
-	//     description: Successfully created the module
+	//     description: Successfully triggered module run creation
+	//     schema:
+	//       $ref: '#/definitions/CreateModuleRunResponse'
 	//   '400':
 	//     description: A malformed or bad request
 	//     schema:

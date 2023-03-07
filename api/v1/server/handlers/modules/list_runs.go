@@ -35,15 +35,28 @@ func (m *ModuleRunsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var status *models.ModuleRunStatus
+	var statuses []string
 
-	if req.Status != "" {
-		status = (*models.ModuleRunStatus)(&req.Status)
+	if req.Status != nil {
+		for _, reqStatus := range req.Status {
+			statuses = append(statuses, string(reqStatus))
+		}
+	}
+
+	var kinds []string
+
+	if req.Kind != nil {
+		for _, reqKind := range req.Kind {
+			kinds = append(kinds, string(reqKind))
+		}
 	}
 
 	modRuns, paginate, err := m.Repo().Module().ListRunsByModuleID(
 		module.ID,
-		status,
+		&repository.ModuleRunsFilter{
+			Status: statuses,
+			Kind:   kinds,
+		},
 		repository.WithPage(req.PaginationRequest),
 		repository.WithSortBy("created_at"),
 		repository.WithOrder(repository.OrderDesc),
