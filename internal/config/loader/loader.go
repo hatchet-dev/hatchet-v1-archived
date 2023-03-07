@@ -19,6 +19,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage/s3"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
+	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage/file"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage/redis"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
@@ -335,15 +336,29 @@ func (e *EnvConfigLoader) LoadBackgroundWorkerConfigFromConfigFile(
 
 	var logManager logstorage.LogStorageBackend
 
-	if e.hasRedisVars(wc.RedisLogStore) {
-		rc := wc.RedisLogStore
-		logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
-			RedisHost:     rc.RedisHost,
-			RedisPort:     rc.RedisPort,
-			RedisUsername: rc.RedisUsername,
-			RedisPassword: rc.RedisPassword,
-			RedisDB:       rc.RedisDB,
-		})
+	if wc.LogStoreConfig.LogStorageKind == "redis" {
+		if e.hasRedisVars(wc.LogStoreConfig) {
+			rc := wc.LogStoreConfig
+			logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
+				RedisHost:     rc.RedisHost,
+				RedisPort:     rc.RedisPort,
+				RedisUsername: rc.RedisUsername,
+				RedisPassword: rc.RedisPassword,
+				RedisDB:       rc.RedisDB,
+			})
+
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("redis environment variables not set")
+		}
+	} else if wc.LogStoreConfig.LogStorageKind == "file" {
+		logManager, err = file.NewFileLogStorageManager(wc.LogStoreConfig.FileDirectory)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
@@ -544,16 +559,29 @@ func (e *EnvConfigLoader) LoadServerConfigFromConfigFile(sc *server.ConfigFile, 
 
 	var logManager logstorage.LogStorageBackend
 
-	if e.hasRedisVars(sc.RedisLogStore) {
-		rc := sc.RedisLogStore
+	if sc.LogStoreConfig.LogStorageKind == "redis" {
+		if e.hasRedisVars(sc.LogStoreConfig) {
+			rc := sc.LogStoreConfig
+			logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
+				RedisHost:     rc.RedisHost,
+				RedisPort:     rc.RedisPort,
+				RedisUsername: rc.RedisUsername,
+				RedisPassword: rc.RedisPassword,
+				RedisDB:       rc.RedisDB,
+			})
 
-		logManager, err = redis.NewRedisLogStorageManager(&redis.InitOpts{
-			RedisHost:     rc.RedisHost,
-			RedisPort:     rc.RedisPort,
-			RedisUsername: rc.RedisUsername,
-			RedisPassword: rc.RedisPassword,
-			RedisDB:       rc.RedisDB,
-		})
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("redis environment variables not set")
+		}
+	} else if sc.LogStoreConfig.LogStorageKind == "file" {
+		logManager, err = file.NewFileLogStorageManager(sc.LogStoreConfig.FileDirectory)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	queueManager := queuemanager.NewDefaultModuleRunQueueManager(dbConfig.Repository)
@@ -590,6 +618,6 @@ func (e *EnvConfigLoader) hasS3StateAppVars(fc shared.FileStorageConfigFile) boo
 		fc.S3StateEncryptionKey != ""
 }
 
-func (e *EnvConfigLoader) hasRedisVars(rc shared.RedisConfigFile) bool {
+func (e *EnvConfigLoader) hasRedisVars(rc shared.LogStoreConfigFile) bool {
 	return rc.RedisHost != ""
 }
