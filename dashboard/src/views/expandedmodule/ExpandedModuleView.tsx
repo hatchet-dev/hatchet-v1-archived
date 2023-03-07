@@ -56,6 +56,11 @@ const ExpandedModuleView: React.FunctionComponent = () => {
       return res;
     },
     retry: false,
+    onError: (err: any) => {
+      if (err?.status == 403) {
+        history.push(`/teams/${currTeam?.id}/modules`);
+      }
+    },
   });
 
   const renderTabContents = () => {

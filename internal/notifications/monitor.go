@@ -54,11 +54,7 @@ func CreateNotificationFromMonitorResult(config *server.Config, teamID string, r
 		}
 	}
 
-	fmt.Println("CALLING APPEND")
-
 	notif, err = repo.Notification().AppendModuleRunMonitorResult(notif, result)
-
-	fmt.Println("CALLED APPEND", err)
 
 	return err
 }
