@@ -43,8 +43,10 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	monitorsInProgress := len(run.ModuleMonitorResults) != len(run.Monitors)
+	coreRunFailed := run.Status == models.ModuleRunStatusFailed || (req.ReportKind == types.ModuleRunReportKindCore && req.Status == types.ModuleRunStatusFailed)
 	coreRunSucceeded := run.Status == models.ModuleRunStatusCompleted || (req.ReportKind == types.ModuleRunReportKindCore && req.Status == types.ModuleRunStatusCompleted)
+	monitorsInProgress := !coreRunFailed && len(run.ModuleMonitorResults) != len(run.Monitors)
+
 	var failedMonitorResult *models.ModuleMonitorResult
 
 	for _, monitorResult := range run.ModuleMonitorResults {
@@ -134,12 +136,9 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 				return
 			}
 
-			monitorAPIType := monitor.ToAPIType()
 			monitorResultAPIType := failedMonitorResult.ToAPIType()
 
-			commentBody = "## Hatchet Plan\n"
-
-			commentBody += fmt.Sprintf("Monitor %s failed for this plan with message: %s", monitorAPIType.Name, monitorResultAPIType.Message)
+			commentBody = getFailedMonitorGithubComment(m.Config(), module, monitor, run, monitorResultAPIType.Message)
 
 			_, _, err = client.Checks.UpdateCheckRun(
 				context.Background(),
@@ -168,9 +167,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 				return
 			}
 
-			commentBody = "## Hatchet Plan\n"
-
-			commentBody += fmt.Sprintf("```\n%s\n```", string(fileBytes))
+			commentBody = getSuccessfulPlanGithubComment(m.Config(), module, run, fileBytes)
 
 			_, _, err = client.Checks.UpdateCheckRun(
 				context.Background(),
@@ -191,9 +188,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 			}
 		} else if run.Status == models.ModuleRunStatusFailed {
 			// otherwise, write that the module run failed
-			commentBody = "## Hatchet Plan\n"
-
-			commentBody += fmt.Sprintf("Plan failed")
+			commentBody = getFailedPlanGithubComment(m.Config(), module, run, run.StatusDescription)
 
 			_, _, err = client.Checks.UpdateCheckRun(
 				context.Background(),
@@ -238,4 +233,78 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
 		return
 	}
+}
+
+func getSuccessfulPlanGithubComment(config *server.Config, module *models.Module, run *models.ModuleRun, planBytes []byte) string {
+	shortSHA := getShortSHA(run)
+	shaLink := getCommitSHALink(module, run)
+	moduleLink := getModuleLink(config, module.TeamID, module.ID)
+
+	return fmt.Sprintf(
+		"## Hatchet Plan\n"+
+			"Successfully created a plan from commit [`%s`](%s). Details:\n"+
+			"||Run information|\n"+
+			"|-|-|\n"+
+			"| Module | [`%s`](%s) |\n"+
+			"| Commit SHA | [`%s`](%s) |\n"+
+			"```\n%s\n```",
+		shortSHA, shaLink, module.Name, moduleLink, shortSHA, shaLink, string(planBytes),
+	)
+}
+
+func getFailedMonitorGithubComment(config *server.Config, module *models.Module, monitor *models.ModuleMonitor, run *models.ModuleRun, msg string) string {
+	shortSHA := getShortSHA(run)
+	shaLink := getCommitSHALink(module, run)
+	moduleLink := getModuleLink(config, module.TeamID, module.ID)
+	monitorLink := getMonitorLink(config, module.TeamID, monitor.ID)
+
+	return fmt.Sprintf(
+		"## Hatchet Plan\n"+
+			"Could not create a plan from commit [`%s`](%s). Details:\n"+
+			"||Run information|\n"+
+			"|-|-|\n"+
+			"| Module | [`%s`](%s) |\n"+
+			"| Monitor | [`%s`](%s) |\n"+
+			"| Commit SHA | [`%s`](%s) |\n"+
+			"| Error message | %s |\n",
+		shortSHA, shaLink, module.Name, moduleLink, monitor.DisplayName, monitorLink, shortSHA, shaLink, msg,
+	)
+}
+
+func getFailedPlanGithubComment(config *server.Config, module *models.Module, run *models.ModuleRun, msg string) string {
+	shortSHA := getShortSHA(run)
+	shaLink := getCommitSHALink(module, run)
+	moduleLink := getModuleLink(config, module.TeamID, module.ID)
+
+	return fmt.Sprintf(
+		"## Hatchet Plan\n"+
+			"Could not create a plan from commit [`%s`](%s). Details:\n"+
+			"||Run information|\n"+
+			"|-|-|\n"+
+			"| Module | [`%s`](%s) |\n"+
+			"| Commit SHA | [`%s`](%s) |\n"+
+			"| Error message | %s |\n",
+		shortSHA, shaLink, module.Name, moduleLink, shortSHA, shaLink, msg,
+	)
+}
+
+func getModuleLink(config *server.Config, teamID, moduleID string) string {
+	return fmt.Sprintf("%s/teams/%s/modules/%s", config.ServerRuntimeConfig.ServerURL, teamID, moduleID)
+}
+
+func getMonitorLink(config *server.Config, teamID, monitorID string) string {
+	return fmt.Sprintf("%s/teams/%s/monitors/%s", config.ServerRuntimeConfig.ServerURL, teamID, monitorID)
+}
+
+func getShortSHA(run *models.ModuleRun) string {
+	return run.ModuleRunConfig.GithubCommitSHA[0:7]
+}
+
+func getCommitSHALink(module *models.Module, run *models.ModuleRun) string {
+	return fmt.Sprintf(
+		"https://github.com/%s/%s/commit/%s",
+		module.DeploymentConfig.GithubRepoOwner,
+		module.DeploymentConfig.GithubRepoName,
+		run.ModuleRunConfig.GithubCommitSHA,
+	)
 }
