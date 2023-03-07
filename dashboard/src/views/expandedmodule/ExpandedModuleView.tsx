@@ -31,8 +31,8 @@ import RunsTab from "./components/runstab";
 
 const TabOptions = [
   "Runs",
-  "Resource Explorer",
-  "Policies",
+  // "Resource Explorer",
+  // "Policies",
   "Monitors",
   "Settings",
 ];

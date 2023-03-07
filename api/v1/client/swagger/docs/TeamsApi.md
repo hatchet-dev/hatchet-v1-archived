@@ -8,7 +8,9 @@ Method | HTTP request | Description
 [**CreateTeam**](TeamsApi.md#CreateTeam) | **Post** /api/v1/organizations/{org_id}/teams | Create a new team.
 [**DeleteTeam**](TeamsApi.md#DeleteTeam) | **Delete** /api/v1/teams/{team_id} | Delete team.
 [**DeleteTeamMember**](TeamsApi.md#DeleteTeamMember) | **Delete** /api/v1/teams/{team_id}/members/{team_member_id} | Delete team member
+[**GetNotification**](TeamsApi.md#GetNotification) | **Get** /api/v1/teams/{team_id}/notifications/{notification_id} | Get notification
 [**GithubIncomingWebhook**](TeamsApi.md#GithubIncomingWebhook) | **Post** /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} | Github incoming webhook endpoint
+[**ListNotifications**](TeamsApi.md#ListNotifications) | **Get** /api/v1/organizations/{org_id}/notifications | List notifications
 [**ListTeamMembers**](TeamsApi.md#ListTeamMembers) | **Get** /api/v1/teams/{team_id}/members | List team members
 [**ListTeams**](TeamsApi.md#ListTeams) | **Get** /api/v1/organizations/{org_id}/teams | List teams.
 [**UpdateTeam**](TeamsApi.md#UpdateTeam) | **Post** /api/v1/teams/{team_id} | Update team
@@ -141,6 +143,34 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **GetNotification**
+> GetNotificationResponse GetNotification(ctx, teamId)
+Get notification
+
+Gets a notification by id.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+
+### Return type
+
+[**GetNotificationResponse**](GetNotificationResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **GithubIncomingWebhook**
 > GithubIncomingWebhook(ctx, teamId, githubIncomingWebhookId)
 Github incoming webhook endpoint
@@ -158,6 +188,40 @@ Name | Type | Description  | Notes
 ### Return type
 
  (empty response body)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ListNotifications**
+> ListNotificationsResponse ListNotifications(ctx, optional)
+List notifications
+
+Lists notifications for an organization, optionally filtered by team id.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **optional** | ***TeamsApiListNotificationsOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a TeamsApiListNotificationsOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **orgId** | **optional.Int64**| The page to query for | 
+
+### Return type
+
+[**ListNotificationsResponse**](ListNotificationsResponse.md)
 
 ### Authorization
 

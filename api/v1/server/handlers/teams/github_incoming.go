@@ -395,7 +395,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestMerged(team *models.Tea
 			LogLocation: g.Config().DefaultLogStore.GetID(),
 		}
 
-		desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status)
+		desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status, nil)
 
 		if err != nil {
 			err = multierror.Append(err)
@@ -568,7 +568,7 @@ func (g *GithubIncomingWebhookHandler) newPlanFromPR(
 		},
 	}
 
-	desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status)
+	desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status, nil)
 
 	if err != nil {
 		return err

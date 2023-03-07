@@ -7,22 +7,34 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
-func GenerateRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {
+func GenerateRunDescription(
+	config *server.Config,
+	module *models.Module,
+	run *models.ModuleRun,
+	status models.ModuleRunStatus,
+	failedMonitorResult *models.ModuleMonitorResult,
+) (string, error) {
 	switch run.Kind {
 	case models.ModuleRunKindPlan:
-		return generatePlanRunDescription(config, module, run, status)
+		return generatePlanRunDescription(config, module, run, status, failedMonitorResult)
 	case models.ModuleRunKindApply:
-		return generateApplyRunDescription(config, module, run, status)
+		return generateApplyRunDescription(config, module, run, status, failedMonitorResult)
 	case models.ModuleRunKindDestroy:
-		return generateDestroyRunDescription(config, module, run, status)
+		return generateDestroyRunDescription(config, module, run, status, failedMonitorResult)
 	case models.ModuleRunKindMonitor:
-		return generateMonitorRunDescription(config, module, run, status)
+		return generateMonitorRunDescription(config, module, run, status, failedMonitorResult)
 	}
 
 	return "", fmt.Errorf("unknown run kind %s", run.Kind)
 }
 
-func generatePlanRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {
+func generatePlanRunDescription(
+	config *server.Config,
+	module *models.Module,
+	run *models.ModuleRun,
+	status models.ModuleRunStatus,
+	failedMonitorResult *models.ModuleMonitorResult,
+) (string, error) {
 	prefix := "Plan"
 
 	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
@@ -35,6 +47,10 @@ func generatePlanRunDescription(config *server.Config, module *models.Module, ru
 		prefix = fmt.Sprintf("Plan for pull request %s/%s #%d", pr.GithubRepositoryOwner, pr.GithubRepositoryName, pr.GithubPullRequestNumber)
 	}
 
+	if failedMonitorResult != nil {
+		return fmt.Sprintf("%s failed a monitor check with message: %s", prefix, failedMonitorResult.Message), nil
+	}
+
 	switch status {
 	case models.ModuleRunStatusCompleted:
 		return fmt.Sprintf("%s ran successfully", prefix), nil
@@ -49,13 +65,23 @@ func generatePlanRunDescription(config *server.Config, module *models.Module, ru
 	return "", nil
 }
 
-func generateApplyRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {
+func generateApplyRunDescription(
+	config *server.Config,
+	module *models.Module,
+	run *models.ModuleRun,
+	status models.ModuleRunStatus,
+	failedMonitorResult *models.ModuleMonitorResult,
+) (string, error) {
 	prefix := "Apply"
 
 	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
 		prefix = fmt.Sprintf("Apply for branch %s", module.DeploymentConfig.GithubRepoBranch)
 	}
 
+	if failedMonitorResult != nil {
+		return fmt.Sprintf("%s failed a monitor check with message: %s", prefix, failedMonitorResult.Message), nil
+	}
+
 	switch status {
 	case models.ModuleRunStatusCompleted:
 		return fmt.Sprintf("%s ran successfully", prefix), nil
@@ -70,13 +96,23 @@ func generateApplyRunDescription(config *server.Config, module *models.Module, r
 	return "", nil
 }
 
-func generateDestroyRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {
+func generateDestroyRunDescription(
+	config *server.Config,
+	module *models.Module,
+	run *models.ModuleRun,
+	status models.ModuleRunStatus,
+	failedMonitorResult *models.ModuleMonitorResult,
+) (string, error) {
 	prefix := "Destroy"
 
 	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
 		prefix = fmt.Sprintf("Destroy for branch %s", module.DeploymentConfig.GithubRepoBranch)
 	}
 
+	if failedMonitorResult != nil {
+		return fmt.Sprintf("%s failed a monitor check with message: %s", prefix, failedMonitorResult.Message), nil
+	}
+
 	switch status {
 	case models.ModuleRunStatusCompleted:
 		return fmt.Sprintf("%s ran successfully", prefix), nil
@@ -91,8 +127,18 @@ func generateDestroyRunDescription(config *server.Config, module *models.Module,
 	return "", nil
 }
 
-func generateMonitorRunDescription(config *server.Config, module *models.Module, run *models.ModuleRun, status models.ModuleRunStatus) (string, error) {
+func generateMonitorRunDescription(
+	config *server.Config,
+	module *models.Module,
+	run *models.ModuleRun,
+	status models.ModuleRunStatus,
+	failedMonitorResult *models.ModuleMonitorResult,
+) (string, error) {
 	prefix := "Monitor"
+
+	if failedMonitorResult != nil {
+		return fmt.Sprintf("%s failed a monitor check with message: %s", prefix, failedMonitorResult.Message), nil
+	}
 
 	switch status {
 	case models.ModuleRunStatusCompleted:

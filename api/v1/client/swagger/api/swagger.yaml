@@ -1648,6 +1648,97 @@ paths:
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/organizations/{org_id}/notifications:
+    get:
+      tags:
+      - Teams
+      summary: List notifications
+      description: "Lists notifications for an organization, optionally filtered by\
+        \ team id."
+      operationId: listNotifications
+      parameters:
+      - name: org_id
+        in: query
+        description: The page to query for
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int64
+          x-go-name: Page
+        x-go-name: Page
+      responses:
+        "200":
+          description: Successfully listed notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListNotificationsResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url 'http://localhost:8080/api/v1/organizations/{org_id}/notifications?org_id=2' \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/organizations/{org_id}/notifications?org_id=2';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/organizations/{org_id}/notifications?org_id=2")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/organizations/{org_id}/notifications"
+
+          querystring = {"org_id":"2"}
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers, params=querystring)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/organizations/{org_id}/notifications?org_id=2\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
   /api/v1/organizations/{org_id}/teams:
     get:
       tags:
@@ -2938,7 +3029,8 @@ paths:
       tags:
       - Modules
       summary: Delete Module
-      description: Deletes a module.
+      description: Triggers module deletion. First triggers destroy for the Terraform
+        module.
       operationId: deleteModule
       parameters:
       - name: team_id
@@ -2962,8 +3054,8 @@ paths:
           x-go-name: Module
         x-go-name: Module
       responses:
-        "200":
-          description: Successfully deleted the module
+        "202":
+          description: Successfully triggered deletion for the module.
           content:
             application/json:
               schema:
@@ -3234,14 +3326,28 @@ paths:
         x-go-name: Page
       - name: status
         in: query
-        description: the status of the module run
+        description: an optional list of statuses for the module run
         required: false
         style: form
-        explode: true
+        explode: false
         schema:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleRunStatus'
           x-go-name: Status
         x-go-name: Status
+      - name: kind
+        in: query
+        description: an optional list of kinds for the module run
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleRunKind'
+          x-go-name: Kind
+        x-go-name: Kind
       - name: team_id
         in: path
         description: The team id
@@ -3285,13 +3391,13 @@ paths:
       - lang: Shell
         source: |-
           curl --request GET \
-            --url 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE' \
+            --url 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_ARRAY_VALUE&kind=SOME_ARRAY_VALUE' \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
 
-          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE';
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_ARRAY_VALUE&kind=SOME_ARRAY_VALUE';
 
           let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
 
@@ -3304,7 +3410,7 @@ paths:
           require 'uri'
           require 'net/http'
 
-          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE")
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_ARRAY_VALUE&kind=SOME_ARRAY_VALUE")
 
           http = Net::HTTP.new(url.host, url.port)
 
@@ -3319,7 +3425,7 @@ paths:
 
           url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs"
 
-          querystring = {"page":"2","status":"SOME_STRING_VALUE"}
+          querystring = {"page":"2","status":"SOME_ARRAY_VALUE","kind":"SOME_ARRAY_VALUE"}
 
           headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
 
@@ -3328,7 +3434,7 @@ paths:
           print(response.text)
       - lang: Go
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
-          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_STRING_VALUE\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs?page=2&status=SOME_ARRAY_VALUE&kind=SOME_ARRAY_VALUE\"\
           \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
@@ -3360,10 +3466,20 @@ paths:
           type: string
           x-go-name: Module
         x-go-name: Module
+      requestBody:
+        description: The module run to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createModuleRun_request'
+        required: false
       responses:
         "201":
-          description: Successfully created the module
-          content: {}
+          description: Successfully triggered module run creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateModuleRunResponse'
         "400":
           description: A malformed or bad request
           content:
@@ -3381,14 +3497,23 @@ paths:
         source: |-
           curl --request POST \
             --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs \
-            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{"kind":"string"}'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
 
           let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs';
 
-          let options = {method: 'POST', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+          let options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer REPLACE_BEARER_TOKEN',
+              'content-type': 'application/json'
+            },
+            body: '{"kind":"string"}'
+          };
 
           fetch(url, options)
             .then(res => res.json())
@@ -3405,6 +3530,8 @@ paths:
 
           request = Net::HTTP::Post.new(url)
           request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+          request["content-type"] = 'application/json'
+          request.body = "{\"kind\":\"string\"}"
 
           response = http.request(request)
           puts response.read_body
@@ -3414,18 +3541,25 @@ paths:
 
           url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs"
 
-          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+          payload = {"kind": "string"}
+          headers = {
+              "Authorization": "Bearer REPLACE_BEARER_TOKEN",
+              "content-type": "application/json"
+          }
 
-          response = requests.request("POST", url, headers=headers)
+          response = requests.request("POST", url, json=payload, headers=headers)
 
           print(response.text)
       - lang: Go
-        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
-          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs\"\
-          \n\n\treq, _ := http.NewRequest(\"POST\", url, nil)\n\n\treq.Header.Add(\"\
-          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
-          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
-          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
+          \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs\"\
+          \n\n\tpayload := strings.NewReader(\"{\\\"kind\\\":\\\"string\\\"}\")\n\n\
+          \treq, _ := http.NewRequest(\"POST\", url, payload)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\treq.Header.Add(\"content-type\"\
+          , \"application/json\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\n\t\
+          defer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\
+          \tfmt.Println(string(body))\n\n}"
+      x-codegen-request-body-name: CreateModuleRunRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}:
     get:
       tags:
@@ -3610,7 +3744,7 @@ paths:
             --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
             --header 'content-type: application/json' \
-            --data '{"description":"string","status":"string"}'
+            --data '{"description":"string","report_kind":"string","status":"string"}'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
@@ -3623,7 +3757,7 @@ paths:
               Authorization: 'Bearer REPLACE_BEARER_TOKEN',
               'content-type': 'application/json'
             },
-            body: '{"description":"string","status":"string"}'
+            body: '{"description":"string","report_kind":"string","status":"string"}'
           };
 
           fetch(url, options)
@@ -3642,7 +3776,7 @@ paths:
           request = Net::HTTP::Post.new(url)
           request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
           request["content-type"] = 'application/json'
-          request.body = "{\"description\":\"string\",\"status\":\"string\"}"
+          request.body = "{\"description\":\"string\",\"report_kind\":\"string\",\"status\":\"string\"}"
 
           response = http.request(request)
           puts response.read_body
@@ -3654,6 +3788,7 @@ paths:
 
           payload = {
               "description": "string",
+              "report_kind": "string",
               "status": "string"
           }
           headers = {
@@ -3668,12 +3803,12 @@ paths:
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
           \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/finalize\"\
           \n\n\tpayload := strings.NewReader(\"{\\\"description\\\":\\\"string\\\"\
-          ,\\\"status\\\":\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\"\
-          , url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
-          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
-          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
-          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
-          \n}"
+          ,\\\"report_kind\\\":\\\"string\\\",\\\"status\\\":\\\"string\\\"}\")\n\n\
+          \treq, _ := http.NewRequest(\"POST\", url, payload)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\treq.Header.Add(\"content-type\"\
+          , \"application/json\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\n\t\
+          defer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\
+          \tfmt.Println(string(body))\n\n}"
       x-codegen-request-body-name: FinalizeModuleRunRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs:
     get:
@@ -5306,6 +5441,93 @@ paths:
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
           \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/monitors/322346f9-54b4-497d-bc9a-c54b5aaa4400\"\
           \n\n\treq, _ := http.NewRequest(\"DELETE\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
+  /api/v1/teams/{team_id}/notifications/{notification_id}:
+    get:
+      tags:
+      - Teams
+      summary: Get notification
+      description: Gets a notification by id.
+      operationId: getNotification
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      responses:
+        "200":
+          description: Successfully got the notification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/notifications/{notification_id} \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/notifications/{notification_id}';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/notifications/{notification_id}")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/notifications/{notification_id}"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/notifications/{notification_id}\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
           Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
           \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
           fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
@@ -7510,6 +7732,17 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleResponse:
       $ref: '#/components/schemas/Module'
+    CreateModuleRunRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      example:
+        kind: kind
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    CreateModuleRunResponse:
+      $ref: '#/components/schemas/ModuleRun'
     CreateModuleValuesRequestGithub:
       required:
       - github_app_installation_id
@@ -7787,6 +8020,7 @@ components:
     FinalizeModuleRunRequest:
       required:
       - description
+      - report_kind
       - status
       type: object
       properties:
@@ -7794,10 +8028,14 @@ components:
           type: string
           description: the description for the module run status
           x-go-name: Description
+        report_kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
         status:
           type: string
           x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
       example:
+        report_kind: report_kind
         description: description
         status: status
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
@@ -7851,6 +8089,8 @@ components:
       $ref: '#/components/schemas/ModuleValues'
     GetMonitorResponse:
       $ref: '#/components/schemas/ModuleMonitor'
+    GetNotificationResponse:
+      $ref: '#/components/schemas/Notification'
     GetOrgMemberResponse:
       $ref: '#/components/schemas/OrganizationMember'
     GetOrganizationResponse:
@@ -8156,6 +8396,43 @@ components:
           disabled: true
           id: bb214807-246e-43a5-a25d-41761d1cff9e
           is_default: true
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ListNotificationsResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/PaginationResponse'
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationMeta'
+          x-go-name: Rows
+      example:
+        pagination:
+          next_page: 3
+          num_pages: 10
+          current_page: 2
+        rows:
+        - module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          notification_id: notification_id
+          team_id: team_id
+          last_notified: 2000-01-23T04:56:07.000+00:00
+          message: message
+          title: title
+          resolved: true
+        - module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          notification_id: notification_id
+          team_id: team_id
+          last_notified: 2000-01-23T04:56:07.000+00:00
+          message: message
+          title: title
+          resolved: true
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     ListOrgMembersResponse:
       type: object
@@ -8993,6 +9270,9 @@ components:
         id: bb214807-246e-43a5-a25d-41761d1cff9e
         status: status
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    ModuleRunReportKind:
+      type: string
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     ModuleRunStatus:
       type: string
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
@@ -9076,6 +9356,305 @@ components:
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     MonitorResultStatus:
       type: string
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    Notification:
+      type: object
+      properties:
+        created_at:
+          type: string
+          description: the time that this resource was created
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: CreatedAt
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        last_notified:
+          type: string
+          format: date-time
+          x-go-name: LastNotified
+        message:
+          type: string
+          x-go-name: Message
+        module:
+          $ref: '#/components/schemas/Module'
+        module_id:
+          type: string
+          x-go-name: ModuleID
+        monitor_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleMonitorResult'
+          x-go-name: MonitorResults
+        notification_id:
+          type: string
+          x-go-name: NotificationID
+        resolved:
+          type: boolean
+          x-go-name: Resolved
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleRun'
+          x-go-name: Runs
+        team_id:
+          type: string
+          x-go-name: TeamID
+        title:
+          type: string
+          x-go-name: Title
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+      example:
+        module:
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          lock_kind: lock_kind
+          current_env_vars_version_id: current_env_vars_version_id
+          name: eks
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          current_values_version_id: current_values_version_id
+          deployment:
+            path: path
+            github_app_installation_id: github_app_installation_id
+            github_repo_name: github_repo_name
+            github_repo_branch: github_repo_branch
+            github_repo_owner: github_repo_owner
+          lock_id: lock_id
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        notification_id: notification_id
+        team_id: team_id
+        message: message
+        title: title
+        module_id: module_id
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        last_notified: 2000-01-23T04:56:07.000+00:00
+        monitor_results:
+        - severity: severity
+          module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          module_monitor_id: module_monitor_id
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          module_name: module_name
+          module_run_id: module_run_id
+          message: message
+          title: title
+          status: status
+        - severity: severity
+          module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          module_monitor_id: module_monitor_id
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          module_name: module_name
+          module_run_id: module_run_id
+          message: message
+          title: title
+          status: status
+        runs:
+        - github_pull_request:
+            github_pull_request_base_branch: github_pull_request_base_branch
+            github_pull_request_state: github_pull_request_state
+            github_pull_request_head_branch: github_pull_request_head_branch
+            github_pull_request_title: github_pull_request_title
+            github_repository_owner: github_repository_owner
+            github_pull_request_id: 0
+            github_pull_request_number: 6
+            github_repository_name: github_repository_name
+          status_description: status_description
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          kind: kind
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          monitor_results:
+          - severity: severity
+            module_id: module_id
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            module_monitor_id: module_monitor_id
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            module_name: module_name
+            module_run_id: module_run_id
+            message: message
+            title: title
+            status: status
+          - severity: severity
+            module_id: module_id
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            module_monitor_id: module_monitor_id
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            module_name: module_name
+            module_run_id: module_run_id
+            message: message
+            title: title
+            status: status
+          config:
+            trigger_kind: trigger_kind
+            github_commit_sha: github_commit_sha
+            values_version_id: values_version_id
+            env_var_version_id: env_var_version_id
+          monitors:
+          - policy_bytes: policy_bytes
+            cron_schedule: cron_schedule
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            kind: kind
+            name: drift
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            description: detects drift
+            disabled: true
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            is_default: true
+            modules:
+            - modules
+            - modules
+          - policy_bytes: policy_bytes
+            cron_schedule: cron_schedule
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            kind: kind
+            name: drift
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            description: detects drift
+            disabled: true
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            is_default: true
+            modules:
+            - modules
+            - modules
+          status: status
+        - github_pull_request:
+            github_pull_request_base_branch: github_pull_request_base_branch
+            github_pull_request_state: github_pull_request_state
+            github_pull_request_head_branch: github_pull_request_head_branch
+            github_pull_request_title: github_pull_request_title
+            github_repository_owner: github_repository_owner
+            github_pull_request_id: 0
+            github_pull_request_number: 6
+            github_repository_name: github_repository_name
+          status_description: status_description
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          kind: kind
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          monitor_results:
+          - severity: severity
+            module_id: module_id
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            module_monitor_id: module_monitor_id
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            module_name: module_name
+            module_run_id: module_run_id
+            message: message
+            title: title
+            status: status
+          - severity: severity
+            module_id: module_id
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            module_monitor_id: module_monitor_id
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            module_name: module_name
+            module_run_id: module_run_id
+            message: message
+            title: title
+            status: status
+          config:
+            trigger_kind: trigger_kind
+            github_commit_sha: github_commit_sha
+            values_version_id: values_version_id
+            env_var_version_id: env_var_version_id
+          monitors:
+          - policy_bytes: policy_bytes
+            cron_schedule: cron_schedule
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            kind: kind
+            name: drift
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            description: detects drift
+            disabled: true
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            is_default: true
+            modules:
+            - modules
+            - modules
+          - policy_bytes: policy_bytes
+            cron_schedule: cron_schedule
+            updated_at: 2022-12-13T15:06:48.888358-05:00
+            kind: kind
+            name: drift
+            created_at: 2022-12-13T15:06:48.888358-05:00
+            description: detects drift
+            disabled: true
+            id: bb214807-246e-43a5-a25d-41761d1cff9e
+            is_default: true
+            modules:
+            - modules
+            - modules
+          status: status
+        resolved: true
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    NotificationMeta:
+      type: object
+      properties:
+        created_at:
+          type: string
+          description: the time that this resource was created
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: CreatedAt
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        last_notified:
+          type: string
+          format: date-time
+          x-go-name: LastNotified
+        message:
+          type: string
+          x-go-name: Message
+        module_id:
+          type: string
+          x-go-name: ModuleID
+        notification_id:
+          type: string
+          x-go-name: NotificationID
+        resolved:
+          type: boolean
+          x-go-name: Resolved
+        team_id:
+          type: string
+          x-go-name: TeamID
+        title:
+          type: string
+          x-go-name: Title
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+      example:
+        module_id: module_id
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        notification_id: notification_id
+        team_id: team_id
+        last_notified: 2000-01-23T04:56:07.000+00:00
+        message: message
+        title: title
+        resolved: true
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     Organization:
       type: object
@@ -10017,9 +10596,17 @@ components:
             properties: {}
           x-go-name: ValuesRaw
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    createModuleRun_request:
+      type: object
+      properties:
+        kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     finalizeModuleRun_request:
       required:
       - description
+      - report_kind
       - status
       type: object
       properties:
@@ -10027,6 +10614,9 @@ components:
           type: string
           description: the description for the module run status
           x-go-name: Description
+        report_kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
         status:
           type: string
           x-go-package: github.com/hatchet-dev/hatchet/api/v1/types

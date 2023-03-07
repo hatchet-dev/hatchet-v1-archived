@@ -150,15 +150,22 @@ Creates a new module run.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
  * @param moduleId The module id
-
+ * @param optional nil or *ModulesApiCreateModuleRunOpts - Optional Parameters:
+     * @param "Body" (optional.Interface of CreateModuleRunRequest) -  The module run to create
+@return CreateModuleRunResponse
 */
-func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, moduleId string) (*http.Response, error) {
+
+type ModulesApiCreateModuleRunOpts struct {
+    Body optional.Interface
+}
+
+func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, moduleId string, localVarOptionals *ModulesApiCreateModuleRunOpts) (CreateModuleRunResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		
+		localVarReturnValue CreateModuleRunResponse
 	)
 
 	// create path and map variables
@@ -171,7 +178,7 @@ func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, 
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{}
+	localVarHttpContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
@@ -187,52 +194,75 @@ func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, 
 	if localVarHttpHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
+	// body params
+	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
+		
+		localVarOptionalBody:= localVarOptionals.Body.Value()
+		localVarPostBody = &localVarOptionalBody
+	}
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHttpResponse, err := a.client.callAPI(r)
 	if err != nil || localVarHttpResponse == nil {
-		return localVarHttpResponse, err
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
 	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
 	localVarHttpResponse.Body.Close()
 	if err != nil {
-		return localVarHttpResponse, err
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+		if err == nil { 
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
 		newErr := GenericSwaggerError{
 			body: localVarBody,
 			error: localVarHttpResponse.Status,
 		}
+		if localVarHttpResponse.StatusCode == 201 {
+			var v CreateModuleRunResponse
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
 		if localVarHttpResponse.StatusCode == 400 {
 			var v ApiErrorBadRequestExample
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
-					return localVarHttpResponse, newErr
+					return localVarReturnValue, localVarHttpResponse, newErr
 				}
 				newErr.model = v
-				return localVarHttpResponse, newErr
+				return localVarReturnValue, localVarHttpResponse, newErr
 		}
 		if localVarHttpResponse.StatusCode == 403 {
 			var v ApiErrorForbiddenExample
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
 					newErr.error = err.Error()
-					return localVarHttpResponse, newErr
+					return localVarReturnValue, localVarHttpResponse, newErr
 				}
 				newErr.model = v
-				return localVarHttpResponse, newErr
+				return localVarReturnValue, localVarHttpResponse, newErr
 		}
-		return localVarHttpResponse, newErr
+		return localVarReturnValue, localVarHttpResponse, newErr
 	}
 
-	return localVarHttpResponse, nil
+	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
 ModulesApiService Create Monitor Result
@@ -518,7 +548,7 @@ func (a *ModulesApiService) CreateTerraformState(ctx context.Context, teamId str
 }
 /*
 ModulesApiService Delete Module
-Deletes a module.
+Triggers module deletion. First triggers destroy for the Terraform module.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param teamId The team id
  * @param moduleId The module id
@@ -588,7 +618,7 @@ func (a *ModulesApiService) DeleteModule(ctx context.Context, teamId string, mod
 			body: localVarBody,
 			error: localVarHttpResponse.Status,
 		}
-		if localVarHttpResponse.StatusCode == 200 {
+		if localVarHttpResponse.StatusCode == 202 {
 			var v DeleteModuleResponse
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
 				if err != nil {
@@ -1812,13 +1842,15 @@ Lists module runs for a given module id.
  * @param moduleId The module id
  * @param optional nil or *ModulesApiListModuleRunsOpts - Optional Parameters:
      * @param "Page" (optional.Int64) -  The page to query for
-     * @param "Status" (optional.String) -  the status of the module run
+     * @param "Status" (optional.Interface of []string) -  an optional list of statuses for the module run
+     * @param "Kind" (optional.Interface of []string) -  an optional list of kinds for the module run
 @return ListModuleRunsResponse
 */
 
 type ModulesApiListModuleRunsOpts struct {
     Page optional.Int64
-    Status optional.String
+    Status optional.Interface
+    Kind optional.Interface
 }
 
 func (a *ModulesApiService) ListModuleRuns(ctx context.Context, teamId string, moduleId string, localVarOptionals *ModulesApiListModuleRunsOpts) (ListModuleRunsResponse, *http.Response, error) {
@@ -1843,7 +1875,10 @@ func (a *ModulesApiService) ListModuleRuns(ctx context.Context, teamId string, m
 		localVarQueryParams.Add("page", parameterToString(localVarOptionals.Page.Value(), ""))
 	}
 	if localVarOptionals != nil && localVarOptionals.Status.IsSet() {
-		localVarQueryParams.Add("status", parameterToString(localVarOptionals.Status.Value(), ""))
+		localVarQueryParams.Add("status", parameterToString(localVarOptionals.Status.Value(), "csv"))
+	}
+	if localVarOptionals != nil && localVarOptionals.Kind.IsSet() {
+		localVarQueryParams.Add("kind", parameterToString(localVarOptionals.Kind.Value(), "csv"))
 	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}

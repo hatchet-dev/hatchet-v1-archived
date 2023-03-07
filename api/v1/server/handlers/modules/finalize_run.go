@@ -43,15 +43,32 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	switch req.Status {
-	case types.ModuleRunStatusFailed:
-		run.Status = models.ModuleRunStatusFailed
-	case types.ModuleRunStatusCompleted:
+	monitorsInProgress := len(run.ModuleMonitorResults) != len(run.Monitors)
+	coreRunSucceeded := run.Status == models.ModuleRunStatusCompleted || (req.ReportKind == types.ModuleRunReportKindCore && req.Status == types.ModuleRunStatusCompleted)
+	var failedMonitorResult *models.ModuleMonitorResult
+
+	for _, monitorResult := range run.ModuleMonitorResults {
+		if monitorResult.Status == models.MonitorResultStatusFailed {
+			failedMonitorResult = &monitorResult
+			break
+		}
+	}
+
+	// if there are still monitors in progress, we simply do nothing and wait for additional reports from
+	// the monitors
+	if monitorsInProgress {
+		m.WriteResult(w, r, run.ToAPITypeOverview())
+		return
+	}
+
+	if coreRunSucceeded {
 		run.Status = models.ModuleRunStatusCompleted
+	} else {
+		run.Status = models.ModuleRunStatusFailed
 	}
 
 	if req.Description == "" {
-		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status)
+		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status, failedMonitorResult)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -95,7 +112,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	m.WriteResult(w, r, run.ToAPITypeOverview())
 
-	// write github comment
+	// write the github comment if all monitors have succeeded for the plan, or one monitor has failed
 	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
 		client, err := github.GetGithubAppClientFromModule(m.Config(), module)
 
@@ -107,8 +124,42 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 		var commentBody string
 
-		// if the run was successful, write the prettified plan to github
-		if run.Status == models.ModuleRunStatusCompleted {
+		// if there's a failed monitor, we write that to github
+		if failedMonitorResult != nil {
+			monitor, err := m.Repo().ModuleMonitor().ReadModuleMonitorByID(module.TeamID, failedMonitorResult.ModuleMonitorID)
+
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+
+			monitorAPIType := monitor.ToAPIType()
+			monitorResultAPIType := failedMonitorResult.ToAPIType()
+
+			commentBody = "## Hatchet Plan\n"
+
+			commentBody += fmt.Sprintf("Monitor %s failed for this plan with message: %s", monitorAPIType.Name, monitorResultAPIType.Message)
+
+			_, _, err = client.Checks.UpdateCheckRun(
+				context.Background(),
+				module.DeploymentConfig.GithubRepoOwner,
+				module.DeploymentConfig.GithubRepoName,
+				run.ModuleRunConfig.GithubCheckID,
+				githubsdk.UpdateCheckRunOptions{
+					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
+					Status:     githubsdk.String("completed"),
+					Conclusion: githubsdk.String("failure"),
+				},
+			)
+
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+		} else if run.Status == models.ModuleRunStatusCompleted {
+			// otherwise, if the run was successful, write the prettified plan to github
 			fileBytes, err := m.Config().DefaultFileStore.ReadFile(filestorage.GetPlanPrettyPath(module.TeamID, module.ID, run.ID), true)
 
 			if err != nil {
@@ -152,7 +203,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 				githubsdk.UpdateCheckRunOptions{
 					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
 					Status:     githubsdk.String("completed"),
-					Conclusion: githubsdk.String("success"),
+					Conclusion: githubsdk.String("failure"),
 				},
 			)
 

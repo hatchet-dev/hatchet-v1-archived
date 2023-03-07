@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **CreateModuleRun**
-> CreateModuleRun(ctx, teamId, moduleId)
+> CreateModuleRunResponse CreateModuleRun(ctx, teamId, moduleId, optional)
 Create Module Run
 
 Creates a new module run.
@@ -74,10 +74,19 @@ Name | Type | Description  | Notes
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **teamId** | **string**| The team id | 
   **moduleId** | **string**| The module id | 
+ **optional** | ***ModulesApiCreateModuleRunOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ModulesApiCreateModuleRunOpts struct
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+ **body** | [**optional.Interface of CreateModuleRunRequest**](CreateModuleRunRequest.md)| The module run to create | 
 
 ### Return type
 
- (empty response body)
+[**CreateModuleRunResponse**](CreateModuleRunResponse.md)
 
 ### Authorization
 
@@ -85,7 +94,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -186,7 +195,7 @@ Name | Type | Description  | Notes
 > DeleteModuleResponse DeleteModule(ctx, teamId, moduleId)
 Delete Module
 
-Deletes a module.
+Triggers module deletion. First triggers destroy for the Terraform module.
 
 ### Required Parameters
 
@@ -561,7 +570,8 @@ Name | Type | Description  | Notes
 
 
  **page** | **optional.Int64**| The page to query for | 
- **status** | **optional.String**| the status of the module run | 
+ **status** | [**optional.Interface of []string**](string.md)| an optional list of statuses for the module run | 
+ **kind** | [**optional.Interface of []string**](string.md)| an optional list of kinds for the module run | 
 
 ### Return type
 

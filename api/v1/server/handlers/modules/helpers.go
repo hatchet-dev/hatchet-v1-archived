@@ -36,7 +36,7 @@ func createManualRun(config *server.Config, module *models.Module, kind models.M
 		},
 	}
 
-	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress)
+	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)

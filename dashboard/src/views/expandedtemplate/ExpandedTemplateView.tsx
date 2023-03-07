@@ -85,9 +85,9 @@ const ExpandedTemplateView: React.FunctionComponent = () => {
               data={data}
               onRowClick={handleResourceClick}
             />
-            <FlexRowRight>
+            {/* <FlexRowRight>
               <Paginator />
-            </FlexRowRight>
+            </FlexRowRight> */}
           </>
         );
       case "Versions":

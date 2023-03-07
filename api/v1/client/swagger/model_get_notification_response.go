@@ -9,9 +9,5 @@
  */
 package swagger
 
-type FinalizeModuleRunRequest struct {
-	// the description for the module run status
-	Description string `json:"description"`
-	ReportKind string `json:"report_kind"`
-	Status string `json:"status"`
+type GetNotificationResponse struct {
 }

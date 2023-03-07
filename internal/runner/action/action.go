@@ -18,15 +18,16 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/opa"
 )
 
-type actionHandler func(config *runner.Config, description string) error
+type actionHandler func(config *runner.Config, reportKind, description string) error
 
 type RunnerAction struct {
 	writer     io.Writer
 	errHandler actionHandler
+	reportKind string
 }
 
-func NewRunnerAction(writer io.Writer, errHandler actionHandler) *RunnerAction {
-	return &RunnerAction{writer, errHandler}
+func NewRunnerAction(writer io.Writer, errHandler actionHandler, reportKind string) *RunnerAction {
+	return &RunnerAction{writer, errHandler, reportKind}
 }
 
 func (r *RunnerAction) Apply(
@@ -53,7 +54,7 @@ func (r *RunnerAction) Apply(
 	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not download module values"))
+		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values"))
 
 		return nil, err
 	}
@@ -62,13 +63,13 @@ func (r *RunnerAction) Apply(
 	err = r.reInit(config)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
 	}
 
 	err = r.apply(config, planPath, "./tfvars.json")
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
+		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
 	}
 
 	// get the output
@@ -99,7 +100,7 @@ func (r *RunnerAction) Destroy(
 	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not download module values"))
+		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values"))
 
 		return err
 	}
@@ -108,13 +109,13 @@ func (r *RunnerAction) Destroy(
 	err = r.reInit(config)
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
 	}
 
 	err = r.destroy(config, planPath, "./tfvars.json")
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
 	}
 
 	// get the output
@@ -132,7 +133,7 @@ func (r *RunnerAction) Plan(
 	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
 
 	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
+		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
 		return nil, nil, nil, err
 	}
 
@@ -140,31 +141,31 @@ func (r *RunnerAction) Plan(
 	err = r.reInit(config)
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
 	}
 
 	err = r.plan(config, "./tfvars.json")
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while running plan: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while running plan: %s", err.Error()))
 	}
 
 	zipOut, err := r.getPlanZIP(config)
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while getting zip output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while getting zip output: %s", err.Error()))
 	}
 
 	prettyOut, err := r.showPretty(config)
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
 	}
 
 	jsonOut, err := r.showJSON(config)
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
 	}
 
 	return zipOut, prettyOut, jsonOut, nil
@@ -241,7 +242,7 @@ func (r *RunnerAction) monitor(
 	err := r.reInit(config)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
 	}
 
 	input := make(map[string]interface{})
@@ -257,7 +258,7 @@ func (r *RunnerAction) monitor(
 	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
 
 	if err != nil {
-		return nil, r.errHandler(config, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
 	}
 
 	return opa.RunMonitorQuery(opaQuery, input)
@@ -270,7 +271,7 @@ func (r *RunnerAction) populateState(
 	stateBytes, err := r.showStateJSON(config)
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
 	}
 
 	state := make(map[string]interface{})
@@ -278,7 +279,7 @@ func (r *RunnerAction) populateState(
 	err = json.Unmarshal(stateBytes, &state)
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
 	}
 
 	input["state"] = state
@@ -303,14 +304,14 @@ func (r *RunnerAction) populatePlan(
 		err := r.plan(config, "./tfvars.json")
 
 		if err != nil {
-			return r.errHandler(config, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
+			return r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
 		}
 	}
 
 	planBytes, err := r.showJSON(config)
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
 	}
 
 	plan := make(map[string]interface{})
@@ -318,7 +319,7 @@ func (r *RunnerAction) populatePlan(
 	err = json.Unmarshal(planBytes, &plan)
 
 	if err != nil {
-		return r.errHandler(config, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
+		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
 	}
 
 	input["plan"] = plan
@@ -333,7 +334,7 @@ func (r *RunnerAction) populateVariables(
 	vars, err := r.getModuleValues(config)
 
 	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not download module values from server"))
+		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
 		return err
 	}
 
@@ -354,7 +355,7 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	}
 
 	if err != nil {
-		r.errHandler(config, fmt.Sprintf("Could not get plan to apply"))
+		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not get plan to apply"))
 
 		return err
 	}
@@ -362,7 +363,7 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	fileBytes, err := ioutil.ReadAll(resp)
 
 	if err != nil {
-		r.errHandler(config, "")
+		r.errHandler(config, r.reportKind, "")
 
 		return err
 	}
@@ -370,7 +371,7 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, planPath), fileBytes, 0666)
 
 	if err != nil {
-		r.errHandler(config, "")
+		r.errHandler(config, r.reportKind, "")
 
 		return err
 	}

@@ -284,6 +284,16 @@ type CreateTerraformPlanRequest struct {
 	PlanJSON string `json:"plan_json"`
 }
 
+type ModuleRunReportKind string
+
+const (
+	// ModuleRunReportKindCore reports for the core run -- plan, apply, destroy
+	ModuleRunReportKindCore = "core"
+
+	// ModuleRunReportKindMonitor reports for monitor runs
+	ModuleRunReportKindMonitor = "monitor"
+)
+
 // swagger:model
 type FinalizeModuleRunRequest struct {
 	// the status of the module run
@@ -293,6 +303,10 @@ type FinalizeModuleRunRequest struct {
 	// the description for the module run status
 	// required: true
 	Description string `json:"description"`
+
+	// the report kind for the finalizer request
+	// required: true
+	ReportKind ModuleRunReportKind `json:"report_kind" form:"required,oneof=core monitor"`
 }
 
 // swagger:model

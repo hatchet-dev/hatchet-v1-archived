@@ -70,7 +70,9 @@ Class | Method | HTTP request | Description
 *TeamsApi* | [**CreateTeam**](docs/TeamsApi.md#createteam) | **Post** /api/v1/organizations/{org_id}/teams | Create a new team.
 *TeamsApi* | [**DeleteTeam**](docs/TeamsApi.md#deleteteam) | **Delete** /api/v1/teams/{team_id} | Delete team.
 *TeamsApi* | [**DeleteTeamMember**](docs/TeamsApi.md#deleteteammember) | **Delete** /api/v1/teams/{team_id}/members/{team_member_id} | Delete team member
+*TeamsApi* | [**GetNotification**](docs/TeamsApi.md#getnotification) | **Get** /api/v1/teams/{team_id}/notifications/{notification_id} | Get notification
 *TeamsApi* | [**GithubIncomingWebhook**](docs/TeamsApi.md#githubincomingwebhook) | **Post** /api/v1/teams/{team_id}/github_incoming/{github_incoming_webhook_id} | Github incoming webhook endpoint
+*TeamsApi* | [**ListNotifications**](docs/TeamsApi.md#listnotifications) | **Get** /api/v1/organizations/{org_id}/notifications | List notifications
 *TeamsApi* | [**ListTeamMembers**](docs/TeamsApi.md#listteammembers) | **Get** /api/v1/teams/{team_id}/members | List team members
 *TeamsApi* | [**ListTeams**](docs/TeamsApi.md#listteams) | **Get** /api/v1/organizations/{org_id}/teams | List teams.
 *TeamsApi* | [**UpdateTeam**](docs/TeamsApi.md#updateteam) | **Post** /api/v1/teams/{team_id} | Update team
@@ -109,6 +111,8 @@ Class | Method | HTTP request | Description
  - [CreateModuleRequest](docs/CreateModuleRequest.md)
  - [CreateModuleRequestGithub](docs/CreateModuleRequestGithub.md)
  - [CreateModuleResponse](docs/CreateModuleResponse.md)
+ - [CreateModuleRunRequest](docs/CreateModuleRunRequest.md)
+ - [CreateModuleRunResponse](docs/CreateModuleRunResponse.md)
  - [CreateModuleValuesRequestGithub](docs/CreateModuleValuesRequestGithub.md)
  - [CreateMonitorRequest](docs/CreateMonitorRequest.md)
  - [CreateMonitorResponse](docs/CreateMonitorResponse.md)
@@ -142,6 +146,7 @@ Class | Method | HTTP request | Description
  - [GetModuleTarballUrlResponse](docs/GetModuleTarballUrlResponse.md)
  - [GetModuleValuesResponse](docs/GetModuleValuesResponse.md)
  - [GetMonitorResponse](docs/GetMonitorResponse.md)
+ - [GetNotificationResponse](docs/GetNotificationResponse.md)
  - [GetOrgMemberResponse](docs/GetOrgMemberResponse.md)
  - [GetOrganizationResponse](docs/GetOrganizationResponse.md)
  - [GetPatResponse](docs/GetPatResponse.md)
@@ -155,6 +160,7 @@ Class | Method | HTTP request | Description
  - [ListModulesResponse](docs/ListModulesResponse.md)
  - [ListMonitorResultsResponse](docs/ListMonitorResultsResponse.md)
  - [ListMonitorsResponse](docs/ListMonitorsResponse.md)
+ - [ListNotificationsResponse](docs/ListNotificationsResponse.md)
  - [ListOrgMembersResponse](docs/ListOrgMembersResponse.md)
  - [ListPatsResponse](docs/ListPatsResponse.md)
  - [ListTeamMembersResponse](docs/ListTeamMembersResponse.md)
@@ -178,6 +184,8 @@ Class | Method | HTTP request | Description
  - [ModuleRunOverview](docs/ModuleRunOverview.md)
  - [ModuleValues](docs/ModuleValues.md)
  - [ModuleValuesGithubConfig](docs/ModuleValuesGithubConfig.md)
+ - [Notification](docs/Notification.md)
+ - [NotificationMeta](docs/NotificationMeta.md)
  - [Organization](docs/Organization.md)
  - [OrganizationInvite](docs/OrganizationInvite.md)
  - [OrganizationInviteSanitized](docs/OrganizationInviteSanitized.md)
