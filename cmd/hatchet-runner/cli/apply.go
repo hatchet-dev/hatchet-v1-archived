@@ -47,7 +47,7 @@ func runApply() error {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler)
+	action := action.NewRunnerAction(writer, errorHandler, "core")
 
 	_, err = action.Apply(rc, map[string]interface{}{})
 
@@ -55,5 +55,5 @@ func runApply() error {
 		return err
 	}
 
-	return successHandler(rc, "")
+	return successHandler(rc, "core", "")
 }

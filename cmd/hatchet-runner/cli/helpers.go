@@ -17,12 +17,13 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/runner/grpcstreamer"
 )
 
-func errorHandler(config *runner.Config, description string) error {
+func errorHandler(config *runner.Config, reportKind, description string) error {
 	_, _, err := config.APIClient.ModulesApi.FinalizeModuleRun(
 		context.Background(),
 		swagger.FinalizeModuleRunRequest{
 			Status:      string(types.ModuleRunStatusFailed),
 			Description: description,
+			ReportKind:  reportKind,
 		},
 		config.ConfigFile.TeamID,
 		config.ConfigFile.ModuleID,
@@ -36,12 +37,13 @@ func errorHandler(config *runner.Config, description string) error {
 	return fmt.Errorf(description)
 }
 
-func successHandler(config *runner.Config, description string) error {
+func successHandler(config *runner.Config, reportKind, description string) error {
 	_, _, err := config.APIClient.ModulesApi.FinalizeModuleRun(
 		context.Background(),
 		swagger.FinalizeModuleRunRequest{
 			Status:      string(types.ModuleRunStatusCompleted),
 			Description: description,
+			ReportKind:  reportKind,
 		},
 		config.ConfigFile.TeamID,
 		config.ConfigFile.ModuleID,

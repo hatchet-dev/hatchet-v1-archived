@@ -47,7 +47,7 @@ func runDestroy() error {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler)
+	action := action.NewRunnerAction(writer, errorHandler, "core")
 
 	err = action.Destroy(rc, map[string]interface{}{})
 
@@ -55,5 +55,5 @@ func runDestroy() error {
 		return err
 	}
 
-	return successHandler(rc, "")
+	return successHandler(rc, "core", "")
 }

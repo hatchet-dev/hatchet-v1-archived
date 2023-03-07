@@ -89,10 +89,10 @@ const DashboardTeamSidebarLinks: SidebarLink[] = [
     name: "Monitors",
     href: "/monitors",
   },
-  {
-    name: "Templates",
-    href: "/templates",
-  },
+  // {
+  //   name: "Templates",
+  //   href: "/templates",
+  // },
   {
     name: "Integrations",
     href: "/integrations",

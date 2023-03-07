@@ -61,6 +61,26 @@ const MonitoringView: React.FunctionComponent = () => {
       Header: "Kind",
       accessor: "kind",
       width: 100,
+      Cell: ({ row }: any) => {
+        switch (row.original.kind) {
+          case "plan":
+            return <div>Plan</div>;
+          case "state":
+            return <div>State</div>;
+          case "before_plan":
+            return <div>Before Plan</div>;
+          case "after_plan":
+            return <div>After Plan</div>;
+          case "before_apply":
+            return <div>Before Apply</div>;
+          case "after_apply":
+            return <div>After Apply</div>;
+          case "before_destroy":
+            return <div>Before Destroy</div>;
+          case "after_destroy":
+            return <div>After Destroy</div>;
+        }
+      },
     },
     {
       Header: "Created",
@@ -72,7 +92,24 @@ const MonitoringView: React.FunctionComponent = () => {
       accessor: "updated_at",
       width: 100,
       Cell: ({ row }: any) => {
-        return <div>{row.original.cron_schedule}</div>;
+        if (row.original.cron_schedule) {
+          return <div>{row.original.cron_schedule}</div>;
+        }
+
+        switch (row.original.kind) {
+          case "before_plan":
+            return <div>Runs before plan</div>;
+          case "after_plan":
+            return <div>Runs after plan</div>;
+          case "before_apply":
+            return <div>Runs before apply</div>;
+          case "after_apply":
+            return <div>Runs after apply</div>;
+          case "before_destroy":
+            return <div>Runs before destroy</div>;
+          case "after_destroy":
+            return <div>Runs after destroy</div>;
+        }
       },
     },
   ];
@@ -91,7 +128,7 @@ const MonitoringView: React.FunctionComponent = () => {
         id: monitor.id,
         name: capitalize(monitor.name),
         description: monitor.description,
-        kind: capitalize(monitor.kind),
+        kind: monitor.kind,
         updated_at: relativeDate(monitor.updated_at),
         created_at: relativeDate(monitor.created_at),
         cron_schedule: monitor.cron_schedule,

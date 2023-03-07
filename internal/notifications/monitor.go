@@ -60,7 +60,7 @@ func CreateNotificationFromMonitorResult(config *server.Config, teamID string, r
 }
 
 func getNotificationIDFromMonitor(result *models.ModuleMonitorResult) string {
-	return fmt.Sprintf("monitor-%s-%s", result.ModuleMonitorID, ToSnake(result.Title))
+	return fmt.Sprintf("monitor-%s-%s-%s", result.ModuleID, result.ModuleMonitorID, ToSnake(result.Title))
 }
 
 func getNotificationTitleFromMonitor(config *server.Config, teamID string, result *models.ModuleMonitorResult) (string, error) {

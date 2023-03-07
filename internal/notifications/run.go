@@ -60,7 +60,7 @@ func CreateNotificationFromModuleRun(config *server.Config, teamID string, run *
 }
 
 func getNotificationIDFromRun(run *models.ModuleRun) string {
-	return fmt.Sprintf("run-%s-%s", run.ID, string(run.Kind))
+	return fmt.Sprintf("run-%s-%s-%s", run.ModuleID, run.ID, string(run.Kind))
 }
 
 func getNotificationTitleFromRun(config *server.Config, teamID string, run *models.ModuleRun) (string, error) {

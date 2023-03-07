@@ -127,7 +127,7 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler)
+	action := action.NewRunnerAction(writer, errorHandler, "monitor")
 
 	policyBytes, err := downloadMonitorPolicy(rc)
 
@@ -159,19 +159,18 @@ func runMonitorFunc(f action.MonitorFunc) error {
 	)
 
 	if err != nil {
-		errorHandler(rc, fmt.Sprintf("Could not report monitor result to server"))
+		errorHandler(rc, "monitor", fmt.Sprintf("Could not report monitor result to server"))
 
 		return err
 	}
 
 	if res.Status == "failed" {
-		err := fmt.Errorf("Monitor failed") // TODO: better error message
-		errorHandler(rc, err.Error())
+		errorHandler(rc, "monitor", "")
 
 		return err
 	}
 
-	return nil
+	return successHandler(rc, "monitor", "")
 }
 
 func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {
