@@ -35,9 +35,9 @@ func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
 
 	backgroundWorker.RegisterWorkflow(notifier.NotifyWorkflow)
 
-	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL)
+	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL, config.BroadcastGRPCAddress)
 	qc := queuechecker.NewQueueChecker(config.DB.Repository, mqc)
-	md := monitordispatcher.NewMonitorDispatcher(config.DefaultLogStore, config.DB, *config.TokenOpts, config.ServerURL)
+	md := monitordispatcher.NewMonitorDispatcher(config.DefaultLogStore, config.DB, *config.TokenOpts, config.ServerURL, config.BroadcastGRPCAddress)
 
 	backgroundWorker.RegisterWorkflow(mqc.ScheduleFromQueue)
 	backgroundWorker.RegisterWorkflow(qc.CheckQueues)

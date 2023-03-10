@@ -19,14 +19,15 @@ import (
 )
 
 type MonitorDispatcher struct {
-	logStore  logstorage.LogStorageBackend
-	db        database.Config
-	tokenOpts token.TokenOpts
-	serverURL string
+	logStore             logstorage.LogStorageBackend
+	db                   database.Config
+	tokenOpts            token.TokenOpts
+	serverURL            string
+	broadcastGRPCAddress string
 }
 
-func NewMonitorDispatcher(logStore logstorage.LogStorageBackend, db database.Config, tokenOpts token.TokenOpts, serverURL string) *MonitorDispatcher {
-	return &MonitorDispatcher{logStore, db, tokenOpts, serverURL}
+func NewMonitorDispatcher(logStore logstorage.LogStorageBackend, db database.Config, tokenOpts token.TokenOpts, serverURL, broadcastGRPCAddress string) *MonitorDispatcher {
+	return &MonitorDispatcher{logStore, db, tokenOpts, serverURL, broadcastGRPCAddress}
 }
 
 type MonitorDispatcherInput struct {
@@ -110,7 +111,7 @@ func (md *MonitorDispatcher) DispatchMonitors(ctx workflow.Context, input Monito
 		ctx = workflow.WithActivityOptions(ctx, options)
 
 		// trigger child workflow
-		envOpts, err := provisionerutils.GetProvisionerEnvOpts(team, mod, run, md.db, md.tokenOpts, md.serverURL)
+		envOpts, err := provisionerutils.GetProvisionerEnvOpts(team, mod, run, md.db, md.tokenOpts, md.serverURL, md.broadcastGRPCAddress)
 
 		if err != nil {
 			resErr = multierror.Append(err)

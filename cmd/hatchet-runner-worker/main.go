@@ -23,18 +23,18 @@ func main() {
 		os.Exit(0)
 	}
 
-	configLoader := &loader.EnvConfigLoader{}
-	rwc, err := configLoader.LoadRunnerWorkerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rwc, err := configLoader.LoadRunnerWorkerConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load runner worker config: %v", err)
+		fmt.Printf("Fatal: could not load runner worker config: %v\n", err)
 		os.Exit(1)
 	}
 
 	err = worker.StartRunnerWorker(rwc, true)
 
 	if err != nil {
-		fmt.Printf("Fatal: could not start worker: %v", err)
+		fmt.Printf("Fatal: could not start worker: %v\n", err)
 		os.Exit(1)
 	}
 }

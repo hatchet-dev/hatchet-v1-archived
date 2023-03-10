@@ -2,21 +2,31 @@ package database
 
 import (
 	"github.com/hatchet-dev/hatchet/internal/repository"
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
 type ConfigFile struct {
-	EncryptionKey string `env:"ENCRYPTION_KEY,default=__random_strong_encryption_key__"`
+	Kind string `mapstructure:"kind" default:"sqlite"`
 
-	PostgresHost     string `env:"PG_DB_HOST,default=postgres"`
-	PostgresPort     int    `env:"PG_DB_PORT,default=5432"`
-	PostgresUsername string `env:"PG_DB_USER,default=hatchet"`
-	PostgresPassword string `env:"PG_DB_PASS,default=hatchet"`
-	PostgresDbName   string `env:"PG_DB_NAME,default=hatchet"`
-	PostgresForceSSL bool   `env:"PG_DB_FORCE_SSL,default=false"`
+	EncryptionKey string `mapstructure:"encryptionKey" default:"__random_strong_encryption_key__"`
 
-	SQLLite     bool   `env:"SQL_LITE,default=false"`
-	SQLLitePath string `env:"SQL_LITE_PATH,default=/hatchet/hatchet.db"`
+	SQLite ConfigFileSQLite `mapstructure:"sqlite"`
+
+	Postgres ConfigFilePostgres `mapstructure:"postgres"`
+}
+
+type ConfigFileSQLite struct {
+	SQLLitePath string `mapstructure:"path" default:"/hatchet/hatchet.db"`
+}
+
+type ConfigFilePostgres struct {
+	PostgresHost     string `mapstructure:"host" default:"postgres"`
+	PostgresPort     int    `mapstructure:"port" default:"5432"`
+	PostgresUsername string `mapstructure:"username" default:"hatchet"`
+	PostgresPassword string `mapstructure:"password" default:"hatchet"`
+	PostgresDbName   string `mapstructure:"dbName" default:"hatchet"`
+	PostgresForceSSL bool   `mapstructure:"forceSSL" default:"false"`
 }
 
 type Config struct {
@@ -34,4 +44,16 @@ func (c *Config) SetEncryptionKey(key *[32]byte) {
 
 func (c *Config) GetEncryptionKey() *[32]byte {
 	return c.encryptionKey
+}
+
+func BindAllEnv(v *viper.Viper) {
+	v.BindEnv("kind", "DATABASE_KIND")
+	v.BindEnv("encryptionKey", "DATABASE_ENCRYPTION_KEY")
+	v.BindEnv("sqlite.path", "DATABASE_SQLITE_PATH")
+	v.BindEnv("postgres.host", "DATABASE_POSTGRES_HOST")
+	v.BindEnv("postgres.port", "DATABASE_POSTGRES_PORT")
+	v.BindEnv("postgres.username", "DATABASE_POSTGRES_USERNAME")
+	v.BindEnv("postgres.password", "DATABASE_POSTGRES_PASSWORD")
+	v.BindEnv("postgres.dbName", "DATABASE_POSTGRES_DB_NAME")
+	v.BindEnv("postgres.forceSSL", "DATABASE_POSTGRES_FORCE_SSL")
 }

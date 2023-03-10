@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
 	"go.temporal.io/sdk/client"
 )
@@ -15,6 +17,8 @@ const DefaultQueueName = "default"
 
 type Client struct {
 	clients map[string]client.Client
+
+	mu sync.Mutex
 
 	opts *ClientOpts
 }
@@ -37,20 +41,20 @@ func NewTemporalClient(opts *ClientOpts) (*Client, error) {
 		opts.DefaultQueueName = DefaultQueueName
 	}
 
-	c, err := clientFromOpts(opts, opts.DefaultQueueName)
+	clients := make(map[string]client.Client)
+
+	res := &Client{clients, sync.Mutex{}, opts}
+
+	err := res.eventualClientFromOpts(opts, opts.DefaultQueueName, 5)
 
 	if err != nil {
 		return nil, err
 	}
 
-	clients := make(map[string]client.Client)
-
-	clients[opts.DefaultQueueName] = c
-
-	return &Client{clients, opts}, nil
+	return res, nil
 }
 
-func clientFromOpts(opts *ClientOpts, taskQueueName string) (client.Client, error) {
+func (c *Client) eventualClientFromOpts(opts *ClientOpts, taskQueueName string, maxRetries uint) error {
 	tOpts := client.Options{
 		HostPort:  opts.HostPort,
 		Namespace: opts.Namespace,
@@ -85,11 +89,11 @@ func clientFromOpts(opts *ClientOpts, taskQueueName string) (client.Client, erro
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("unable to load CA cert from file: %v", err)
+			return fmt.Errorf("unable to load CA cert from file: %v", err)
 		}
 
 		if !caPool.AppendCertsFromPEM(caBytes) {
-			return nil, errors.New("unknown failure constructing cert pool for ca")
+			return errors.New("unknown failure constructing cert pool for ca")
 		}
 
 		tlsConfig.RootCAs = caPool
@@ -97,7 +101,34 @@ func clientFromOpts(opts *ClientOpts, taskQueueName string) (client.Client, erro
 		tOpts.ConnectionOptions.TLS = tlsConfig
 	}
 
-	return client.Dial(tOpts)
+	getter := func() {
+		var err error
+		for i := 0; i < int(maxRetries); {
+			tClient, err := client.Dial(tOpts)
+
+			if err == nil {
+				c.mu.Lock()
+				c.clients[taskQueueName] = tClient
+				c.mu.Unlock()
+				return
+			} else {
+				time.Sleep(5 * time.Second)
+			}
+		}
+
+		if err != nil {
+			// TODO: use shared logger here
+			fmt.Fprintf(os.Stderr, fmt.Sprintf("could not create temporal client for queue %s: %s", taskQueueName, err.Error()))
+		}
+	}
+
+	if maxRetries == 1 {
+		getter()
+	} else {
+		go getter()
+	}
+
+	return nil
 }
 
 func (c *Client) GetClient(queueName string) (client.Client, error) {
@@ -119,15 +150,13 @@ func (c *Client) GetBroadcastAddress() string {
 }
 
 func (c *Client) newQueueClient(taskQueueName string) (client.Client, error) {
-	tc, err := clientFromOpts(c.opts, taskQueueName)
+	err := c.eventualClientFromOpts(c.opts, taskQueueName, 1)
 
 	if err != nil {
 		return nil, err
 	}
 
-	c.clients[taskQueueName] = tc
-
-	return tc, nil
+	return c.clients[taskQueueName], nil
 }
 
 func (c *Client) Close() {

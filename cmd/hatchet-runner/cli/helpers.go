@@ -25,9 +25,9 @@ func errorHandler(config *runner.Config, reportKind, description string) error {
 			Description: description,
 			ReportKind:  reportKind,
 		},
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
-		config.ConfigFile.ModuleRunID,
+		config.ConfigFile.Resources.TeamID,
+		config.ConfigFile.Resources.ModuleID,
+		config.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if err != nil {
@@ -45,9 +45,9 @@ func successHandler(config *runner.Config, reportKind, description string) error
 			Description: description,
 			ReportKind:  reportKind,
 		},
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
-		config.ConfigFile.ModuleRunID,
+		config.ConfigFile.Resources.TeamID,
+		config.ConfigFile.Resources.ModuleID,
+		config.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if err != nil {
@@ -60,10 +60,10 @@ func successHandler(config *runner.Config, reportKind, description string) error
 func downloadGithubRepoContents(config *runner.Config) error {
 	resp, _, err := config.APIClient.ModulesApi.GetModuleTarballURL(
 		context.Background(),
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
+		config.ConfigFile.Resources.TeamID,
+		config.ConfigFile.Resources.ModuleID,
 		&swagger.ModulesApiGetModuleTarballURLOpts{
-			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
+			GithubSha: optional.NewString(config.ConfigFile.Github.GithubSHA),
 		},
 	)
 
@@ -71,12 +71,12 @@ func downloadGithubRepoContents(config *runner.Config) error {
 		return err
 	}
 
-	dstDir := config.ConfigFile.GithubRepositoryDest
+	dstDir := config.ConfigFile.Github.GithubRepositoryDest
 
 	zipDownload := &github_zip.ZIPDownloader{
 		SourceURL:           resp.Url,
 		ZipFolderDest:       dstDir,
-		ZipName:             fmt.Sprintf("%s.zip", config.ConfigFile.GithubRepositoryName),
+		ZipName:             fmt.Sprintf("%s.zip", config.ConfigFile.Github.GithubRepositoryName),
 		AssetFolderDest:     dstDir,
 		RemoveAfterDownload: true,
 	}
@@ -98,8 +98,8 @@ func downloadGithubRepoContents(config *runner.Config) error {
 
 	for _, info := range dstFiles {
 		if info.Mode().IsDir() &&
-			strings.Contains(info.Name(), strings.Replace(config.ConfigFile.GithubRepositoryName, "/", "-", 1)) &&
-			strings.Contains(info.Name(), config.ConfigFile.GithubSHA) {
+			strings.Contains(info.Name(), strings.Replace(config.ConfigFile.Github.GithubRepositoryName, "/", "-", 1)) &&
+			strings.Contains(info.Name(), config.ConfigFile.Github.GithubSHA) {
 			res = filepath.Join(dstDir, info.Name())
 		}
 	}
@@ -108,7 +108,7 @@ func downloadGithubRepoContents(config *runner.Config) error {
 		return fmt.Errorf("could not find destination folder")
 	}
 
-	fullTFPath := filepath.Join(res, config.ConfigFile.GithubModulePath)
+	fullTFPath := filepath.Join(res, config.ConfigFile.Github.GithubModulePath)
 	config.SetTerraformDir(fullTFPath)
 
 	return nil

@@ -25,18 +25,18 @@ func main() {
 		os.Exit(0)
 	}
 
-	configLoader := &loader.EnvConfigLoader{}
+	configLoader := &loader.ConfigLoader{}
 	dc, err := configLoader.LoadDatabaseConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load database config: %v", err)
+		fmt.Printf("Fatal: could not load database config: %v\n", err)
 		os.Exit(1)
 	}
 
 	err = migrate.AutoMigrate(dc.GormDB, true)
 
 	if err != nil {
-		fmt.Printf("Fatal: could not run auto migration: %v", err)
+		fmt.Printf("Fatal: could not run auto migration: %v\n", err)
 		os.Exit(1)
 	}
 }

@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -21,15 +22,15 @@ func New(configFile *database.ConfigFile) (*gorm.DB, error) {
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
 			SlowThreshold: time.Second,
-			LogLevel:      logger.Silent,
+			LogLevel:      logger.Error,
 			Colorful:      false,
 		},
 	)
 
-	if configFile.SQLLite {
+	if configFile.Kind == "sqlite" {
 		// we add DisableForeignKeyConstraintWhenMigrating since our sqlite does
 		// not support foreign key constraints
-		return gorm.Open(sqlite.Open(configFile.SQLLitePath), &gorm.Config{
+		return gorm.Open(sqlite.Open(configFile.SQLite.SQLLitePath), &gorm.Config{
 			DisableForeignKeyConstraintWhenMigrating: true,
 			FullSaveAssociations:                     true,
 			Logger:                                   gormLogger,
@@ -39,30 +40,19 @@ func New(configFile *database.ConfigFile) (*gorm.DB, error) {
 	// connect to default postgres instance first
 	baseDSN := fmt.Sprintf(
 		"user=%s password=%s port=%d host=%s",
-		configFile.PostgresUsername,
-		configFile.PostgresPassword,
-		configFile.PostgresPort,
-		configFile.PostgresHost,
+		configFile.Postgres.PostgresUsername,
+		configFile.Postgres.PostgresPassword,
+		configFile.Postgres.PostgresPort,
+		configFile.Postgres.PostgresHost,
 	)
 
-	if configFile.PostgresForceSSL {
+	if configFile.Postgres.PostgresForceSSL {
 		baseDSN = baseDSN + " sslmode=require"
 	} else {
 		baseDSN = baseDSN + " sslmode=disable"
 	}
 
-	postgresDSN := baseDSN + " database=postgres"
-	targetDSN := baseDSN + " database=" + configFile.PostgresDbName
-
-	defaultDB, err := gorm.Open(postgres.Open(postgresDSN), &gorm.Config{
-		FullSaveAssociations: true,
-		Logger:               gormLogger,
-	})
-
-	// attempt to create the database
-	if configFile.PostgresDbName != "" {
-		defaultDB.Exec(fmt.Sprintf("CREATE DATABASE %s;", configFile.PostgresDbName))
-	}
+	targetDSN := baseDSN + " database=" + configFile.Postgres.PostgresDbName
 
 	// open the database connection
 	res, err := gorm.Open(postgres.Open(targetDSN), &gorm.Config{
@@ -76,6 +66,8 @@ func New(configFile *database.ConfigFile) (*gorm.DB, error) {
 
 	if err != nil {
 		for {
+			gormLogger.Warn(context.Background(), "could not connect to database. Retrying...")
+
 			time.Sleep(timeout)
 			res, err = gorm.Open(postgres.Open(targetDSN), &gorm.Config{
 				FullSaveAssociations: true,

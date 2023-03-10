@@ -9,26 +9,33 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
+	"github.com/spf13/viper"
 )
 
 type BackgroundConfigFile struct {
-	ServerURL      string   `env:"SERVER_URL,default=https://hatchet.run"`
-	TokenIssuerURL string   `env:"TOKEN_ISSUER_URL"`
-	TokenAudience  []string `env:"TOKEN_AUDIENCE"`
+	ServerURL string `mapstructure:"serverURL"`
 
-	S3StateStore shared.FileStorageConfigFile
+	BroadcastGRPCAddress string `mapstructure:"broadcastGRPCAddress" validator:"url" default:"http://localhost:8080"`
 
-	LogStoreConfig shared.LogStoreConfigFile
+	Auth shared.ConfigFileAuth `mapstructure:"auth"`
 
-	// Notification options
+	FileStore shared.FileStorageConfigFile `mapstructure:"fileStore"`
 
-	// RestrictedEmailDomains sets the restricted email domains for the instance.
-	RestrictedEmailDomains []string `env:"RESTRICTED_EMAIL_DOMAINS"`
+	LogStore shared.LogStoreConfigFile `mapstructure:"logStore"`
 
-	// Sendgrid notifier options
-	SendgridAPIKey             string `env:"SENDGRID_API_KEY"`
-	SendgridIncidentTemplateID string `env:"SENDGRID_INCIDENT_TEMPLATE_ID"`
-	SendgridSenderEmail        string `env:"SENDGRID_SENDER_EMAIL"`
+	Notifier BackgroundConfigFileNotifier `mapstructure:"notifier"`
+}
+
+type BackgroundConfigFileNotifier struct {
+	Kind string `mapstructure:"kind"`
+
+	Sendgrid BackgroundConfigFileNotifierSendgrid `mapstructure:"sendgrid"`
+}
+
+type BackgroundConfigFileNotifierSendgrid struct {
+	SendgridAPIKey             string `mapstructure:"apiKey"`
+	SendgridIncidentTemplateID string `mapstructure:"incidentTemplateID"`
+	SendgridSenderEmail        string `mapstructure:"senderEmail" validator:"email"`
 }
 
 type BackgroundConfig struct {
@@ -37,6 +44,8 @@ type BackgroundConfig struct {
 	DB database.Config
 
 	ServerURL string
+
+	BroadcastGRPCAddress string
 
 	TokenOpts *token.TokenOpts
 
@@ -49,14 +58,59 @@ type BackgroundConfig struct {
 	IncidentNotifier notifier.IncidentNotifier
 }
 
+func BindAllBackgroundEnv(v *viper.Viper) {
+	v.BindEnv("serverURL", "BACKGROUND_SERVER_URL")
+	v.BindEnv("broadcastGRPCAddress", "BACKGROUND_BROADCAST_GRPC_ADDRESS")
+
+	v.BindEnv("auth.restrictedEmailDomains", "BACKGROUND_AUTH_RESTRICTED_EMAIL_DOMAINS")
+	v.BindEnv("auth.basicAuthEnabled", "BACKGROUND_AUTH_BASIC_AUTH_ENABLED")
+	v.BindEnv("auth.cookie.name", "BACKGROUND_AUTH_COOKIE_NAME")
+	v.BindEnv("auth.cookie.domain", "BACKGROUND_AUTH_COOKIE_DOMAIN")
+	v.BindEnv("auth.cookie.secrets", "BACKGROUND_AUTH_COOKIE_SECRETS")
+	v.BindEnv("auth.cookie.insecure", "BACKGROUND_AUTH_COOKIE_INSECURE")
+	v.BindEnv("auth.token.issuer", "BACKGROUND_AUTH_TOKEN_ISSUER")
+	v.BindEnv("auth.token.audience", "BACKGROUND_AUTH_TOKEN_AUDIENCE")
+
+	v.BindEnv("fileStore.kind", "BACKGROUND_FILESTORE_KIND")
+	v.BindEnv("fileStore.s3.accessKeyID", "BACKGROUND_FILESTORE_S3_ACCESS_KEY_ID")
+	v.BindEnv("fileStore.s3.secretKey", "BACKGROUND_FILESTORE_S3_SECRET_KEY")
+	v.BindEnv("fileStore.s3.region", "BACKGROUND_FILESTORE_S3_REGION")
+	v.BindEnv("fileStore.s3.bucketName", "BACKGROUND_FILESTORE_S3_BUCKET_NAME")
+	v.BindEnv("fileStore.s3.encryptionKey", "BACKGROUND_FILESTORE_S3_ENCRYPTION_KEY")
+	v.BindEnv("fileStore.local.directory", "BACKGROUND_FILESTORE_LOCAL_DIRECTORY")
+	v.BindEnv("fileStore.local.encryptionKey", "BACKGROUND_FILESTORE_LOCAL_ENCRYPTION_KEY")
+
+	v.BindEnv("logStore.kind", "BACKGROUND_LOGSTORE_KIND")
+	v.BindEnv("logStore.redis.host", "BACKGROUND_LOGSTORE_REDIS_HOST")
+	v.BindEnv("logStore.redis.port", "BACKGROUND_LOGSTORE_REDIS_PORT")
+	v.BindEnv("logStore.redis.user", "BACKGROUND_LOGSTORE_REDIS_USER")
+	v.BindEnv("logStore.redis.password", "BACKGROUND_LOGSTORE_REDIS_PASSWORD")
+	v.BindEnv("logStore.redis.db", "BACKGROUND_LOGSTORE_REDIS_DB")
+	v.BindEnv("logStore.file.directory", "BACKGROUND_LOGSTORE_FILE_DIRECTORY")
+
+	v.BindEnv("notifier.kind", "BACKGROUND_NOTIFIER_KIND")
+	v.BindEnv("notifier.sendgrid.apiKey", "BACKGROUND_NOTIFIER_SENDGRID_API_KEY")
+	v.BindEnv("notifier.sendgrid.incidentTemplateID", "BACKGROUND_NOTIFIER_SENDGRID_INCIDENT_TEMPLATE_ID")
+	v.BindEnv("notifier.sendgrid.senderEmail", "BACKGROUND_NOTIFIER_SENDGRID_SENDER_EMAIL")
+}
+
 type RunnerConfigFile struct {
-	// Provisioner config options
-	ProvisionerRunnerMethod string `env:"PROVISIONER_RUNNER_METHOD,default=local"`
-	RunnerGRPCServerAddress string `env:"RUNNER_GRPC_SERVER_ADDRESS,default=http://localhost:8080"`
+	Provisioner RunnerConfigFileProvisioner `mapstructure:"provisioner"`
+
+	RunnerGRPCServerAddress string `mapstructure:"grpcServerAddress" default:"http://localhost:8080"`
+}
+
+type RunnerConfigFileProvisioner struct {
+	Kind string `mapstructure:"kind" default:"local"`
 }
 
 type RunnerConfig struct {
 	shared.Config
 
 	DefaultProvisioner provisioner.Provisioner
+}
+
+func BindAllRunnerEnv(v *viper.Viper) {
+	v.BindEnv("provisioner.kind", "RUNNER_WORKER_PROVISIONER_KIND")
+	v.BindEnv("grpcServerAddress", "RUNNER_WORKER_GRPC_SERVER_ADDRESS")
 }

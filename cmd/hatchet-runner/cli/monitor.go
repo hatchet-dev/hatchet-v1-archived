@@ -108,8 +108,8 @@ func init() {
 }
 
 func runMonitorFunc(f action.MonitorFunc) error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err
@@ -141,21 +141,21 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	res.MonitorID = rc.ConfigFile.ModuleMonitorID
+	res.MonitorID = rc.ConfigFile.Resources.ModuleMonitorID
 
 	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
 		context.Background(),
 		swagger.CreateMonitorResultRequest{
-			MonitorId:       rc.ConfigFile.ModuleMonitorID,
+			MonitorId:       rc.ConfigFile.Resources.ModuleMonitorID,
 			FailureMessages: res.FailureMessages,
 			SuccessMessage:  res.SuccessMessage,
 			Severity:        res.Severity,
 			Status:          res.Status,
 			Title:           res.Title,
 		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
+		rc.ConfigFile.Resources.TeamID,
+		rc.ConfigFile.Resources.ModuleID,
+		rc.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if err != nil {
@@ -174,7 +174,7 @@ func runMonitorFunc(f action.MonitorFunc) error {
 }
 
 func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {
-	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.TeamID, config.ConfigFile.ModuleMonitorID)
+	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.Resources.TeamID, config.ConfigFile.Resources.ModuleMonitorID)
 
 	if resp != nil {
 		defer resp.Close()

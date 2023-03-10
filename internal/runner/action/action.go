@@ -41,7 +41,7 @@ func (r *RunnerAction) Apply(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if config.ConfigFile.GithubSHA != "" {
+	if config.ConfigFile.Github.GithubSHA != "" {
 		planPath = "./plan.tfplan"
 
 		err := r.downloadPlanToFile(config, planPath)
@@ -87,7 +87,7 @@ func (r *RunnerAction) Destroy(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if config.ConfigFile.GithubSHA != "" {
+	if config.ConfigFile.Github.GithubSHA != "" {
 		planPath = "./plan.tfplan"
 
 		err := r.downloadPlanToFile(config, planPath)
@@ -292,7 +292,7 @@ func (r *RunnerAction) populatePlan(
 	input map[string]interface{},
 ) error {
 	// if there's a github SHA that we can retrieve the plan from, download the plan to a file
-	if config.ConfigFile.GithubSHA != "" {
+	if config.ConfigFile.Github.GithubSHA != "" {
 		planPath := "./plan.tfplan"
 
 		err := r.downloadPlanToFile(config, planPath)
@@ -345,9 +345,9 @@ func (r *RunnerAction) populateVariables(
 
 func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string) error {
 	resp, _, err := config.FileClient.GetPlanByCommitSHA(
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
-		config.ConfigFile.ModuleRunID,
+		config.ConfigFile.Resources.TeamID,
+		config.ConfigFile.Resources.ModuleID,
+		config.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if resp != nil {
@@ -401,10 +401,10 @@ func (r *RunnerAction) downloadModuleValuesToFile(config *runner.Config, relPath
 func (r *RunnerAction) getModuleValues(config *runner.Config) (map[string]interface{}, error) {
 	vals, _, err := config.APIClient.ModulesApi.GetCurrentModuleValues(
 		context.Background(),
-		config.ConfigFile.TeamID,
-		config.ConfigFile.ModuleID,
+		config.ConfigFile.Resources.TeamID,
+		config.ConfigFile.Resources.ModuleID,
 		&swagger.ModulesApiGetCurrentModuleValuesOpts{
-			GithubSha: optional.NewString(config.ConfigFile.GithubSHA),
+			GithubSha: optional.NewString(config.ConfigFile.Github.GithubSHA),
 		},
 	)
 
@@ -441,15 +441,15 @@ func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error
 	rc := config.ConfigFile
 
 	tfStateAddress := fmt.Sprintf("%s/api/v1/teams/%s/modules/%s/runs/%s/tfstate",
-		rc.APIServerAddress,
-		rc.TeamID,
-		rc.ModuleID,
-		rc.ModuleRunID)
+		rc.API.APIServerAddress,
+		rc.Resources.TeamID,
+		rc.Resources.ModuleID,
+		rc.Resources.ModuleRunID)
 
 	cmd.Env = append(cmd.Environ(), []string{
 		fmt.Sprintf("TF_LOG=JSON"),
 		fmt.Sprintf("TF_HTTP_USERNAME=mrt"),
-		fmt.Sprintf("TF_HTTP_PASSWORD=%s", rc.APIToken),
+		fmt.Sprintf("TF_HTTP_PASSWORD=%s", rc.API.APIToken),
 		fmt.Sprintf("TF_HTTP_ADDRESS=%s", tfStateAddress),
 		fmt.Sprintf("TF_HTTP_LOCK_ADDRESS=%s", tfStateAddress),
 		fmt.Sprintf("TF_HTTP_UNLOCK_ADDRESS=%s", tfStateAddress),

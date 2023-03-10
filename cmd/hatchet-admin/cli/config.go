@@ -12,11 +12,11 @@ var sc *server.Config
 
 func init() {
 	var err error
-	configLoader := &loader.EnvConfigLoader{}
-	sc, err = configLoader.LoadServerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	sc, err = configLoader.LoadServerConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load server config: %v", err)
+		fmt.Printf("Fatal: could not load server config: %v\n", err)
 		os.Exit(1)
 	}
 }

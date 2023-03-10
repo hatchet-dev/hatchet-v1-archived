@@ -28,8 +28,8 @@ func init() {
 }
 
 func runApply() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err

@@ -21,11 +21,11 @@ type uiConfig struct {
 }
 
 func main() {
-	configLoader := &loader.EnvConfigLoader{}
-	tc, err := configLoader.LoadTemporalWorkerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	tc, err := configLoader.LoadTemporalConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load server config: %v", err)
+		fmt.Printf("Fatal: could not load temporal config: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -38,7 +38,7 @@ func main() {
 	sui, err := server.NewUIServer(tc.ConfigFile)
 
 	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to create UI server. Error: %v.", err))
+		goLog.Fatal(fmt.Sprintf("Unable to create UI server. Error: %v\n", err))
 	}
 
 	go func() {
@@ -50,7 +50,7 @@ func main() {
 	err = s.Start()
 
 	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to start server. Error: %v", err))
+		goLog.Fatal(fmt.Sprintf("Unable to start server. Error: %v\n", err))
 	}
 
 	return

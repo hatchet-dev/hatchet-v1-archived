@@ -31,8 +31,8 @@ func init() {
 }
 
 func runPlan() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err
@@ -61,9 +61,9 @@ func runPlan() error {
 	}
 
 	_, err = rc.FileClient.UploadPlanZIPFile(
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
+		rc.ConfigFile.Resources.TeamID,
+		rc.ConfigFile.Resources.ModuleID,
+		rc.ConfigFile.Resources.ModuleRunID,
 		zipOut,
 	)
 
@@ -79,9 +79,9 @@ func runPlan() error {
 			PlanJson:   string(jsonOut),
 			PlanPretty: string(prettyOut),
 		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
+		rc.ConfigFile.Resources.TeamID,
+		rc.ConfigFile.Resources.ModuleID,
+		rc.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if err != nil {

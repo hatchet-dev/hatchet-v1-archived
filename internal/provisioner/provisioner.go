@@ -33,9 +33,10 @@ type GetEnvOpts struct {
 	ModuleRun *models.ModuleRun
 	EnvVars   map[string]string
 
-	TokenOpts  token.TokenOpts
-	Repository repository.Repository
-	ServerURL  string
+	TokenOpts            token.TokenOpts
+	Repository           repository.Repository
+	ServerURL            string
+	BroadcastGRPCAddress string
 }
 
 func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
@@ -49,19 +50,16 @@ func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 		currEnv = make([]string, 0)
 	}
 
-	// TODO: configure grpc server address separately
-	// env = append(env, "GRPC_SERVER_ADDRESS=%s", config.ServerRuntimeConfig.ServerURL)
-	currEnv = append(currEnv, fmt.Sprintf("GRPC_TOKEN=%s", tok))
-	currEnv = append(currEnv, fmt.Sprintf("TEAM_ID=%s", opts.Team.ID))
-	currEnv = append(currEnv, fmt.Sprintf("MODULE_ID=%s", opts.Module.ID))
-	currEnv = append(currEnv, fmt.Sprintf("MODULE_RUN_ID=%s", opts.ModuleRun.ID))
-	currEnv = append(currEnv, fmt.Sprintf("API_TOKEN=%s", tok))
-
-	// TODO: configure api server address separately
-	// env = append(env, fmt.Sprintf("API_SERVER_ADDRESS=%s", opts.ServerURL))
-	currEnv = append(currEnv, fmt.Sprintf("GITHUB_SHA=%s", opts.ModuleRun.ModuleRunConfig.GithubCommitSHA))
-	currEnv = append(currEnv, fmt.Sprintf("GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GithubRepoName))
-	currEnv = append(currEnv, fmt.Sprintf("GITHUB_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_SERVER_ADDRESS=%s", opts.BroadcastGRPCAddress))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_TOKEN=%s", tok))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_TEAM_ID=%s", opts.Team.ID))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_MODULE_ID=%s", opts.Module.ID))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_MODULE_RUN_ID=%s", opts.ModuleRun.ID))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_TOKEN=%s", tok))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_SERVER_ADDRESS=%s", opts.ServerURL))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_SHA=%s", opts.ModuleRun.ModuleRunConfig.GithubCommitSHA))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GithubRepoName))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
 
 	for key, val := range opts.EnvVars {
 		currEnv = append(currEnv, fmt.Sprintf("%s=%s", key, val))

@@ -7,7 +7,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/provisioner"
 )
 
-func GetProvisionerEnvOpts(team *models.Team, mod *models.Module, run *models.ModuleRun, dbConfig database.Config, tokenOpts token.TokenOpts, serverURL string) (*provisioner.GetEnvOpts, error) {
+func GetProvisionerEnvOpts(team *models.Team, mod *models.Module, run *models.ModuleRun, dbConfig database.Config, tokenOpts token.TokenOpts, serverURL, broadcastGRPCAddress string) (*provisioner.GetEnvOpts, error) {
 	envVars := make(map[string]string)
 	var err error
 
@@ -30,12 +30,13 @@ func GetProvisionerEnvOpts(team *models.Team, mod *models.Module, run *models.Mo
 	}
 
 	return &provisioner.GetEnvOpts{
-		Team:       team,
-		Module:     mod,
-		ModuleRun:  run,
-		EnvVars:    envVars,
-		TokenOpts:  tokenOpts,
-		Repository: dbConfig.Repository,
-		ServerURL:  serverURL,
+		Team:                 team,
+		Module:               mod,
+		ModuleRun:            run,
+		EnvVars:              envVars,
+		TokenOpts:            tokenOpts,
+		Repository:           dbConfig.Repository,
+		ServerURL:            serverURL,
+		BroadcastGRPCAddress: broadcastGRPCAddress,
 	}, nil
 }
