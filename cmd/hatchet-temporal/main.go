@@ -5,6 +5,7 @@ import (
 	goLog "log"
 	"os"
 
+	"github.com/hatchet-dev/hatchet/cmd/cmdutils"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/temporal/server"
 
@@ -22,14 +23,15 @@ type uiConfig struct {
 
 func main() {
 	configLoader := &loader.ConfigLoader{}
+	interruptChan := cmdutils.InterruptChan()
 	tc, err := configLoader.LoadTemporalConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load temporal config: %v\n", err)
+		fmt.Printf("Fatal: could not load server config: %v\n", err)
 		os.Exit(1)
 	}
 
-	s, err := server.NewTemporalServer(tc)
+	s, err := server.NewTemporalServer(tc, interruptChan)
 
 	if err != nil {
 		goLog.Fatal(err)

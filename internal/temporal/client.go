@@ -103,22 +103,25 @@ func (c *Client) eventualClientFromOpts(opts *ClientOpts, taskQueueName string, 
 
 	getter := func() {
 		var err error
-		for i := 0; i < int(maxRetries); {
-			tClient, err := client.Dial(tOpts)
+		var tClient client.Client
+
+		for i := 0; i < int(maxRetries); i++ {
+			tClient, err = client.Dial(tOpts)
 
 			if err == nil {
 				c.mu.Lock()
 				c.clients[taskQueueName] = tClient
 				c.mu.Unlock()
-				return
+				break
 			} else {
+				fmt.Fprintf(os.Stderr, fmt.Sprintf("could not create temporal client for queue %s: %s. Retrying (attempt %d of %d)...\n", taskQueueName, err.Error(), i+1, maxRetries))
 				time.Sleep(5 * time.Second)
 			}
 		}
 
 		if err != nil {
 			// TODO: use shared logger here
-			fmt.Fprintf(os.Stderr, fmt.Sprintf("could not create temporal client for queue %s: %s", taskQueueName, err.Error()))
+			fmt.Fprintf(os.Stderr, fmt.Sprintf("Fatal: could not create temporal client for queue %s: %s\n", taskQueueName, err.Error()))
 		}
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hatchet-dev/hatchet/cmd/cmdutils"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/temporal/worker"
 )
@@ -24,6 +25,7 @@ func main() {
 	}
 
 	configLoader := &loader.ConfigLoader{}
+	interruptChan := cmdutils.InterruptChan()
 	rwc, err := configLoader.LoadRunnerWorkerConfig()
 
 	if err != nil {
@@ -31,7 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = worker.StartRunnerWorker(rwc, true)
+	err = worker.StartRunnerWorker(rwc, true, interruptChan)
 
 	if err != nil {
 		fmt.Printf("Fatal: could not start worker: %v\n", err)

@@ -11,6 +11,8 @@ type ConfigFile struct {
 
 	EncryptionKey string `mapstructure:"encryptionKey" default:"__random_strong_encryption_key__"`
 
+	AutoMigrate bool `mapstructure:"autoMigrate" default:"true"`
+
 	SQLite ConfigFileSQLite `mapstructure:"sqlite"`
 
 	Postgres ConfigFilePostgres `mapstructure:"postgres"`
@@ -49,6 +51,7 @@ func (c *Config) GetEncryptionKey() *[32]byte {
 func BindAllEnv(v *viper.Viper) {
 	v.BindEnv("kind", "DATABASE_KIND")
 	v.BindEnv("encryptionKey", "DATABASE_ENCRYPTION_KEY")
+	v.BindEnv("autoMigrate", "DATABASE_AUTO_MIGRATE")
 	v.BindEnv("sqlite.path", "DATABASE_SQLITE_PATH")
 	v.BindEnv("postgres.host", "DATABASE_POSTGRES_HOST")
 	v.BindEnv("postgres.port", "DATABASE_POSTGRES_PORT")

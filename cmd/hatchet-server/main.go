@@ -3,7 +3,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,10 +12,12 @@ import (
 	"github.com/hatchet-dev/hatchet/api/serverutils/staticfileserver"
 	"github.com/hatchet-dev/hatchet/api/v1/server/pb"
 	"github.com/hatchet-dev/hatchet/api/v1/server/router"
+	"github.com/hatchet-dev/hatchet/cmd/cmdutils"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
 	"github.com/hatchet-dev/hatchet/internal/temporal/server"
 	"github.com/hatchet-dev/hatchet/internal/temporal/worker"
+	"github.com/spf13/cobra"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -24,22 +25,59 @@ import (
 	pgrpc "github.com/hatchet-dev/hatchet/api/v1/server/grpc"
 )
 
+var printVersion bool
+var configDirectory string
+var configPreset string
+
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command{
+	Use:   "hatchet-server",
+	Short: "hatchet-server runs a Hatchet instance.",
+	Run: func(cmd *cobra.Command, args []string) {
+		if printVersion {
+			fmt.Println(Version)
+			os.Exit(0)
+		}
+
+		configLoader := loader.NewConfigLoader(configDirectory)
+		interruptChan := cmdutils.InterruptChan()
+
+		startServerOrDie(configLoader, interruptChan)
+	},
+}
+
 // Version will be linked by an ldflag during build
 var Version string = "dev-ce"
 
 func main() {
-	var versionFlag bool
-	flag.BoolVar(&versionFlag, "version", false, "print version and exit")
-	flag.Parse()
+	rootCmd.PersistentFlags().BoolVar(
+		&printVersion,
+		"version",
+		false,
+		"print version and exit.",
+	)
 
-	// Exit safely when version is used
-	if versionFlag {
-		fmt.Println(Version)
-		os.Exit(0)
+	rootCmd.PersistentFlags().StringVar(
+		&configDirectory,
+		"config",
+		"",
+		"The path the config folder.",
+	)
+
+	rootCmd.PersistentFlags().StringVar(
+		&configPreset,
+		"preset",
+		"",
+		"The preset config (options: \"local\").",
+	)
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
+}
 
-	configLoader := &loader.ConfigLoader{}
-
+func startServerOrDie(configLoader *loader.ConfigLoader, interruptCh <-chan interface{}) {
 	sc, err := configLoader.LoadServerConfig()
 
 	if err != nil {
@@ -54,15 +92,15 @@ func main() {
 	sc.Logger.Info().Msgf("Starting server %v", address)
 
 	if sc.ServerRuntimeConfig.RunTemporalServer {
-		startTemporalServerOrDie(configLoader)
+		startTemporalServerOrDie(configLoader, interruptCh)
 	}
 
 	if sc.ServerRuntimeConfig.RunBackgroundWorker {
-		startBackgroundWorkerOrDie(configLoader)
+		startBackgroundWorkerOrDie(configLoader, interruptCh)
 	}
 
 	if sc.ServerRuntimeConfig.RunRunnerWorker {
-		startRunnerWorkerOrDie(configLoader)
+		startRunnerWorkerOrDie(configLoader, interruptCh)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -105,12 +143,17 @@ func main() {
 		}), http2Server),
 	}
 
+	go func() {
+		<-interruptCh
+		s.Close()
+	}()
+
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		sc.Logger.Fatal().Err(err).Msg("Server startup failed")
 	}
 }
 
-func startBackgroundWorkerOrDie(configLoader *loader.ConfigLoader) {
+func startBackgroundWorkerOrDie(configLoader *loader.ConfigLoader, interruptCh <-chan interface{}) {
 	bwc, err := configLoader.LoadBackgroundWorkerConfig()
 
 	if err != nil {
@@ -118,7 +161,7 @@ func startBackgroundWorkerOrDie(configLoader *loader.ConfigLoader) {
 		os.Exit(1)
 	}
 
-	err = worker.StartBackgroundWorker(bwc)
+	err = worker.StartBackgroundWorker(bwc, interruptCh)
 
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Fatal: could not start worker: %v\n", err)
@@ -133,7 +176,7 @@ func startBackgroundWorkerOrDie(configLoader *loader.ConfigLoader) {
 	}
 }
 
-func startRunnerWorkerOrDie(configLoader *loader.ConfigLoader) {
+func startRunnerWorkerOrDie(configLoader *loader.ConfigLoader, interruptCh <-chan interface{}) {
 	rwc, err := configLoader.LoadRunnerWorkerConfig()
 
 	if err != nil {
@@ -141,7 +184,7 @@ func startRunnerWorkerOrDie(configLoader *loader.ConfigLoader) {
 		os.Exit(1)
 	}
 
-	err = worker.StartRunnerWorker(rwc, false)
+	err = worker.StartRunnerWorker(rwc, false, interruptCh)
 
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Fatal: could not start worker: %v\n", err)
@@ -149,7 +192,7 @@ func startRunnerWorkerOrDie(configLoader *loader.ConfigLoader) {
 	}
 }
 
-func startTemporalServerOrDie(configLoader *loader.ConfigLoader) {
+func startTemporalServerOrDie(configLoader *loader.ConfigLoader, interruptCh <-chan interface{}) {
 	tc, err := configLoader.LoadTemporalConfig()
 
 	if err != nil {
@@ -157,7 +200,7 @@ func startTemporalServerOrDie(configLoader *loader.ConfigLoader) {
 		os.Exit(1)
 	}
 
-	s, err := server.NewTemporalServer(tc)
+	s, err := server.NewTemporalServer(tc, interruptCh)
 
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Fatal: could not get temporal server: %v\n", err)

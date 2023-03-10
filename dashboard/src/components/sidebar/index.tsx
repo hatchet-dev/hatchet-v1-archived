@@ -188,7 +188,11 @@ const SideBar: React.FunctionComponent<Props> = ({
         {userTeams?.map((row, i) => {
           return (
             <>
-              <ExpandableTeam team={row} links={team_links} expanded={false} />
+              <ExpandableTeam
+                team={row}
+                links={team_links}
+                expanded={currTeam && currTeam.id == row.id}
+              />
               {userTeams.length != i + 1 && (
                 <HorizontalSpacer spacepixels={10} />
               )}

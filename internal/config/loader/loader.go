@@ -180,6 +180,7 @@ func LoadTemporalConfigFile(files ...[]byte) (*temporalconfig.TemporalConfigFile
 
 func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, files ...[]byte) error {
 	v := viper.New()
+	v.SetConfigType("yaml")
 	bindFunc(v)
 
 	for _, f := range files {
@@ -203,6 +204,10 @@ func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, 
 
 type ConfigLoader struct {
 	directory string
+}
+
+func NewConfigLoader(directory string) *ConfigLoader {
+	return &ConfigLoader{directory}
 }
 
 // LoadSharedConfig loads the shared configuration

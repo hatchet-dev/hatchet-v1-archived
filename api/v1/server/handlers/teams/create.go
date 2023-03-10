@@ -1,8 +1,10 @@
 package teams
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
@@ -11,7 +13,9 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/monitors"
+	"github.com/hatchet-dev/hatchet/internal/temporal"
 	"github.com/hatchet-dev/hatchet/internal/temporal/dispatcher"
+	"go.temporal.io/api/workflowservice/v1"
 )
 
 type TeamCreateHandler struct {
@@ -78,6 +82,26 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	t.WriteResult(w, r, team.ToAPIType())
+
+	// create a temporal namespace for the team
+	tc, err := t.Config().TemporalClient.GetClient(temporal.DefaultQueueName)
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
+
+	retention := 24 * 30 * time.Hour
+
+	_, err = tc.WorkflowService().RegisterNamespace(context.Background(), &workflowservice.RegisterNamespaceRequest{
+		Namespace:                        team.ID,
+		WorkflowExecutionRetentionPeriod: &retention,
+	})
+
+	if err != nil {
+		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+		return
+	}
 
 	// create service account team member by creating a new user and team member and appending them to
 	// the team
