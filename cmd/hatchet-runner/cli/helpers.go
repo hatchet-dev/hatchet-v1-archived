@@ -3,9 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	github_zip "github.com/hatchet-dev/hatchet/internal/integrations/git/github/zip"
-	"github.com/hatchet-dev/hatchet/internal/runner/grpcstreamer"
 )
 
 func errorHandler(config *runner.Config, reportKind, description string) error {
@@ -112,16 +109,4 @@ func downloadGithubRepoContents(config *runner.Config) error {
 	config.SetTerraformDir(fullTFPath)
 
 	return nil
-}
-
-func getWriter(config *runner.Config) (io.Writer, error) {
-	provClient := config.GRPCClient
-
-	grpcStream, err := grpcstreamer.NewGRPCStreamer(provClient)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return io.MultiWriter(grpcStream, os.Stdout), nil
 }

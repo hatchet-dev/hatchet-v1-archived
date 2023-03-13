@@ -9,7 +9,6 @@
  */
 package swagger
 
-type CreateModuleRunRequest struct {
-	Hostname string `json:"hostname,omitempty"`
-	Kind string `json:"kind,omitempty"`
+type GetModuleRunTokenResponse struct {
+	Token string `json:"token,omitempty"`
 }

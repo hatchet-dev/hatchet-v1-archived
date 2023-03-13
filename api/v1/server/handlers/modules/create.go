@@ -37,12 +37,11 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	mod := &models.Module{
-		TeamID:              team.ID,
-		Name:                request.Name,
-		DeploymentMechanism: models.DeploymentMechanismGithub,
+		TeamID: team.ID,
+		Name:   request.Name,
 	}
 
-	if request.DeploymentGithub == nil {
+	if request.DeploymentGithub == nil && request.DeploymentLocal == nil {
 		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 			Code:        types.ErrCodeBadRequest,
 			Description: fmt.Sprintf("at least one deployment mechanism must be specified"),
@@ -52,6 +51,15 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if github := request.DeploymentGithub; github != nil {
+		if !isAllowedDeploymentMechanism(m.Config(), "github") {
+			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: fmt.Sprintf("github is not a permitted deployment mechanism for this hatchet instance"),
+			}, http.StatusBadRequest))
+
+			return
+		}
+
 		deplConfig, reqErr := setupGithubDeploymentConfig(m.Config(), request.DeploymentGithub, team, user)
 
 		if reqErr != nil {
@@ -60,6 +68,26 @@ func (m *ModuleCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 
 		mod.DeploymentConfig = *deplConfig
+		mod.DeploymentMechanism = models.DeploymentMechanismGithub
+	} else if local := request.DeploymentLocal; local != nil {
+		if !isAllowedDeploymentMechanism(m.Config(), "local") {
+			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
+				Code:        types.ErrCodeBadRequest,
+				Description: fmt.Sprintf("local is not a permitted deployment mechanism for this hatchet instance"),
+			}, http.StatusBadRequest))
+
+			return
+		}
+
+		deplConfig, reqErr := getLocalDeploymentConfig(m.Config(), request.DeploymentLocal, team, user)
+
+		if reqErr != nil {
+			m.HandleAPIError(w, r, reqErr)
+			return
+		}
+
+		mod.DeploymentConfig = *deplConfig
+		mod.DeploymentMechanism = models.DeploymentMechanismLocal
 	}
 
 	mod, err := m.Repo().Module().CreateModule(mod)

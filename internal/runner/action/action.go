@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -18,21 +17,43 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/opa"
 )
 
+const hatchetVarFile = ".hatchet.tfvars.json"
+
 type actionHandler func(config *runner.Config, reportKind, description string) error
 
 type RunnerAction struct {
-	writer     io.Writer
-	errHandler actionHandler
-	reportKind string
+	config       *runner.Config
+	stdoutWriter io.Writer
+	stderrWriter io.Writer
+	errHandler   actionHandler
+	reportKind   string
+	requireInit  bool
 }
 
-func NewRunnerAction(writer io.Writer, errHandler actionHandler, reportKind string) *RunnerAction {
-	return &RunnerAction{writer, errHandler, reportKind}
+type RunnerActionOpts struct {
+	Config       *runner.Config
+	StdoutWriter io.Writer
+	StderrWriter io.Writer
+	ErrHandler   actionHandler
+	ReportKind   string
+
+	// Whether a `terraform init` should be run before plan/apply operations
+	RequireInit bool
+}
+
+func NewRunnerAction(opts *RunnerActionOpts) *RunnerAction {
+	return &RunnerAction{
+		config:       opts.Config,
+		stdoutWriter: opts.StdoutWriter,
+		stderrWriter: opts.StderrWriter,
+		errHandler:   opts.ErrHandler,
+		reportKind:   opts.ReportKind,
+		requireInit:  opts.RequireInit,
+	}
 }
 
 func (r *RunnerAction) Apply(
-	config *runner.Config,
-	vals map[string]interface{},
+	variables map[string]interface{},
 ) ([]byte, error) {
 	if !commandExists("terraform") {
 		return nil, fmt.Errorf("terraform cli command does not exist")
@@ -41,44 +62,54 @@ func (r *RunnerAction) Apply(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.Github.GithubSHA != "" {
 		planPath = "./plan.tfplan"
 
-		err := r.downloadPlanToFile(config, planPath)
+		err := r.downloadPlanToFile(planPath)
 
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
+	if variables == nil {
+		err := r.downloadModuleValuesToFile(hatchetVarFile)
 
-	if err != nil {
-		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values"))
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not download module values"))
 
-		return nil, err
+			return nil, err
+		}
+	} else {
+		err := r.copyVarsToFile(variables, hatchetVarFile)
+
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not copy module variables: %s", err.Error()))
+			return nil, err
+		}
 	}
 
 	// re initialize
-	err = r.reInit(config)
+	if r.requireInit {
+		err := r.reInit()
 
-	if err != nil {
-		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		if err != nil {
+			return nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		}
 	}
 
-	err = r.apply(config, planPath, "./tfvars.json")
+	err := r.apply(planPath, hatchetVarFile)
 
 	if err != nil {
-		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
+		return nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
 	}
 
 	// get the output
-	return r.output(config)
+	return r.output()
 }
 
 func (r *RunnerAction) Destroy(
-	config *runner.Config,
-	vals map[string]interface{},
+	variables map[string]interface{},
 ) error {
 	if !commandExists("terraform") {
 		return fmt.Errorf("terraform cli command does not exist")
@@ -87,151 +118,175 @@ func (r *RunnerAction) Destroy(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.Github.GithubSHA != "" {
 		planPath = "./plan.tfplan"
 
-		err := r.downloadPlanToFile(config, planPath)
+		err := r.downloadPlanToFile(planPath)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
+	if variables == nil {
+		err := r.downloadModuleValuesToFile(hatchetVarFile)
 
-	if err != nil {
-		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values"))
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not download module values"))
 
-		return err
+			return err
+		}
+	} else {
+		err := r.copyVarsToFile(variables, hatchetVarFile)
+
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not copy module variables: %s", err.Error()))
+			return err
+		}
 	}
 
-	// re initialize
-	err = r.reInit(config)
+	// re initialize if required
+	if r.requireInit {
+		err := r.reInit()
 
-	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		if err != nil {
+			return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		}
 	}
 
-	err = r.destroy(config, planPath, "./tfvars.json")
+	err := r.destroy(planPath, hatchetVarFile)
 
 	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
+		return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not apply Terraform changes: %s", err.Error()))
 	}
 
 	// get the output
 	return nil
 }
 
-func (r *RunnerAction) Plan(
-	config *runner.Config,
-	vals map[string]interface{},
-) ([]byte, []byte, []byte, error) {
+func (r *RunnerAction) Plan(variables map[string]interface{}) ([]byte, []byte, []byte, error) {
 	if !commandExists("terraform") {
 		return nil, nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
-	err := r.downloadModuleValuesToFile(config, "./tfvars.json")
+	if variables == nil {
+		err := r.downloadModuleValuesToFile(hatchetVarFile)
 
-	if err != nil {
-		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
-		return nil, nil, nil, err
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
+			return nil, nil, nil, err
+		}
+	} else {
+		err := r.copyVarsToFile(variables, hatchetVarFile)
+
+		if err != nil {
+			r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not copy module variables: %s", err.Error()))
+			return nil, nil, nil, err
+		}
 	}
 
-	// re initialize
-	err = r.reInit(config)
+	// re initialize if required
+	if r.requireInit {
+		err := r.reInit()
 
-	if err != nil {
-		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
+		if err != nil {
+			return nil, nil, nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while reinitializing the Terraform backend: %s", err.Error()))
+		}
 	}
 
-	err = r.plan(config, "./tfvars.json")
+	err := r.plan(hatchetVarFile)
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while running plan: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while running plan: %s", err.Error()))
 	}
 
-	zipOut, err := r.getPlanZIP(config)
+	zipOut, err := r.getPlanZIP()
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while getting zip output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while getting zip output: %s", err.Error()))
 	}
 
-	prettyOut, err := r.showPretty(config)
+	prettyOut, err := r.showPretty()
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while generating prettified output: %s", err.Error()))
 	}
 
-	jsonOut, err := r.showJSON(config)
+	jsonOut, err := r.showJSON()
 
 	if err != nil {
-		return nil, nil, nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
+		return nil, nil, nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while generating JSON output: %s", err.Error()))
 	}
 
 	return zipOut, prettyOut, jsonOut, nil
 }
 
+func (r *RunnerAction) Init() error {
+	if !commandExists("terraform") {
+		return fmt.Errorf("terraform cli command does not exist")
+	}
+
+	err := r.reInit()
+
+	if err != nil {
+		return fmt.Errorf("Failed while reinitializing the Terraform backend: %s", err.Error())
+	}
+
+	return nil
+}
+
 type MonitorFunc func(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error)
 
 func MonitorState(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
 func MonitorPlan(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
 func MonitorBeforePlan(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populateState)
 }
 
 func MonitorAfterPlan(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
 func MonitorBeforeApply(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
 func MonitorAfterApply(
 	r *RunnerAction,
-	config *runner.Config,
 	policyBytes []byte,
 ) (*types.CreateMonitorResultRequest, error) {
-	return r.monitor(config, policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
 type populatorFunc func(
-	config *runner.Config,
 	input map[string]interface{},
 ) error
 
 func (r *RunnerAction) monitor(
-	config *runner.Config,
 	policyBytes []byte,
 	populators ...populatorFunc,
 ) (*types.CreateMonitorResultRequest, error) {
@@ -239,16 +294,18 @@ func (r *RunnerAction) monitor(
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
-	err := r.reInit(config)
+	if r.requireInit {
+		err := r.reInit()
 
-	if err != nil {
-		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		if err != nil {
+			return nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not initialize Terraform backend: %s", err.Error()))
+		}
 	}
 
 	input := make(map[string]interface{})
 
 	for _, f := range populators {
-		err = f(config, input)
+		err := f(input)
 
 		if err != nil {
 			return nil, err
@@ -258,20 +315,19 @@ func (r *RunnerAction) monitor(
 	opaQuery, err := opa.LoadQueryFromBytes(opa.PACKAGE_HATCHET_MODULE, policyBytes)
 
 	if err != nil {
-		return nil, r.errHandler(config, r.reportKind, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
+		return nil, r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not load OPA query: %s", err.Error()))
 	}
 
 	return opa.RunMonitorQuery(opaQuery, input)
 }
 
 func (r *RunnerAction) populateState(
-	config *runner.Config,
 	input map[string]interface{},
 ) error {
-	stateBytes, err := r.showStateJSON(config)
+	stateBytes, err := r.showStateJSON()
 
 	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
+		return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not get Terraform state bytes: %s", err.Error()))
 	}
 
 	state := make(map[string]interface{})
@@ -279,7 +335,7 @@ func (r *RunnerAction) populateState(
 	err = json.Unmarshal(stateBytes, &state)
 
 	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
+		return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform state to json: %s", err.Error()))
 	}
 
 	input["state"] = state
@@ -288,30 +344,29 @@ func (r *RunnerAction) populateState(
 }
 
 func (r *RunnerAction) populatePlan(
-	config *runner.Config,
 	input map[string]interface{},
 ) error {
 	// if there's a github SHA that we can retrieve the plan from, download the plan to a file
-	if config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.Github.GithubSHA != "" {
 		planPath := "./plan.tfplan"
 
-		err := r.downloadPlanToFile(config, planPath)
+		err := r.downloadPlanToFile(planPath)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		err := r.plan(config, "./tfvars.json")
+		err := r.plan(hatchetVarFile)
 
 		if err != nil {
-			return r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
+			return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while running plan for monitor: %s", err.Error()))
 		}
 	}
 
-	planBytes, err := r.showJSON(config)
+	planBytes, err := r.showJSON()
 
 	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
+		return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Failed while generating JSON plan output: %s", err.Error()))
 	}
 
 	plan := make(map[string]interface{})
@@ -319,7 +374,7 @@ func (r *RunnerAction) populatePlan(
 	err = json.Unmarshal(planBytes, &plan)
 
 	if err != nil {
-		return r.errHandler(config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
+		return r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not unmarshal Terraform plan to json: %s", err.Error()))
 	}
 
 	input["plan"] = plan
@@ -328,13 +383,12 @@ func (r *RunnerAction) populatePlan(
 }
 
 func (r *RunnerAction) populateVariables(
-	config *runner.Config,
 	input map[string]interface{},
 ) error {
-	vars, err := r.getModuleValues(config)
+	vars, err := r.downloadModuleValues()
 
 	if err != nil {
-		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
+		r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not download module values from server"))
 		return err
 	}
 
@@ -343,11 +397,11 @@ func (r *RunnerAction) populateVariables(
 	return nil
 }
 
-func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string) error {
-	resp, _, err := config.FileClient.GetPlanByCommitSHA(
-		config.ConfigFile.Resources.TeamID,
-		config.ConfigFile.Resources.ModuleID,
-		config.ConfigFile.Resources.ModuleRunID,
+func (r *RunnerAction) downloadPlanToFile(planPath string) error {
+	resp, _, err := r.config.FileClient.GetPlanByCommitSHA(
+		r.config.ConfigFile.Resources.TeamID,
+		r.config.ConfigFile.Resources.ModuleID,
+		r.config.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if resp != nil {
@@ -355,7 +409,7 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	}
 
 	if err != nil {
-		r.errHandler(config, r.reportKind, fmt.Sprintf("Could not get plan to apply"))
+		r.errHandler(r.config, r.reportKind, fmt.Sprintf("Could not get plan to apply"))
 
 		return err
 	}
@@ -363,15 +417,15 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	fileBytes, err := ioutil.ReadAll(resp)
 
 	if err != nil {
-		r.errHandler(config, r.reportKind, "")
+		r.errHandler(r.config, r.reportKind, "")
 
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, planPath), fileBytes, 0666)
+	err = ioutil.WriteFile(filepath.Join(r.config.TerraformConf.TFDir, planPath), fileBytes, 0666)
 
 	if err != nil {
-		r.errHandler(config, r.reportKind, "")
+		r.errHandler(r.config, r.reportKind, "")
 
 		return err
 	}
@@ -379,50 +433,58 @@ func (r *RunnerAction) downloadPlanToFile(config *runner.Config, planPath string
 	return nil
 }
 
-func (r *RunnerAction) downloadModuleValuesToFile(config *runner.Config, relPath string) error {
+func (r *RunnerAction) downloadModuleValuesToFile(relPath string) error {
 	// download values
-	vals, err := r.getModuleValues(config)
+	vars, err := r.downloadModuleValues()
 
 	if err != nil {
 		return err
 	}
 
-	fileBytes, err := json.Marshal(vals)
+	return r.copyVarsToFile(vars, relPath)
+}
+
+func (r *RunnerAction) copyVarsToFile(vars map[string]interface{}, targetPath string) error {
+	fileBytes, err := json.Marshal(vars)
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(config.TerraformConf.TFDir, relPath), fileBytes, 0666)
+	err = ioutil.WriteFile(filepath.Join(r.config.TerraformConf.TFDir, targetPath), fileBytes, 0666)
 
 	return err
 }
 
-func (r *RunnerAction) getModuleValues(config *runner.Config) (map[string]interface{}, error) {
-	vals, _, err := config.APIClient.ModulesApi.GetCurrentModuleValues(
-		context.Background(),
-		config.ConfigFile.Resources.TeamID,
-		config.ConfigFile.Resources.ModuleID,
-		&swagger.ModulesApiGetCurrentModuleValuesOpts{
-			GithubSha: optional.NewString(config.ConfigFile.Github.GithubSHA),
-		},
-	)
+func (r *RunnerAction) downloadModuleValues() (map[string]interface{}, error) {
+	if r.config.ConfigFile != nil && r.config.ConfigFile.Github.GithubSHA != "" {
+		vals, _, err := r.config.APIClient.ModulesApi.GetCurrentModuleValues(
+			context.Background(),
+			r.config.ConfigFile.Resources.TeamID,
+			r.config.ConfigFile.Resources.ModuleID,
+			&swagger.ModulesApiGetCurrentModuleValuesOpts{
+				GithubSha: optional.NewString(r.config.ConfigFile.Github.GithubSHA),
+			},
+		)
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+
+		return vals, nil
 	}
 
-	return vals, nil
+	return map[string]interface{}{}, nil
 }
 
-func (r *RunnerAction) reInit(config *runner.Config) error {
-	cmd := exec.Command("terraform", "init", "-reconfigure", "-upgrade")
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stdout = r.writer
-	cmd.Stderr = r.writer
+func (r *RunnerAction) reInit() error {
+	cmd := exec.Command("terraform", "init", "-reconfigure")
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stdout = r.stdoutWriter
+	cmd.Stderr = r.stderrWriter
 	cmd.Stdin = strings.NewReader("yes\n")
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return err
@@ -437,8 +499,8 @@ func (r *RunnerAction) reInit(config *runner.Config) error {
 	return nil
 }
 
-func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error {
-	rc := config.ConfigFile
+func (r *RunnerAction) setBackendEnv(cmd *exec.Cmd) error {
+	rc := r.config.ConfigFile
 
 	tfStateAddress := fmt.Sprintf("%s/api/v1/teams/%s/modules/%s/runs/%s/tfstate",
 		rc.API.APIServerAddress,
@@ -459,7 +521,6 @@ func (r *RunnerAction) setBackendEnv(config *runner.Config, cmd *exec.Cmd) error
 }
 
 func (r *RunnerAction) apply(
-	config *runner.Config,
 	planPath string,
 	valsFilePath string,
 ) error {
@@ -477,13 +538,12 @@ func (r *RunnerAction) apply(
 	fmt.Printf("running apply with args: [%v]", args)
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Dir = r.config.TerraformConf.TFDir
 
-	// writer := io.MultiWriter(streamer, os.Stdout, os.Stderr)
-	cmd.Stdout = r.writer
-	cmd.Stderr = r.writer
+	cmd.Stdout = r.stdoutWriter
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return err
@@ -493,7 +553,6 @@ func (r *RunnerAction) apply(
 }
 
 func (r *RunnerAction) destroy(
-	config *runner.Config,
 	planPath string,
 	valsFilePath string,
 ) error {
@@ -511,13 +570,12 @@ func (r *RunnerAction) destroy(
 	fmt.Printf("running destroy with args: [%v]", args)
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
+	cmd.Dir = r.config.TerraformConf.TFDir
 
-	// writer := io.MultiWriter(streamer, os.Stdout, os.Stderr)
-	cmd.Stdout = r.writer
-	cmd.Stderr = r.writer
+	cmd.Stdout = r.stdoutWriter
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return err
@@ -527,7 +585,6 @@ func (r *RunnerAction) destroy(
 }
 
 func (r *RunnerAction) plan(
-	config *runner.Config,
 	valsFilePath string,
 ) error {
 	args := []string{"plan", "-out=./plan.tfplan"}
@@ -537,11 +594,11 @@ func (r *RunnerAction) plan(
 	}
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stdout = r.writer
-	cmd.Stderr = r.writer
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stdout = r.stdoutWriter
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return err
@@ -550,23 +607,19 @@ func (r *RunnerAction) plan(
 	return cmd.Run()
 }
 
-func (r *RunnerAction) getPlanZIP(
-	config *runner.Config,
-) ([]byte, error) {
-	path := filepath.Join(config.TerraformConf.TFDir, "./plan.tfplan")
+func (r *RunnerAction) getPlanZIP() ([]byte, error) {
+	path := filepath.Join(r.config.TerraformConf.TFDir, "./plan.tfplan")
 	return ioutil.ReadFile(path)
 }
 
-func (r *RunnerAction) showPretty(
-	config *runner.Config,
-) ([]byte, error) {
+func (r *RunnerAction) showPretty() ([]byte, error) {
 	args := []string{"show", "-no-color", "./plan.tfplan"}
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stderr = os.Stderr
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return nil, err
@@ -575,16 +628,14 @@ func (r *RunnerAction) showPretty(
 	return cmd.Output()
 }
 
-func (r *RunnerAction) showStateJSON(
-	config *runner.Config,
-) ([]byte, error) {
+func (r *RunnerAction) showStateJSON() ([]byte, error) {
 	args := []string{"show", "-json"}
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stderr = os.Stderr
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return nil, err
@@ -593,16 +644,14 @@ func (r *RunnerAction) showStateJSON(
 	return cmd.Output()
 }
 
-func (r *RunnerAction) showJSON(
-	config *runner.Config,
-) ([]byte, error) {
+func (r *RunnerAction) showJSON() ([]byte, error) {
 	args := []string{"show", "-json", "./plan.tfplan"}
 
 	cmd := exec.Command("terraform", args...)
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stderr = os.Stderr
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return nil, err
@@ -611,12 +660,12 @@ func (r *RunnerAction) showJSON(
 	return cmd.Output()
 }
 
-func (r *RunnerAction) output(config *runner.Config) ([]byte, error) {
+func (r *RunnerAction) output() ([]byte, error) {
 	cmd := exec.Command("terraform", "output", "-json")
-	cmd.Dir = config.TerraformConf.TFDir
-	cmd.Stderr = os.Stderr
+	cmd.Dir = r.config.TerraformConf.TFDir
+	cmd.Stderr = r.stderrWriter
 
-	err := r.setBackendEnv(config, cmd)
+	err := r.setBackendEnv(cmd)
 
 	if err != nil {
 		return nil, err

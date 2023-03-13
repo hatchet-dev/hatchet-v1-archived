@@ -48,6 +48,8 @@ type ConfigFileRuntime struct {
 	RunTemporalServer    bool   `mapstructure:"runTemporalServer" default:"false"`
 	RunStaticFileServer  bool   `mapstructure:"runStaticFileServer" default:"false"`
 	StaticFileServerPath string `mapstructure:"staticFilePath"`
+
+	PermittedModuleDeploymentMechanisms []string `mapstructure:"permittedModuleDeploymentMechanisms" default:"[\"github\",\"api\",\"local\"]"`
 }
 
 type ConfigFileNotification struct {
@@ -161,6 +163,8 @@ type ServerRuntimeConfig struct {
 	RunTemporalServer    bool
 	RunStaticFileServer  bool
 	StaticFileServerPath string
+
+	PermittedModuleDeploymentMechanisms []string
 }
 
 type Config struct {

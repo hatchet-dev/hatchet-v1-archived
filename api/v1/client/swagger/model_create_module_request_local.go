@@ -9,7 +9,7 @@
  */
 package swagger
 
-type CreateModuleRunRequest struct {
-	Hostname string `json:"hostname,omitempty"`
-	Kind string `json:"kind,omitempty"`
+type CreateModuleRequestLocal struct {
+	// the local path to the module
+	LocalPath string `json:"local_path,omitempty"`
 }

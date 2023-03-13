@@ -120,10 +120,11 @@ export interface APIServerMetadataAuth {
   require_email_verification?: boolean;
 }
 
-/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"env_vars":{"key":"env_vars"}} */
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"local":{"local_path":"local_path"},"env_vars":{"key":"env_vars"}} */
 export interface CreateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
+  local?: CreateModuleRequestLocal;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
@@ -158,7 +159,42 @@ export interface CreateModuleRequestGithub {
   path: string;
 }
 
-export type CreateModuleResponse = Module;
+/** @example {"local_path":"local_path"} */
+export interface CreateModuleRequestLocal {
+  /** the local path to the module */
+  local_path?: string;
+}
+
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
+export interface CreateModuleResponse {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  current_env_vars_version_id?: string;
+  current_values_version_id?: string;
+  deployment?: ModuleDeploymentConfig;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  lock_id?: string;
+  lock_kind?: string;
+  /**
+   * the name for the module
+   * @example "eks"
+   */
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
 
 /** @example {"kind":"kind"} */
 export interface CreateModuleRunRequest {
@@ -322,10 +358,11 @@ export type DeleteTeamResponse = Team;
 
 export type EmptyResponse = object;
 
-/** @example {"description":"description","status":"status"} */
+/** @example {"report_kind":"report_kind","description":"description","status":"status"} */
 export interface FinalizeModuleRunRequest {
   /** the description for the module run status */
   description: string;
+  report_kind: string;
   status: string;
 }
 
@@ -783,6 +820,8 @@ export interface ModuleRunOverview {
    */
   updated_at?: string;
 }
+
+export type ModuleRunReportKind = string;
 
 export type ModuleRunStatus = string;
 
@@ -1330,6 +1369,7 @@ export interface TerraformLock {
   Who?: string;
 }
 
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"env_vars":{"key":"env_vars"}} */
 export interface UpdateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
@@ -1509,6 +1549,15 @@ export interface AddTeamMemberRequest {
 export interface CreateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
+  local?: CreateModuleRequestLocal;
+  name?: string;
+  values_github?: CreateModuleValuesRequestGithub;
+  values_raw?: Record<string, object>;
+}
+
+export interface UpdateModuleRequest {
+  env_vars?: Record<string, string>;
+  github?: CreateModuleRequestGithub;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
@@ -1521,6 +1570,7 @@ export interface CreateModuleRunRequest {
 export interface FinalizeModuleRunRequest {
   /** the description for the module run status */
   description: string;
+  report_kind: string;
   status: string;
 }
 

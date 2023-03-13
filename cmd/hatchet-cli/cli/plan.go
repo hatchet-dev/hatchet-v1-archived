@@ -7,20 +7,19 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
-	"github.com/hatchet-dev/hatchet/internal/config/loader"
-	"github.com/hatchet-dev/hatchet/internal/runner/action"
-
 	"github.com/spf13/cobra"
 )
 
 var planCmd = &cobra.Command{
-	Use: "plan",
+	Use:   "plan",
+	Short: "run a Hatchet plan",
 	Run: func(cmd *cobra.Command, args []string) {
+		preflight()
+
 		err := runPlan()
 
 		if err != nil {
-			red := color.New(color.FgRed)
-			red.Println("Error running plan:", err.Error())
+			color.New(color.FgRed).Fprintf(os.Stderr, "could not run plan: %v\n", err)
 			os.Exit(1)
 		}
 	},
@@ -28,41 +27,64 @@ var planCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(planCmd)
+
+	planCmd.PersistentFlags().StringVar(
+		&planVarFilePath,
+		"var-file",
+		"",
+		"The var file.",
+	)
 }
 
+var planVarFilePath string
+
 func runPlan() error {
-	configLoader := &loader.ConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfig()
+	path, err := os.Getwd()
 
 	if err != nil {
 		return err
 	}
 
-	err = downloadGithubRepoContents(rc)
+	// get the module id based on the file path
+	mods, _, err := config.APIClient.ModulesApi.ListModules(
+		context.Background(),
+		config.ConfigFile.TeamID,
+		&swagger.ModulesApiListModulesOpts{},
+	)
 
 	if err != nil {
-		return errorHandler(rc, "core", fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
+		return err
 	}
 
-	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
+	var matchedMod *swagger.Module
+
+	for _, mod := range mods.Rows {
+		if mod.Deployment.Path == path {
+			matchedMod = &mod
+			break
+		}
+	}
+
+	a, rc, err := getAction(matchedMod.Id, "plan", path)
 
 	if err != nil {
 		return err
 	}
 
-	a := action.NewRunnerAction(&action.RunnerActionOpts{
-		StdoutWriter: stdoutWriter,
-		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
-		ReportKind:   "core",
-		RequireInit:  true,
-	})
-
-	zipOut, prettyOut, jsonOut, err := a.Plan(nil)
+	// pass in module variables
+	variables, err := loadVarFile(planVarFilePath)
 
 	if err != nil {
 		return err
 	}
+
+	zipOut, prettyOut, jsonOut, err := a.Plan(variables)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(string(prettyOut))
 
 	_, err = rc.FileClient.UploadPlanZIPFile(
 		rc.ConfigFile.Resources.TeamID,
@@ -95,4 +117,12 @@ func runPlan() error {
 	}
 
 	return successHandler(rc, "core", "")
+}
+
+func getHostName() string {
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = "Unknown"
+	}
+	return hostName
 }

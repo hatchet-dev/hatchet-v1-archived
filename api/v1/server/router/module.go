@@ -29,7 +29,7 @@ type modulePathParams struct {
 	Module string `json:"module_id"`
 }
 
-// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun getModuleRun getModuleRunLogs createMonitorResult
+// swagger:parameters createTerraformState getTerraformState lockTerraformState unlockTerraformState createTerraformPlan uploadTerraformPlan getTerraformPlan getTerraformPlanBySHA finalizeModuleRun getModuleRun getModuleRunLogs createMonitorResult getModuleRunLocalToken
 type moduleRunPathParams struct {
 	// The team id
 	// in: path
@@ -105,6 +105,7 @@ func GetModuleRoutes(
 	//   - in: body
 	//     name: CreateModuleRequest
 	//     description: The module to create
+	//     required: true
 	//     schema:
 	//       $ref: '#/definitions/CreateModuleRequest'
 	// responses:
@@ -394,6 +395,7 @@ func GetModuleRoutes(
 	//   - name: module_id
 	//   - in: body
 	//     name: CreateModuleRunRequest
+	//     required: true
 	//     description: The module run to create
 	//     schema:
 	//       $ref: '#/definitions/CreateModuleRunRequest'
@@ -1472,6 +1474,65 @@ func GetModuleRoutes(
 	routes = append(routes, &router.Route{
 		Endpoint: getLogsEndpoint,
 		Handler:  getLogsHandler,
+		Router:   r,
+	})
+
+	// GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token -> modules.NewModuleRunGetLocalTokenHandler
+	// swagger:operation GET /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token getModuleRunLocalToken
+	//
+	// ### Description
+	//
+	// Gets a module run token for a local run.
+	//
+	// ---
+	// produces:
+	// - application/json
+	// summary: Get Module Run Token (Local)
+	// tags:
+	// - Modules
+	// parameters:
+	//   - name: team_id
+	//   - name: module_id
+	//   - name: module_run_id
+	// responses:
+	//   '200':
+	//     description: Successfully got module run token
+	//     schema:
+	//       $ref: '#/definitions/GetModuleRunTokenResponse'
+	//   '400':
+	//     description: A malformed or bad request
+	//     schema:
+	//       $ref: '#/definitions/APIErrorBadRequestExample'
+	//   '403':
+	//     description: Forbidden
+	//     schema:
+	//       $ref: '#/definitions/APIErrorForbiddenExample'
+	getModuleRunTokenLocalEndpoint := factory.NewAPIEndpoint(
+		&endpoint.EndpointMetadata{
+			Verb:   types.APIVerbGet,
+			Method: types.HTTPVerbGet,
+			Path: &endpoint.Path{
+				Parent:       basePath,
+				RelativePath: fmt.Sprintf("/modules/{%s}/runs/{%s}/local_token", types.URLParamModuleID, types.URLParamModuleRunID),
+			},
+			Scopes: []types.PermissionScope{
+				types.UserScope,
+				types.TeamScope,
+				types.ModuleScope,
+				types.ModuleRunScope,
+			},
+		},
+	)
+
+	getModuleRunTokenLocalHandler := modules.NewModuleRunGetLocalTokenHandler(
+		config,
+		factory.GetDecoderValidator(),
+		factory.GetResultWriter(),
+	)
+
+	routes = append(routes, &router.Route{
+		Endpoint: getModuleRunTokenLocalEndpoint,
+		Handler:  getModuleRunTokenLocalHandler,
 		Router:   r,
 	})
 

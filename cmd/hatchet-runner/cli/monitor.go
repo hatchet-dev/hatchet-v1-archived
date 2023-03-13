@@ -121,13 +121,19 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	writer, err := getWriter(rc)
+	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler, "monitor")
+	action := action.NewRunnerAction(&action.RunnerActionOpts{
+		StdoutWriter: stdoutWriter,
+		StderrWriter: stderrWriter,
+		ErrHandler:   errorHandler,
+		ReportKind:   "monitor",
+		RequireInit:  true,
+	})
 
 	policyBytes, err := downloadMonitorPolicy(rc)
 
@@ -135,7 +141,7 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	res, err := f(action, rc, policyBytes)
+	res, err := f(action, policyBytes)
 
 	if err != nil {
 		return err

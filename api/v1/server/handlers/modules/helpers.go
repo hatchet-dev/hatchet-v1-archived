@@ -81,6 +81,39 @@ func createManualRun(config *server.Config, module *models.Module, kind models.M
 	return run, nil
 }
 
+func createLocalRun(config *server.Config, module *models.Module, kind models.ModuleRunKind, hostname string) (*models.ModuleRun, apierrors.RequestError) {
+	repo := config.DB.Repository
+
+	run := &models.ModuleRun{
+		ModuleID:    module.ID,
+		Status:      models.ModuleRunStatusQueued,
+		Kind:        kind,
+		LogLocation: config.DefaultLogStore.GetID(),
+		ModuleRunConfig: models.ModuleRunConfig{
+			TriggerKind:            models.ModuleRunTriggerKindManual,
+			ModuleValuesVersionID:  module.CurrentModuleValuesVersionID,
+			ModuleEnvVarsVersionID: module.CurrentModuleEnvVarsVersionID,
+			LocalHostname:          hostname,
+		},
+	}
+
+	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	run.StatusDescription = desc
+
+	run, err = repo.Module().CreateModuleRun(run)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	return run, nil
+}
+
 func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleRequestGithub, team *models.Team, user *models.User) (*models.ModuleDeploymentConfig, apierrors.RequestError) {
 	res := &models.ModuleDeploymentConfig{
 		ModulePath:              req.Path,
@@ -102,6 +135,15 @@ func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleR
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
+	}
+
+	return res, nil
+}
+
+func getLocalDeploymentConfig(config *server.Config, req *types.CreateModuleRequestLocal, team *models.Team, user *models.User) (*models.ModuleDeploymentConfig, apierrors.RequestError) {
+	res := &models.ModuleDeploymentConfig{
+		ModulePath: req.LocalPath,
+		UserID:     user.ID,
 	}
 
 	return res, nil
@@ -229,4 +271,14 @@ func createModuleValuesGithub(config *server.Config, module *models.Module, req 
 	}
 
 	return config.DB.Repository.ModuleValues().CreateModuleValuesVersion(mvv)
+}
+
+func isAllowedDeploymentMechanism(config *server.Config, mechanism string) bool {
+	for _, permittedMechanism := range config.ServerRuntimeConfig.PermittedModuleDeploymentMechanisms {
+		if permittedMechanism == mechanism {
+			return true
+		}
+	}
+
+	return false
 }

@@ -41,15 +41,21 @@ func runApply() error {
 		return err
 	}
 
-	writer, err := getWriter(rc)
+	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler, "core")
+	action := action.NewRunnerAction(&action.RunnerActionOpts{
+		StdoutWriter: stdoutWriter,
+		StderrWriter: stderrWriter,
+		ErrHandler:   errorHandler,
+		ReportKind:   "core",
+		RequireInit:  true,
+	})
 
-	_, err = action.Apply(rc, map[string]interface{}{})
+	_, err = action.Apply(map[string]interface{}{})
 
 	if err != nil {
 		return err

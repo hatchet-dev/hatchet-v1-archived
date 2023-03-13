@@ -3,6 +3,7 @@ package modules
 import (
 	"net/http"
 
+	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
@@ -33,7 +34,14 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	run, reqErr := createManualRun(m.Config(), module, models.ModuleRunKind(req.Kind))
+	var run *models.ModuleRun
+	var reqErr apierrors.RequestError
+
+	if module.DeploymentMechanism == models.DeploymentMechanismGithub {
+		run, reqErr = createManualRun(m.Config(), module, models.ModuleRunKind(req.Kind))
+	} else if module.DeploymentMechanism == models.DeploymentMechanismLocal {
+		run, reqErr = createLocalRun(m.Config(), module, models.ModuleRunKind(req.Kind), req.Hostname)
+	}
 
 	if reqErr != nil {
 		m.HandleAPIError(w, r, reqErr)
@@ -41,6 +49,5 @@ func (m *RunCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-
 	m.WriteResult(w, r, run.ToAPIType(nil))
 }

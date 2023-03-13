@@ -44,6 +44,7 @@ const (
 	ModuleRunKindPlan    ModuleRunKind = "plan"
 	ModuleRunKindApply   ModuleRunKind = "apply"
 	ModuleRunKindDestroy ModuleRunKind = "destroy"
+	ModuleRunKindInit    ModuleRunKind = "init"
 )
 
 // swagger:model
@@ -110,11 +111,13 @@ type CreateModuleRequest struct {
 
 	EnvVars map[string]string `json:"env_vars"`
 
-	ValuesRaw map[string]interface{} `json:"values_raw,omitempty" form:"required_without=ValuesGithub,omitempty"`
+	ValuesRaw map[string]interface{} `json:"values_raw" form:"required_without=ValuesGithub,omitempty"`
 
 	ValuesGithub *CreateModuleValuesRequestGithub `json:"values_github,omitempty" form:"required_without=ValuesRaw,omitempty"`
 
 	DeploymentGithub *CreateModuleRequestGithub `json:"github,omitempty" form:"omitempty"`
+
+	DeploymentLocal *CreateModuleRequestLocal `json:"local,omitempty" form:"omitempty"`
 }
 
 type CreateModuleRequestGithub struct {
@@ -142,6 +145,11 @@ type CreateModuleRequestGithub struct {
 	// required: true
 	// example: main
 	GithubRepositoryBranch string `json:"github_repository_branch" form:"required"`
+}
+
+type CreateModuleRequestLocal struct {
+	// the local path to the module
+	LocalPath string `json:"local_path" form:"required"`
 }
 
 type CreateModuleValuesRequestGithub struct {
@@ -172,7 +180,9 @@ type CreateModuleValuesRequestGithub struct {
 }
 
 // swagger:model
-type CreateModuleResponse Module
+type CreateModuleResponse struct {
+	Module
+}
 
 // swagger:model
 type GetModuleResponse Module
@@ -231,11 +241,15 @@ type ListModuleRunsResponse struct {
 
 // swagger:model
 type CreateModuleRunRequest struct {
-	Kind ModuleRunKind `json:"kind" form:"required,oneof=plan apply"`
+	Kind ModuleRunKind `json:"kind" form:"required,oneof=plan apply init destroy"`
+
+	Hostname string `json:"hostname"`
 }
 
 // swagger:model
-type CreateModuleRunResponse ModuleRun
+type CreateModuleRunResponse struct {
+	ModuleRun
+}
 
 // swagger:model
 type CreateTerraformStateRequest struct {
@@ -387,3 +401,8 @@ type ModuleValuesGithubConfig struct {
 
 // swagger:model
 type GetModuleValuesResponse ModuleValues
+
+// swagger:model
+type GetModuleRunTokenResponse struct {
+	Token string `json:"token"`
+}

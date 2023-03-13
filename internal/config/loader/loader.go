@@ -17,6 +17,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/adapter"
 	"github.com/hatchet-dev/hatchet/internal/auth/cookie"
 	"github.com/hatchet-dev/hatchet/internal/auth/token"
+	"github.com/hatchet-dev/hatchet/internal/config/cli"
 	"github.com/hatchet-dev/hatchet/internal/config/database"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
@@ -42,78 +43,12 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/temporal"
 )
 
-// ServerConfigFromEnv loads the server config file from environment variables
-// func ServerConfigFromEnv() (*server.ConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.ServerConfigFile, nil
-// }
-
-// BackgroundWorkerConfigFromEnv loads the background worker config file from environment variables
-// func BackgroundWorkerConfigFromEnv() (*worker.BackgroundConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.BackgroundWorkerConfigFile, nil
-// }
-
-// TemporalConfigFromEnv loads the temporal config file from environment variables
-// func TemporalConfigFromEnv() (*temporalconfig.TemporalConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.TemporalConfigFile, nil
-// }
-
-// RunnerWorkerConfigFromEnv loads the runner worker config file from environment variables
-// func RunnerWorkerConfigFromEnv() (*worker.RunnerConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode server conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.RunnerWorkerConfigFile, nil
-// }
-
-// RunnerConfigFromEnv loads the runner config file from environment variables
-// func RunnerConfigFromEnv() (*runner.ConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode runner conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.RunnerConfigFile, nil
-// }
-
-// DatabaseConfigFromEnv loads the database config file from environment variables
-// func DatabaseConfigFromEnv() (*database.ConfigFile, error) {
-// 	var envDecoderConf EnvDecoderConf = EnvDecoderConf{}
-
-// 	if err := envdecode.StrictDecode(&envDecoderConf); err != nil {
-// 		return nil, fmt.Errorf("Failed to decode database conf: %s", err)
-// 	}
-
-// 	return &envDecoderConf.DatabaseConfigFile, nil
-// }
-
 // LoadSharedConfigFile loads the shared config file via viper
 func LoadSharedConfigFile(files ...[]byte) (*shared.ConfigFile, error) {
 	configFile := &shared.ConfigFile{}
 	f := shared.BindAllEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -123,7 +58,7 @@ func LoadServerConfigFile(files ...[]byte) (*server.ConfigFile, error) {
 	configFile := &server.ConfigFile{}
 	f := server.BindAllEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -133,7 +68,7 @@ func LoadRunnerConfigFile(files ...[]byte) (*runner.ConfigFile, error) {
 	configFile := &runner.ConfigFile{}
 	f := runner.BindAllEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -143,7 +78,7 @@ func LoadDatabaseConfigFile(files ...[]byte) (*database.ConfigFile, error) {
 	configFile := &database.ConfigFile{}
 	f := database.BindAllEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -153,7 +88,7 @@ func LoadBackgroundWorkerConfigFile(files ...[]byte) (*worker.BackgroundConfigFi
 	configFile := &worker.BackgroundConfigFile{}
 	f := worker.BindAllBackgroundEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -163,7 +98,7 @@ func LoadRunnerWorkerConfigFile(files ...[]byte) (*worker.RunnerConfigFile, erro
 	configFile := &worker.RunnerConfigFile{}
 	f := worker.BindAllRunnerEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
@@ -173,12 +108,22 @@ func LoadTemporalConfigFile(files ...[]byte) (*temporalconfig.TemporalConfigFile
 	configFile := &temporalconfig.TemporalConfigFile{}
 	f := temporalconfig.BindAllEnv
 
-	err := loadConfigFromViper(f, configFile, files...)
+	_, err := loadConfigFromViper(f, configFile, files...)
 
 	return configFile, err
 }
 
-func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, files ...[]byte) error {
+// LoadCLIConfigFile loads the CLI config file via viper
+func LoadCLIConfigFile(files ...[]byte) (*cli.ConfigFile, *viper.Viper, error) {
+	configFile := &cli.ConfigFile{}
+	f := cli.BindAllEnv
+
+	v, err := loadConfigFromViper(f, configFile, files...)
+
+	return configFile, v, err
+}
+
+func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, files ...[]byte) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetConfigType("yaml")
 	bindFunc(v)
@@ -187,19 +132,19 @@ func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, 
 		err := v.ReadConfig(bytes.NewBuffer(f))
 
 		if err != nil {
-			return fmt.Errorf("could not load viper config: %w", err)
+			return nil, fmt.Errorf("could not load viper config: %w", err)
 		}
-	}
-
-	err := v.Unmarshal(configFile)
-
-	if err != nil {
-		return fmt.Errorf("could not unmarshal viper config: %w", err)
 	}
 
 	defaults.Set(configFile)
 
-	return nil
+	err := v.Unmarshal(configFile)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal viper config: %w", err)
+	}
+
+	return v, nil
 }
 
 type ConfigLoader struct {
@@ -322,6 +267,36 @@ func (c *ConfigLoader) LoadRunnerConfig() (res *runner.Config, err error) {
 	}
 
 	return GetRunnerConfigFromConfigFile(cf, sharedConfig)
+}
+
+// LoadRunnerConfig loads the cli configuration
+func (c *ConfigLoader) LoadCLIConfig() (res *cli.Config, v *viper.Viper, err error) {
+	sharedConfig, err := c.LoadSharedConfig()
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not load shared config for runner: %w", err)
+	}
+
+	sharedFilePath := filepath.Join(c.directory, "hatchet.yaml")
+	configFileBytes, err := getConfigBytes(sharedFilePath)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cf, v, err := LoadCLIConfigFile(configFileBytes...)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	res, err = GetCLIConfigFromConfigFile(cf, sharedConfig)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return res, v, nil
 }
 
 // LoadBackgroundWorkerConfig loads the background worker configuration
@@ -465,15 +440,16 @@ func GetServerConfigFromConfigFile(sc *server.ConfigFile, dbConfig *database.Con
 	}
 
 	serverRuntimeConfig := server.ServerRuntimeConfig{
-		Port:                 sc.Runtime.Port,
-		ServerURL:            sc.Runtime.ServerURL,
-		BroadcastGRPCAddress: sc.Runtime.BroadcastGRPCAddress,
-		CookieName:           sc.Auth.Cookie.Name,
-		RunBackgroundWorker:  sc.Runtime.RunBackgroundWorker,
-		RunRunnerWorker:      sc.Runtime.RunRunnerWorker,
-		RunTemporalServer:    sc.Runtime.RunTemporalServer,
-		RunStaticFileServer:  sc.Runtime.RunStaticFileServer,
-		StaticFileServerPath: sc.Runtime.StaticFileServerPath,
+		Port:                                sc.Runtime.Port,
+		ServerURL:                           sc.Runtime.ServerURL,
+		BroadcastGRPCAddress:                sc.Runtime.BroadcastGRPCAddress,
+		CookieName:                          sc.Auth.Cookie.Name,
+		RunBackgroundWorker:                 sc.Runtime.RunBackgroundWorker,
+		RunRunnerWorker:                     sc.Runtime.RunRunnerWorker,
+		RunTemporalServer:                   sc.Runtime.RunTemporalServer,
+		RunStaticFileServer:                 sc.Runtime.RunStaticFileServer,
+		StaticFileServerPath:                sc.Runtime.StaticFileServerPath,
+		PermittedModuleDeploymentMechanisms: sc.Runtime.PermittedModuleDeploymentMechanisms,
 	}
 
 	userSessionStore, err := cookie.NewUserSessionStore(&cookie.UserSessionStoreOpts{
@@ -672,6 +648,23 @@ func GetRunnerConfigFromConfigFile(rc *runner.ConfigFile, sharedConfig *shared.C
 		Config:     *sharedConfig,
 		ConfigFile: rc,
 		GRPCClient: grpcClient,
+		APIClient:  c,
+		FileClient: fileClient,
+	}, nil
+}
+
+func GetCLIConfigFromConfigFile(cc *cli.ConfigFile, sharedConfig *shared.Config) (res *cli.Config, err error) {
+	clientConf := swagger.NewConfiguration()
+
+	clientConf.AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", cc.APIToken))
+
+	c := swagger.NewAPIClient(clientConf)
+
+	fileClient := fileclient.NewFileClient(cc.Address, cc.APIToken)
+
+	return &cli.Config{
+		Config:     *sharedConfig,
+		ConfigFile: cc,
 		APIClient:  c,
 		FileClient: fileClient,
 	}, nil

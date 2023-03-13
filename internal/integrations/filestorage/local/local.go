@@ -39,7 +39,24 @@ func (l *LocalFileStorageManager) WriteFile(path string, fileBytes []byte, shoul
 
 	fullFilePath := filepath.Join(l.rootDir, path)
 
-	return ioutil.WriteFile(fullFilePath, body, 0666)
+	err = ioutil.WriteFile(fullFilePath, body, 0666)
+
+	if os.IsNotExist(err) {
+		fileDir := filepath.Dir(fullFilePath)
+
+		err = os.MkdirAll(fileDir, os.ModePerm)
+
+		if err != nil {
+			return fmt.Errorf("could not create log file: %w", err)
+		}
+
+		// attempt again
+		return ioutil.WriteFile(fullFilePath, body, 0666)
+	} else if err != nil {
+		return fmt.Errorf("error opening log file: %w", err)
+	}
+
+	return nil
 }
 
 func (l *LocalFileStorageManager) ReadFile(path string, shouldDecrypt bool) ([]byte, error) {
