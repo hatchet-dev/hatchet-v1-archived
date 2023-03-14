@@ -494,7 +494,7 @@ func GetServerConfigFromConfigFile(sc *server.ConfigFile, dbConfig *database.Con
 
 		authConfig.RequireEmailVerification = true
 	} else {
-		notifier = noop.NewNoOpUserNotifier()
+		notifier = noop.NewNoOpUserNotifier(&sharedConfig.Logger)
 	}
 
 	var githubAppConf *github.GithubAppConf
@@ -764,7 +764,7 @@ func GetBackgroundWorkerConfigFromConfigFile(
 			IncidentTemplateID: wc.Notifier.Sendgrid.SendgridIncidentTemplateID,
 		})
 	} else {
-		notifier = noop.NewNoOpIncidentNotifier()
+		notifier = noop.NewNoOpIncidentNotifier(&sharedConfig.Logger)
 	}
 
 	return &worker.BackgroundConfig{
