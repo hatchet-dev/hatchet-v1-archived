@@ -47,19 +47,19 @@ func runApply() error {
 		return err
 	}
 
-	action := action.NewRunnerAction(&action.RunnerActionOpts{
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
+		ErrHandler:   action.ErrorHandler,
 		ReportKind:   "core",
 		RequireInit:  true,
 	})
 
-	_, err = action.Apply(map[string]interface{}{})
+	_, err = a.Apply(map[string]interface{}{})
 
 	if err != nil {
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	return action.SuccessHandler(rc, "core", "")
 }

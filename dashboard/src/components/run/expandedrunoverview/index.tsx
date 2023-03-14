@@ -120,6 +120,10 @@ const ExpandedRunOverview: React.FC<Props> = ({
   };
 
   const renderPlannedChanges = () => {
+    if (!planSummaryQuery.data?.data) {
+      return null;
+    }
+
     const [numToCreate, numToUpdate, numToDelete] = parseTerraformPlanSummary(
       planSummaryQuery.data.data
     );
@@ -187,12 +191,23 @@ const ExpandedRunOverview: React.FC<Props> = ({
     );
   };
 
+  const renderInitOverview = () => {
+    return (
+      <FlexCol>
+        <SmallSpan>{module_run?.status_description} </SmallSpan>
+        <HorizontalSpacer spacepixels={8} />
+      </FlexCol>
+    );
+  };
+
   const renderOverview = () => {
     switch (module_run?.kind) {
       case "plan":
         return renderPlanOverview();
       case "apply":
         return renderApplyOverview();
+      case "init":
+        return renderInitOverview();
     }
   };
 

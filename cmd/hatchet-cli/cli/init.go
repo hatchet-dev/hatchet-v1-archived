@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
+	"github.com/hatchet-dev/hatchet/internal/runner/action"
 	"github.com/spf13/cobra"
 )
 
@@ -84,7 +85,11 @@ func runInit() error {
 
 	color.New(color.FgGreen).Fprintf(os.Stdout, "successfully created module %s with id %s\n", mod.Name, mod.Id)
 
-	a, _, err := getAction(mod.Id, "init", path)
+	_, a, rc, err := getAction(mod.Id, "init", path)
+
+	if err != nil {
+		return err
+	}
 
 	err = a.Init()
 
@@ -92,5 +97,5 @@ func runInit() error {
 		return err
 	}
 
-	return nil
+	return action.SuccessHandler(rc, "core", "")
 }

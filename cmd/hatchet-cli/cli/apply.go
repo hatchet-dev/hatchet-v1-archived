@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
+	"github.com/hatchet-dev/hatchet/internal/runner/action"
 	"github.com/spf13/cobra"
 )
 
@@ -65,9 +66,15 @@ func runApply() error {
 		}
 	}
 
-	a, rc, err := getAction(matchedMod.Id, "apply", path)
+	run, a, rc, err := getAction(matchedMod.Id, "apply", path)
 
 	if err != nil {
+		return err
+	}
+
+	succeeded, err := runAllMonitors(run.Monitors, "before_apply", action.MonitorBeforeApply, a, rc)
+
+	if !succeeded {
 		return err
 	}
 
@@ -86,5 +93,17 @@ func runApply() error {
 
 	fmt.Print(string(out))
 
-	return successHandler(rc, "core", "")
+	err = action.SuccessHandler(rc, "core", "")
+
+	if err != nil {
+		return err
+	}
+
+	succeeded, err = runAllMonitors(run.Monitors, "after_apply", action.MonitorAfterApply, a, rc)
+
+	if !succeeded {
+		return err
+	}
+
+	return nil
 }

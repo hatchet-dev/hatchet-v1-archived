@@ -1,15 +1,10 @@
 package cli
 
 import (
-	"context"
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
-	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
 
 	"github.com/spf13/cobra"
@@ -127,68 +122,15 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	action := action.NewRunnerAction(&action.RunnerActionOpts{
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
+		ErrHandler:   action.ErrorHandler,
 		ReportKind:   "monitor",
 		RequireInit:  true,
 	})
 
-	policyBytes, err := downloadMonitorPolicy(rc)
+	_, err = action.RunMonitorFunc(f, a, rc)
 
-	if err != nil {
-		return err
-	}
-
-	res, err := f(action, policyBytes)
-
-	if err != nil {
-		return err
-	}
-
-	res.MonitorID = rc.ConfigFile.Resources.ModuleMonitorID
-
-	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
-		context.Background(),
-		swagger.CreateMonitorResultRequest{
-			MonitorId:       rc.ConfigFile.Resources.ModuleMonitorID,
-			FailureMessages: res.FailureMessages,
-			SuccessMessage:  res.SuccessMessage,
-			Severity:        res.Severity,
-			Status:          res.Status,
-			Title:           res.Title,
-		},
-		rc.ConfigFile.Resources.TeamID,
-		rc.ConfigFile.Resources.ModuleID,
-		rc.ConfigFile.Resources.ModuleRunID,
-	)
-
-	if err != nil {
-		errorHandler(rc, "monitor", fmt.Sprintf("Could not report monitor result to server"))
-
-		return err
-	}
-
-	if res.Status == "failed" {
-		errorHandler(rc, "monitor", "")
-
-		return err
-	}
-
-	return successHandler(rc, "monitor", "")
-}
-
-func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {
-	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.Resources.TeamID, config.ConfigFile.Resources.ModuleMonitorID)
-
-	if resp != nil {
-		defer resp.Close()
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ioutil.ReadAll(resp)
+	return err
 }

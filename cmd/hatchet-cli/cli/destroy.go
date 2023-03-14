@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
+	"github.com/hatchet-dev/hatchet/internal/runner/action"
 	"github.com/spf13/cobra"
 )
 
@@ -64,9 +65,15 @@ func runDestroy() error {
 		}
 	}
 
-	a, rc, err := getAction(matchedMod.Id, "destroy", path)
+	run, a, rc, err := getAction(matchedMod.Id, "destroy", path)
 
 	if err != nil {
+		return err
+	}
+
+	succeeded, err := runAllMonitors(run.Monitors, "before_destroy", action.MonitorBeforeDestroy, a, rc)
+
+	if !succeeded {
 		return err
 	}
 
@@ -83,5 +90,17 @@ func runDestroy() error {
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	err = action.SuccessHandler(rc, "core", "")
+
+	if err != nil {
+		return err
+	}
+
+	succeeded, err = runAllMonitors(run.Monitors, "after_destroy", action.MonitorAfterDestroy, a, rc)
+
+	if !succeeded {
+		return err
+	}
+
+	return nil
 }

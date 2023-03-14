@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
+	"github.com/hatchet-dev/hatchet/internal/runner/action"
 	"github.com/spf13/cobra"
 )
 
@@ -65,9 +66,15 @@ func runPlan() error {
 		}
 	}
 
-	a, rc, err := getAction(matchedMod.Id, "plan", path)
+	run, a, rc, err := getAction(matchedMod.Id, "plan", path)
 
 	if err != nil {
+		return err
+	}
+
+	succeeded, err := runAllMonitors(run.Monitors, "before_plan", action.MonitorBeforePlan, a, rc)
+
+	if !succeeded {
 		return err
 	}
 
@@ -94,7 +101,7 @@ func runPlan() error {
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
 
 		return err
 	}
@@ -111,12 +118,24 @@ func runPlan() error {
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
 
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	err = action.SuccessHandler(rc, "core", "")
+
+	if err != nil {
+		return err
+	}
+
+	succeeded, err = runAllMonitors(run.Monitors, "after_plan", action.MonitorAfterPlan, a, rc)
+
+	if !succeeded {
+		return err
+	}
+
+	return nil
 }
 
 func getHostName() string {

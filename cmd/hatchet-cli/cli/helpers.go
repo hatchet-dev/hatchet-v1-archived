@@ -12,12 +12,12 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
-	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/zclconf/go-cty/cty"
@@ -25,7 +25,7 @@ import (
 	"github.com/zclconf/go-cty/cty/json"
 )
 
-func getAction(modID, kind, path string) (*action.RunnerAction, *runner.Config, error) {
+func getAction(modID, kind, path string) (*swagger.CreateModuleRunResponse, *action.RunnerAction, *runner.Config, error) {
 	// create a new module run via the API
 	run, _, err := config.APIClient.ModulesApi.CreateModuleRun(
 		context.Background(),
@@ -38,7 +38,7 @@ func getAction(modID, kind, path string) (*action.RunnerAction, *runner.Config, 
 	)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// get a module run token via the API
@@ -50,7 +50,7 @@ func getAction(modID, kind, path string) (*action.RunnerAction, *runner.Config, 
 	)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// using this token, we generate a runner config
@@ -80,75 +80,35 @@ func getAction(modID, kind, path string) (*action.RunnerAction, *runner.Config, 
 	sc, err := loader.GetSharedConfigFromConfigFile(sharedCF)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	rc, err := loader.GetRunnerConfigFromConfigFile(runnerCF, sc)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not get runner configuration: %s", err.Error()))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not get runner configuration: %s", err.Error()))
 
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not get writers for plan"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not get writers for plan"))
 
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	a := action.NewRunnerAction(&action.RunnerActionOpts{
 		Config:       rc,
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
+		ErrHandler:   action.ErrorHandler,
 		ReportKind:   "core",
 		RequireInit:  false,
 	})
 
-	return a, rc, nil
-}
-
-func errorHandler(config *runner.Config, reportKind, description string) error {
-	_, _, err := config.APIClient.ModulesApi.FinalizeModuleRun(
-		context.Background(),
-		swagger.FinalizeModuleRunRequest{
-			Status:      string(types.ModuleRunStatusFailed),
-			Description: description,
-			ReportKind:  reportKind,
-		},
-		config.ConfigFile.Resources.TeamID,
-		config.ConfigFile.Resources.ModuleID,
-		config.ConfigFile.Resources.ModuleRunID,
-	)
-
-	if err != nil {
-		return fmt.Errorf("Error reporting error: %s. Original error: %s", err.Error(), description)
-	}
-
-	return fmt.Errorf(description)
-}
-
-func successHandler(config *runner.Config, reportKind, description string) error {
-	_, _, err := config.APIClient.ModulesApi.FinalizeModuleRun(
-		context.Background(),
-		swagger.FinalizeModuleRunRequest{
-			Status:      string(types.ModuleRunStatusCompleted),
-			Description: description,
-			ReportKind:  reportKind,
-		},
-		config.ConfigFile.Resources.TeamID,
-		config.ConfigFile.Resources.ModuleID,
-		config.ConfigFile.Resources.ModuleRunID,
-	)
-
-	if err != nil {
-		return fmt.Errorf("Error reporting success: %s. Success message: %s", err.Error(), description)
-	}
-
-	return nil
+	return &run, a, rc, nil
 }
 
 func preflight() {
@@ -223,8 +183,6 @@ func loadVarFile(varFilePath string) (map[string]interface{}, error) {
 
 	jsonBytes, err := sjv.MarshalJSON()
 
-	fmt.Println("JSON BYTES", string(jsonBytes), err)
-
 	target := make(map[string]interface{})
 
 	err = gojson.Unmarshal(jsonBytes, &target)
@@ -242,4 +200,26 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func runAllMonitors(monitors []swagger.ModuleMonitor, kind string, f action.MonitorFunc, a *action.RunnerAction, rc *runner.Config) (bool, error) {
+	var resErr error
+
+	for _, monitor := range monitors {
+		if monitor.Kind == kind {
+			rc.ConfigFile.Resources.ModuleMonitorID = monitor.Id
+
+			status, err := action.RunMonitorFunc(action.MonitorBeforePlan, a, rc)
+
+			if err != nil {
+				resErr = multierror.Append(resErr, err)
+			}
+
+			if status == "failed" {
+				return false, fmt.Errorf("monitor %s failed", monitor.Name)
+			}
+		}
+	}
+
+	return true, resErr
 }

@@ -46,7 +46,7 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	path := getStatePath(team.ID, module.ID, run.ID)
+	path := getStatePath(team.ID, module.ID)
 
 	// read state file
 	fileBytes, err := ioutil.ReadAll(r.Body)
@@ -68,6 +68,6 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	return
 }
 
-func getStatePath(teamID, moduleID, runID string) string {
+func getStatePath(teamID, moduleID string) string {
 	return fmt.Sprintf("%s/%s/terraform.tfstate", teamID, moduleID)
 }

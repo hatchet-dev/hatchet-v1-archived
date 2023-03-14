@@ -47,19 +47,19 @@ func runDestroy() error {
 		return err
 	}
 
-	action := action.NewRunnerAction(&action.RunnerActionOpts{
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
+		ErrHandler:   action.ErrorHandler,
 		ReportKind:   "core",
 		RequireInit:  true,
 	})
 
-	err = action.Destroy(map[string]interface{}{})
+	err = a.Destroy(map[string]interface{}{})
 
 	if err != nil {
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	return action.SuccessHandler(rc, "core", "")
 }

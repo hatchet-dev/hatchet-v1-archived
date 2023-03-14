@@ -282,6 +282,20 @@ func MonitorAfterApply(
 	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
 }
 
+func MonitorBeforeDestroy(
+	r *RunnerAction,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
+func MonitorAfterDestroy(
+	r *RunnerAction,
+	policyBytes []byte,
+) (*types.CreateMonitorResultRequest, error) {
+	return r.monitor(policyBytes, r.populateVariables, r.populatePlan, r.populateState)
+}
+
 type populatorFunc func(
 	input map[string]interface{},
 ) error

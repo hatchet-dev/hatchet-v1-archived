@@ -30,9 +30,8 @@ func NewTerraformStateGetHandler(
 func (t *TerraformStateGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
-	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	path := getStatePath(team.ID, module.ID, run.ID)
+	path := getStatePath(team.ID, module.ID)
 
 	fileBytes, err := t.Config().DefaultFileStore.ReadFile(path, true)
 

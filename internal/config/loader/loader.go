@@ -697,6 +697,20 @@ func GetBackgroundWorkerConfigFromConfigFile(
 		if err != nil {
 			return nil, err
 		}
+	} else if wc.FileStore.FileStorageKind == "local" {
+		fc := wc.FileStore.Local
+
+		var stateEncryptionKey [32]byte
+
+		for i, b := range []byte(fc.FileEncryptionKey) {
+			stateEncryptionKey[i] = b
+		}
+
+		storageManager, err = filelocal.NewLocalFileStorageManager(fc.FileDirectory, &stateEncryptionKey)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	tokenOpts := &token.TokenOpts{

@@ -41,7 +41,7 @@ func runPlan() error {
 	err = downloadGithubRepoContents(rc)
 
 	if err != nil {
-		return errorHandler(rc, "core", fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
+		return action.ErrorHandler(rc, "core", fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
 	}
 
 	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
@@ -53,7 +53,7 @@ func runPlan() error {
 	a := action.NewRunnerAction(&action.RunnerActionOpts{
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
-		ErrHandler:   errorHandler,
+		ErrHandler:   action.ErrorHandler,
 		ReportKind:   "core",
 		RequireInit:  true,
 	})
@@ -72,7 +72,7 @@ func runPlan() error {
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
 
 		return err
 	}
@@ -89,10 +89,10 @@ func runPlan() error {
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
 
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	return action.SuccessHandler(rc, "core", "")
 }

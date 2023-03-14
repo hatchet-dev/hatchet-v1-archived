@@ -111,6 +111,19 @@ func createLocalRun(config *server.Config, module *models.Module, kind models.Mo
 		return nil, apierrors.NewErrInternal(err)
 	}
 
+	// get all monitors for this run
+	runMonitors, err := monitors.GetAllMonitorsForModuleRun(repo, module.TeamID, run)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	run, err = repo.Module().AppendModuleRunMonitors(run, runMonitors)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
 	return run, nil
 }
 
