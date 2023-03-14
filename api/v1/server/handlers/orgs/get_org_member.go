@@ -25,7 +25,8 @@ func NewOrgGetMemberHandler(
 }
 
 func (o *OrgGetMemberHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	org, _ := r.Context().Value(types.OrgScope).(*models.Organization)
 	orgMember, _ := r.Context().Value(types.OrgMemberScope).(*models.OrganizationMember)
 
-	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey()))
+	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey(), o.Config().ServerRuntimeConfig.ServerURL, org.DisplayName))
 }

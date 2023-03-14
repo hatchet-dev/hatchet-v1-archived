@@ -65,5 +65,5 @@ func (o *OrgUpdateMemberPoliciesHandler) ServeHTTP(w http.ResponseWriter, r *htt
 		return
 	}
 
-	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey()))
+	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey(), o.Config().ServerRuntimeConfig.ServerURL, org.DisplayName))
 }

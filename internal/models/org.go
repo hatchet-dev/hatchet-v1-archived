@@ -122,7 +122,7 @@ func (o *OrganizationMember) ToAPITypeSanitized() *types.OrganizationMemberSanit
 	return res
 }
 
-func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember {
+func (o *OrganizationMember) ToAPIType(key *[32]byte, serverURL, orgName string) *types.OrganizationMember {
 	sanitized := o.ToAPITypeSanitized()
 
 	res := &types.OrganizationMember{
@@ -135,7 +135,7 @@ func (o *OrganizationMember) ToAPIType(key *[32]byte) *types.OrganizationMember 
 	invite := &o.InviteLink
 
 	if invite != nil {
-		res.Invite = *invite.ToAPIType(key)
+		res.Invite = *invite.ToAPIType(key, serverURL, orgName)
 	}
 
 	return res
@@ -153,7 +153,9 @@ type OrganizationInviteLink struct {
 
 	OrganizationID       string
 	OrganizationMemberID string
-	InviteeEmail         string
+
+	InviterEmail string
+	InviteeEmail string
 
 	Expires *time.Time
 
@@ -167,9 +169,10 @@ type OrganizationInviteLink struct {
 	InviteLinkURL []byte
 }
 
-func NewOrganizationInviteLink(serverURL, orgID string) (*OrganizationInviteLink, error) {
+func NewOrganizationInviteLink(serverURL, orgID, inviterEmail string) (*OrganizationInviteLink, error) {
 	res := &OrganizationInviteLink{
 		OrganizationID: orgID,
+		InviterEmail:   inviterEmail,
 	}
 
 	res.Base.ID = uuid.New().String()
@@ -195,14 +198,15 @@ func NewOrganizationInviteLink(serverURL, orgID string) (*OrganizationInviteLink
 	return res, nil
 }
 
-func (o *OrganizationInviteLink) ToAPIType(key *[32]byte) *types.OrganizationInvite {
+func (o *OrganizationInviteLink) ToAPIType(key *[32]byte, serverURL, orgName string) *types.OrganizationInvite {
 	o.Decrypt(key)
 
 	return &types.OrganizationInvite{
-		APIResourceMeta: o.ToAPITypeMetadata(),
-		InviteLinkURL:   string(o.InviteLinkURL),
-		InviteeEmail:    o.InviteeEmail,
-		Expires:         o.Expires,
+		APIResourceMeta:     o.ToAPITypeMetadata(),
+		InviteLinkURL:       string(o.InviteLinkURL),
+		PublicInviteLinkURL: o.GetPublicInviteLink(serverURL, orgName, o.InviterEmail),
+		InviteeEmail:        o.InviteeEmail,
+		Expires:             o.Expires,
 	}
 }
 
@@ -212,6 +216,17 @@ func (o *OrganizationInviteLink) ToAPITypeSanitized() *types.OrganizationInviteS
 		InviteeEmail:    o.InviteeEmail,
 		Expires:         o.Expires,
 	}
+}
+
+func (o *OrganizationInviteLink) GetPublicInviteLink(serverURL, orgName, inviterAddress string) string {
+	queryVals := url.Values{
+		"token":           []string{string(o.Token)},
+		"invite_id":       []string{o.ID},
+		"org_name":        []string{orgName},
+		"inviter_address": []string{inviterAddress},
+	}
+
+	return fmt.Sprintf("%s/organization_invite/accept?%s", serverURL, queryVals.Encode())
 }
 
 func (o *OrganizationInviteLink) BeforeCreate(tx *gorm.DB) error {

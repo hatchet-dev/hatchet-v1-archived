@@ -67,8 +67,9 @@ type OrganizationPolicyMeta struct {
 type OrganizationInvite struct {
 	*APIResourceMeta
 
-	InviteLinkURL string `json:"invite_link_url"`
-	InviteeEmail  string `json:"invitee_email"`
+	InviteLinkURL       string `json:"invite_link_url"`
+	PublicInviteLinkURL string `json:"public_invite_link_url"`
+	InviteeEmail        string `json:"invitee_email"`
 
 	Expires *time.Time `json:"expires"`
 }

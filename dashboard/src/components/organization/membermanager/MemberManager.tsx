@@ -104,6 +104,9 @@ const MemberManager: React.FunctionComponent<Props> = ({
         <MemberList
           members={data.data?.rows}
           remove_member={can_remove && removeMember}
+          get_invite_link={(member: OrganizationMemberSanitized) => {
+            return api.getOrgMember(currOrg.id, member.id);
+          }}
         />
       )}
       <HorizontalSpacer spacepixels={24} />
