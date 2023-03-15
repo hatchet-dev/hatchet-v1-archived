@@ -74,6 +74,6 @@ jobs:
           GITHUB_TAG: ${{ github.ref }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release/static/static_${{steps.tag_name.outputs.tag}}.zip
-          asset_name: static_${{steps.tag_name.outputs.tag}}.zip
+          asset_path: ./release/static/hatchet-static_${{steps.tag_name.outputs.tag}}.zip
+          asset_name: hatchet-static_${{steps.tag_name.outputs.tag}}.zip
           asset_content_type: application/zip
