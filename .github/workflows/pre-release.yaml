@@ -25,13 +25,13 @@ jobs:
         run: |
           mkdir -p ./release/static
           cd dashboard
-          echo $NPM_TOKEN
           npm i --production=false --legacy-peer-deps
           npm run build
           cd ..
           zip --junk-paths ./release/static/hatchet-static_${{steps.tag_name.outputs.tag}}.zip ./dashboard/build/*
         env:
           NODE_ENV: production
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Upload static binaries
         uses: actions/upload-artifact@v2
         with:
