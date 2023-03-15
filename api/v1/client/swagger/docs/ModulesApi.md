@@ -16,6 +16,7 @@ Method | HTTP request | Description
 [**GetModule**](ModulesApi.md#GetModule) | **Get** /api/v1/teams/{team_id}/modules/{module_id} | Get module
 [**GetModuleEnvVars**](ModulesApi.md#GetModuleEnvVars) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} | Get Module Env Vars
 [**GetModuleRun**](ModulesApi.md#GetModuleRun) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} | Get module run
+[**GetModuleRunLocalToken**](ModulesApi.md#GetModuleRunLocalToken) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token | Get Module Run Token (Local)
 [**GetModuleRunLogs**](ModulesApi.md#GetModuleRunLogs) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs | Get logs
 [**GetModuleRunPlanSummary**](ModulesApi.md#GetModuleRunPlanSummary) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary | Get plan summary
 [**GetModuleTarballURL**](ModulesApi.md#GetModuleTarballURL) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
@@ -26,7 +27,7 @@ Method | HTTP request | Description
 [**UpdateModule**](ModulesApi.md#UpdateModule) | **Post** /api/v1/teams/{team_id}/modules/{module_id} | Update Module Run
 
 # **CreateModule**
-> CreateModuleResponse CreateModule(ctx, teamId, optional)
+> CreateModuleResponse CreateModule(ctx, body, teamId)
 Create Module
 
 Creates a new module.
@@ -36,15 +37,8 @@ Creates a new module.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**CreateModuleRequest**](CreateModuleRequest.md)| The module to create | 
   **teamId** | **string**| The team id | 
- **optional** | ***ModulesApiCreateModuleOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a ModulesApiCreateModuleOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
- **body** | [**optional.Interface of CreateModuleRequest**](CreateModuleRequest.md)| The module to create | 
 
 ### Return type
 
@@ -62,7 +56,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **CreateModuleRun**
-> CreateModuleRunResponse CreateModuleRun(ctx, teamId, moduleId, optional)
+> CreateModuleRunResponse CreateModuleRun(ctx, body, teamId, moduleId)
 Create Module Run
 
 Creates a new module run.
@@ -72,17 +66,9 @@ Creates a new module run.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**CreateModuleRunRequest**](CreateModuleRunRequest.md)| The module run to create | 
   **teamId** | **string**| The team id | 
   **moduleId** | **string**| The module id | 
- **optional** | ***ModulesApiCreateModuleRunOpts** | optional parameters | nil if no parameters
-
-### Optional Parameters
-Optional parameters are passed through a pointer to a ModulesApiCreateModuleRunOpts struct
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
-
- **body** | [**optional.Interface of CreateModuleRunRequest**](CreateModuleRunRequest.md)| The module run to create | 
 
 ### Return type
 
@@ -402,6 +388,36 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **GetModuleRunLocalToken**
+> GetModuleRunTokenResponse GetModuleRunLocalToken(ctx, teamId, moduleId, moduleRunId)
+Get Module Run Token (Local)
+
+Gets a module run token for a local run.
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **teamId** | **string**| The team id | 
+  **moduleId** | **string**| The module id | 
+  **moduleRunId** | **string**| The module run id | 
+
+### Return type
+
+[**GetModuleRunTokenResponse**](GetModuleRunTokenResponse.md)
+
+### Authorization
+
+[Bearer](../README.md#Bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **GetModuleRunLogs**
 > GetLogsResponse GetModuleRunLogs(ctx, teamId, moduleId, moduleRunId)
 Get logs
@@ -645,7 +661,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **body** | [**optional.Interface of CreateModuleRequest**](CreateModuleRequest.md)| The module params to update | 
+ **body** | [**optional.Interface of UpdateModuleRequest**](UpdateModuleRequest.md)| The module params to update | 
 
 ### Return type
 

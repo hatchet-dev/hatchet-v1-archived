@@ -20,14 +20,15 @@ import (
 )
 
 type ModuleQueueChecker struct {
-	queueManager queuemanager.ModuleRunQueueManager
-	db           database.Config
-	tokenOpts    token.TokenOpts
-	serverURL    string
+	queueManager         queuemanager.ModuleRunQueueManager
+	db                   database.Config
+	tokenOpts            token.TokenOpts
+	serverURL            string
+	broadcastGRPCAddress string
 }
 
-func NewModuleQueueChecker(queueManager queuemanager.ModuleRunQueueManager, db database.Config, tokenOpts token.TokenOpts, serverURL string) *ModuleQueueChecker {
-	return &ModuleQueueChecker{queueManager, db, tokenOpts, serverURL}
+func NewModuleQueueChecker(queueManager queuemanager.ModuleRunQueueManager, db database.Config, tokenOpts token.TokenOpts, serverURL, broadcastGRPCAddress string) *ModuleQueueChecker {
+	return &ModuleQueueChecker{queueManager, db, tokenOpts, serverURL, broadcastGRPCAddress}
 }
 
 type CheckQueueInput struct {
@@ -106,7 +107,7 @@ func (mqc *ModuleQueueChecker) ScheduleFromQueue(ctx workflow.Context, input Che
 
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	envOpts, err := provisionerutils.GetProvisionerEnvOpts(team, module, currModuleRun, mqc.db, mqc.tokenOpts, mqc.serverURL)
+	envOpts, err := provisionerutils.GetProvisionerEnvOpts(team, module, currModuleRun, mqc.db, mqc.tokenOpts, mqc.serverURL, mqc.broadcastGRPCAddress)
 
 	if err != nil {
 		return "", err

@@ -10,5 +10,6 @@
 package swagger
 
 type CreateModuleRunRequest struct {
+	Hostname string `json:"hostname,omitempty"`
 	Kind string `json:"kind,omitempty"`
 }

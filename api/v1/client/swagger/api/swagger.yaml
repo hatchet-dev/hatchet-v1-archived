@@ -2653,7 +2653,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/createModule_request'
-        required: false
+        required: true
       responses:
         "201":
           description: Successfully created the module
@@ -2680,7 +2680,7 @@ paths:
             --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
             --header 'content-type: application/json' \
-            --data '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
+            --data '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"local":{"local_path":"string"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
@@ -2693,7 +2693,7 @@ paths:
               Authorization: 'Bearer REPLACE_BEARER_TOKEN',
               'content-type': 'application/json'
             },
-            body: '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
+            body: '{"env_vars":{"property1":"string","property2":"string"},"github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"local":{"local_path":"string"},"name":"string","values_github":{"github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_branch":"main","github_repository_name":"infra","github_repository_owner":"hatchet-dev","path":"./staging/eks"},"values_raw":{"property1":{},"property2":{}}}'
           };
 
           fetch(url, options)
@@ -2712,7 +2712,7 @@ paths:
           request = Net::HTTP::Post.new(url)
           request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
           request["content-type"] = 'application/json'
-          request.body = "{\"env_vars\":{\"property1\":\"string\",\"property2\":\"string\"},\"github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"name\":\"string\",\"values_github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"values_raw\":{\"property1\":{},\"property2\":{}}}"
+          request.body = "{\"env_vars\":{\"property1\":\"string\",\"property2\":\"string\"},\"github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"local\":{\"local_path\":\"string\"},\"name\":\"string\",\"values_github\":{\"github_app_installation_id\":\"bb214807-246e-43a5-a25d-41761d1cff9e\",\"github_repository_branch\":\"main\",\"github_repository_name\":\"infra\",\"github_repository_owner\":\"hatchet-dev\",\"path\":\"./staging/eks\"},\"values_raw\":{\"property1\":{},\"property2\":{}}}"
 
           response = http.request(request)
           puts response.read_body
@@ -2734,6 +2734,7 @@ paths:
                   "github_repository_owner": "hatchet-dev",
                   "path": "./staging/eks"
               },
+              "local": {"local_path": "string"},
               "name": "string",
               "values_github": {
                   "github_app_installation_id": "bb214807-246e-43a5-a25d-41761d1cff9e",
@@ -2762,17 +2763,17 @@ paths:
           :\\\"string\\\",\\\"property2\\\":\\\"string\\\"},\\\"github\\\":{\\\"github_app_installation_id\\\
           \":\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
           \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
-          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"name\\\"\
-          :\\\"string\\\",\\\"values_github\\\":{\\\"github_app_installation_id\\\"\
-          :\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\",\\\"github_repository_branch\\\
-          \":\\\"main\\\",\\\"github_repository_name\\\":\\\"infra\\\",\\\"github_repository_owner\\\
-          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"values_raw\\\
-          \":{\\\"property1\\\":{},\\\"property2\\\":{}}}\")\n\n\treq, _ := http.NewRequest(\"\
-          POST\", url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
-          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
-          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
-          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
-          \n}"
+          \":\\\"hatchet-dev\\\",\\\"path\\\":\\\"./staging/eks\\\"},\\\"local\\\"\
+          :{\\\"local_path\\\":\\\"string\\\"},\\\"name\\\":\\\"string\\\",\\\"values_github\\\
+          \":{\\\"github_app_installation_id\\\":\\\"bb214807-246e-43a5-a25d-41761d1cff9e\\\
+          \",\\\"github_repository_branch\\\":\\\"main\\\",\\\"github_repository_name\\\
+          \":\\\"infra\\\",\\\"github_repository_owner\\\":\\\"hatchet-dev\\\",\\\"\
+          path\\\":\\\"./staging/eks\\\"},\\\"values_raw\\\":{\\\"property1\\\":{},\\\
+          \"property2\\\":{}}}\")\n\n\treq, _ := http.NewRequest(\"POST\", url, payload)\n\
+          \n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\
+          \treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _ :=\
+          \ http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\
+          \n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
       x-codegen-request-body-name: CreateModuleRequest
   /api/v1/teams/{team_id}/modules/{module_id}:
     get:
@@ -2903,7 +2904,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/createModule_request'
+              $ref: '#/components/schemas/updateModule_request'
         required: false
       responses:
         "200":
@@ -3472,7 +3473,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/createModuleRun_request'
-        required: false
+        required: true
       responses:
         "201":
           description: Successfully triggered module run creation
@@ -3499,7 +3500,7 @@ paths:
             --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs \
             --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
             --header 'content-type: application/json' \
-            --data '{"kind":"string"}'
+            --data '{"hostname":"string","kind":"string"}'
       - lang: Node
         source: |-
           const fetch = require('node-fetch');
@@ -3512,7 +3513,7 @@ paths:
               Authorization: 'Bearer REPLACE_BEARER_TOKEN',
               'content-type': 'application/json'
             },
-            body: '{"kind":"string"}'
+            body: '{"hostname":"string","kind":"string"}'
           };
 
           fetch(url, options)
@@ -3531,7 +3532,7 @@ paths:
           request = Net::HTTP::Post.new(url)
           request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
           request["content-type"] = 'application/json'
-          request.body = "{\"kind\":\"string\"}"
+          request.body = "{\"hostname\":\"string\",\"kind\":\"string\"}"
 
           response = http.request(request)
           puts response.read_body
@@ -3541,7 +3542,10 @@ paths:
 
           url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs"
 
-          payload = {"kind": "string"}
+          payload = {
+              "hostname": "string",
+              "kind": "string"
+          }
           headers = {
               "Authorization": "Bearer REPLACE_BEARER_TOKEN",
               "content-type": "application/json"
@@ -3553,12 +3557,13 @@ paths:
       - lang: Go
         source: "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\
           \n\t\"io/ioutil\"\n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs\"\
-          \n\n\tpayload := strings.NewReader(\"{\\\"kind\\\":\\\"string\\\"}\")\n\n\
-          \treq, _ := http.NewRequest(\"POST\", url, payload)\n\n\treq.Header.Add(\"\
-          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\treq.Header.Add(\"content-type\"\
-          , \"application/json\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\n\t\
-          defer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\
-          \tfmt.Println(string(body))\n\n}"
+          \n\n\tpayload := strings.NewReader(\"{\\\"hostname\\\":\\\"string\\\",\\\
+          \"kind\\\":\\\"string\\\"}\")\n\n\treq, _ := http.NewRequest(\"POST\", url,\
+          \ payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer REPLACE_BEARER_TOKEN\"\
+          )\n\treq.Header.Add(\"content-type\", \"application/json\")\n\n\tres, _\
+          \ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ :=\
+          \ ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\
+          \n}"
       x-codegen-request-body-name: CreateModuleRunRequest
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}:
     get:
@@ -3810,6 +3815,113 @@ paths:
           defer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\
           \tfmt.Println(string(body))\n\n}"
       x-codegen-request-body-name: FinalizeModuleRunRequest
+  /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token:
+    get:
+      tags:
+      - Modules
+      summary: Get Module Run Token (Local)
+      description: Gets a module run token for a local run.
+      operationId: getModuleRunLocalToken
+      parameters:
+      - name: team_id
+        in: path
+        description: The team id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Team
+        x-go-name: Team
+      - name: module_id
+        in: path
+        description: The module id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Module
+        x-go-name: Module
+      - name: module_run_id
+        in: path
+        description: The module run id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          x-go-name: Run
+        x-go-name: Run
+      responses:
+        "200":
+          description: Successfully got module run token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetModuleRunTokenResponse'
+        "400":
+          description: A malformed or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorBadRequestExample'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorForbiddenExample'
+      x-codeSamples:
+      - lang: Shell
+        source: |-
+          curl --request GET \
+            --url http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/local_token \
+            --header 'Authorization: Bearer REPLACE_BEARER_TOKEN'
+      - lang: Node
+        source: |-
+          const fetch = require('node-fetch');
+
+          let url = 'http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/local_token';
+
+          let options = {method: 'GET', headers: {Authorization: 'Bearer REPLACE_BEARER_TOKEN'}};
+
+          fetch(url, options)
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error('error:' + err));
+      - lang: Ruby
+        source: |-
+          require 'uri'
+          require 'net/http'
+
+          url = URI("http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/local_token")
+
+          http = Net::HTTP.new(url.host, url.port)
+
+          request = Net::HTTP::Get.new(url)
+          request["Authorization"] = 'Bearer REPLACE_BEARER_TOKEN'
+
+          response = http.request(request)
+          puts response.read_body
+      - lang: Python
+        source: |-
+          import requests
+
+          url = "http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/local_token"
+
+          headers = {"Authorization": "Bearer REPLACE_BEARER_TOKEN"}
+
+          response = requests.request("GET", url, headers=headers)
+
+          print(response.text)
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"io/ioutil\"\
+          \n)\n\nfunc main() {\n\n\turl := \"http://localhost:8080/api/v1/teams/322346f9-54b4-497d-bc9a-c54b5aaa4400/modules/322346f9-54b4-497d-bc9a-c54b5aaa4400/runs/322346f9-54b4-497d-bc9a-c54b5aaa4400/local_token\"\
+          \n\n\treq, _ := http.NewRequest(\"GET\", url, nil)\n\n\treq.Header.Add(\"\
+          Authorization\", \"Bearer REPLACE_BEARER_TOKEN\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\
+          \n\tdefer res.Body.Close()\n\tbody, _ := ioutil.ReadAll(res.Body)\n\n\t\
+          fmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
   /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs:
     get:
       tags:
@@ -7658,6 +7770,8 @@ components:
           x-go-name: EnvVars
         github:
           $ref: '#/components/schemas/CreateModuleRequestGithub'
+        local:
+          $ref: '#/components/schemas/CreateModuleRequestLocal'
         name:
           type: string
           x-go-name: Name
@@ -7685,6 +7799,8 @@ components:
           github_app_installation_id: bb214807-246e-43a5-a25d-41761d1cff9e
           github_repository_owner: hatchet-dev
           github_repository_name: infra
+        local:
+          local_path: local_path
         env_vars:
           key: env_vars
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
@@ -7730,19 +7846,199 @@ components:
         github_repository_owner: hatchet-dev
         github_repository_name: infra
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    CreateModuleRequestLocal:
+      type: object
+      properties:
+        local_path:
+          type: string
+          description: the local path to the module
+          x-go-name: LocalPath
+      example:
+        local_path: local_path
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleResponse:
-      $ref: '#/components/schemas/Module'
+      type: object
+      properties:
+        created_at:
+          type: string
+          description: the time that this resource was created
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: CreatedAt
+        current_env_vars_version_id:
+          type: string
+          x-go-name: CurrentEnvVarsVersionID
+        current_values_version_id:
+          type: string
+          x-go-name: CurrentValuesVersionID
+        deployment:
+          $ref: '#/components/schemas/ModuleDeploymentConfig'
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        lock_id:
+          type: string
+          x-go-name: LockID
+        lock_kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+        name:
+          type: string
+          description: the name for the module
+          example: eks
+          x-go-name: Name
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+      example:
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        lock_kind: lock_kind
+        current_env_vars_version_id: current_env_vars_version_id
+        name: eks
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        current_values_version_id: current_values_version_id
+        deployment:
+          path: path
+          github_app_installation_id: github_app_installation_id
+          github_repo_name: github_repo_name
+          github_repo_branch: github_repo_branch
+          github_repo_owner: github_repo_owner
+        lock_id: lock_id
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleRunRequest:
       type: object
       properties:
+        hostname:
+          type: string
+          x-go-name: Hostname
         kind:
           type: string
           x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
       example:
+        hostname: hostname
         kind: kind
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleRunResponse:
-      $ref: '#/components/schemas/ModuleRun'
+      type: object
+      properties:
+        config:
+          $ref: '#/components/schemas/ModuleRunConfig'
+        created_at:
+          type: string
+          description: the time that this resource was created
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: CreatedAt
+        github_pull_request:
+          $ref: '#/components/schemas/GithubPullRequest'
+        id:
+          type: string
+          description: "the id of this resource, in UUID format"
+          example: bb214807-246e-43a5-a25d-41761d1cff9e
+          x-go-name: ID
+        kind:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+        monitor_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleMonitorResult'
+          x-go-name: MonitorResults
+        monitors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleMonitor'
+          x-go-name: Monitors
+        status:
+          type: string
+          x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+        status_description:
+          type: string
+          x-go-name: StatusDescription
+        updated_at:
+          type: string
+          description: the time that this resource was last updated
+          format: date-time
+          example: 2022-12-13T15:06:48.888358-05:00
+          x-go-name: UpdatedAt
+      example:
+        github_pull_request:
+          github_pull_request_base_branch: github_pull_request_base_branch
+          github_pull_request_state: github_pull_request_state
+          github_pull_request_head_branch: github_pull_request_head_branch
+          github_pull_request_title: github_pull_request_title
+          github_repository_owner: github_repository_owner
+          github_pull_request_id: 0
+          github_pull_request_number: 6
+          github_repository_name: github_repository_name
+        status_description: status_description
+        updated_at: 2022-12-13T15:06:48.888358-05:00
+        kind: kind
+        created_at: 2022-12-13T15:06:48.888358-05:00
+        id: bb214807-246e-43a5-a25d-41761d1cff9e
+        monitor_results:
+        - severity: severity
+          module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          module_monitor_id: module_monitor_id
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          module_name: module_name
+          module_run_id: module_run_id
+          message: message
+          title: title
+          status: status
+        - severity: severity
+          module_id: module_id
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          module_monitor_id: module_monitor_id
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          module_name: module_name
+          module_run_id: module_run_id
+          message: message
+          title: title
+          status: status
+        config:
+          trigger_kind: trigger_kind
+          github_commit_sha: github_commit_sha
+          values_version_id: values_version_id
+          env_var_version_id: env_var_version_id
+        monitors:
+        - policy_bytes: policy_bytes
+          cron_schedule: cron_schedule
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          kind: kind
+          name: drift
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          description: detects drift
+          disabled: true
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          is_default: true
+          modules:
+          - modules
+          - modules
+        - policy_bytes: policy_bytes
+          cron_schedule: cron_schedule
+          updated_at: 2022-12-13T15:06:48.888358-05:00
+          kind: kind
+          name: drift
+          created_at: 2022-12-13T15:06:48.888358-05:00
+          description: detects drift
+          disabled: true
+          id: bb214807-246e-43a5-a25d-41761d1cff9e
+          is_default: true
+          modules:
+          - modules
+          - modules
+        status: status
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     CreateModuleValuesRequestGithub:
       required:
       - github_app_installation_id
@@ -8068,6 +8364,15 @@ components:
       $ref: '#/components/schemas/Module'
     GetModuleRunResponse:
       $ref: '#/components/schemas/ModuleRun'
+    GetModuleRunTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          x-go-name: Token
+      example:
+        token: token
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     GetModuleTarballURLResponse:
       type: object
       properties:
@@ -10332,6 +10637,24 @@ components:
             type: object
             properties: {}
           x-go-name: ValuesRaw
+      example:
+        values_raw:
+          key: "{}"
+        github:
+          github_repository_branch: main
+          path: ./staging/eks
+          github_app_installation_id: bb214807-246e-43a5-a25d-41761d1cff9e
+          github_repository_owner: hatchet-dev
+          github_repository_name: infra
+        name: name
+        values_github:
+          github_repository_branch: main
+          path: ./staging/eks
+          github_app_installation_id: bb214807-246e-43a5-a25d-41761d1cff9e
+          github_repository_owner: hatchet-dev
+          github_repository_name: infra
+        env_vars:
+          key: env_vars
       x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
     UpdateModuleResponse:
       $ref: '#/components/schemas/Module'
@@ -10584,6 +10907,30 @@ components:
           x-go-name: EnvVars
         github:
           $ref: '#/components/schemas/CreateModuleRequestGithub'
+        local:
+          $ref: '#/components/schemas/CreateModuleRequestLocal'
+        name:
+          type: string
+          x-go-name: Name
+        values_github:
+          $ref: '#/components/schemas/CreateModuleValuesRequestGithub'
+        values_raw:
+          type: object
+          additionalProperties:
+            type: object
+            properties: {}
+          x-go-name: ValuesRaw
+      x-go-package: github.com/hatchet-dev/hatchet/api/v1/types
+    updateModule_request:
+      type: object
+      properties:
+        env_vars:
+          type: object
+          additionalProperties:
+            type: string
+          x-go-name: EnvVars
+        github:
+          $ref: '#/components/schemas/CreateModuleRequestGithub'
         name:
           type: string
           x-go-name: Name
@@ -10599,6 +10946,9 @@ components:
     createModuleRun_request:
       type: object
       properties:
+        hostname:
+          type: string
+          x-go-name: Hostname
         kind:
           type: string
           x-go-package: github.com/hatchet-dev/hatchet/api/v1/types

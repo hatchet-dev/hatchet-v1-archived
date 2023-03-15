@@ -31,8 +31,8 @@ func init() {
 }
 
 func runPlan() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err
@@ -41,34 +41,38 @@ func runPlan() error {
 	err = downloadGithubRepoContents(rc)
 
 	if err != nil {
-		return errorHandler(rc, "core", fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
+		return action.ErrorHandler(rc, "core", fmt.Sprintf("Could not download Github repository contents: %s", err.Error()))
 	}
 
-	writer, err := getWriter(rc)
+	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
-
 		return err
 	}
 
-	a := action.NewRunnerAction(writer, errorHandler, "core")
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
+		StdoutWriter: stdoutWriter,
+		StderrWriter: stderrWriter,
+		ErrHandler:   action.ErrorHandler,
+		ReportKind:   "core",
+		RequireInit:  true,
+	})
 
-	zipOut, prettyOut, jsonOut, err := a.Plan(rc, map[string]interface{}{})
+	zipOut, prettyOut, jsonOut, err := a.Plan(nil)
 
 	if err != nil {
 		return err
 	}
 
 	_, err = rc.FileClient.UploadPlanZIPFile(
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
+		rc.ConfigFile.Resources.TeamID,
+		rc.ConfigFile.Resources.ModuleID,
+		rc.ConfigFile.Resources.ModuleRunID,
 		zipOut,
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not upload plan file to server"))
 
 		return err
 	}
@@ -79,16 +83,16 @@ func runPlan() error {
 			PlanJson:   string(jsonOut),
 			PlanPretty: string(prettyOut),
 		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
+		rc.ConfigFile.Resources.TeamID,
+		rc.ConfigFile.Resources.ModuleID,
+		rc.ConfigFile.Resources.ModuleRunID,
 	)
 
 	if err != nil {
-		errorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
+		action.ErrorHandler(rc, "core", fmt.Sprintf("Could not create terraform plan file on server"))
 
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	return action.SuccessHandler(rc, "core", "")
 }

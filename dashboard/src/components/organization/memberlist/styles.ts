@@ -16,7 +16,7 @@ export const MemberContainer = styled(FlexRow)`
 
 export const MemberNameOrEmail = styled.div`
   font-size: 13px;
-  width: 100%;
+  width: 400px;
   padding: 7px 12px;
   background: ${(props) => props.theme.bg.shadeone};
   border: ${(props) => props.theme.line.default};

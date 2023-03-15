@@ -2,12 +2,17 @@ package github_zip
 
 import (
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
+
+	"github.com/google/go-github/v49/github"
 )
 
 type ZIPDownloader struct {
@@ -103,4 +108,50 @@ func (z *ZIPDownloader) UnzipToDir() error {
 	}
 
 	return nil
+}
+
+const HatchetRepositoryOwner = "hatchet-dev"
+const HatchetRepositoryName = "hatchet"
+const HatchetStaticAssetsName = "hatchet-static"
+
+func GetHatchetStaticAssetsDownloadURL(version string) (string, error) {
+	return getHatchetAssetDownloadURL(version, HatchetStaticAssetsName)
+}
+
+func getHatchetAssetDownloadURL(releaseTag, assetName string) (string, error) {
+	client := github.NewClient(nil)
+
+	rel, _, err := client.Repositories.GetReleaseByTag(
+		context.Background(),
+		HatchetRepositoryOwner,
+		HatchetRepositoryName,
+		releaseTag,
+	)
+
+	if err != nil {
+		return "", fmt.Errorf("release %s does not exist: %w", releaseTag, err)
+	}
+
+	re := getDownloadRegexp(assetName)
+	releaseURL := ""
+
+	// iterate through the assets
+	for _, asset := range rel.Assets {
+		if downloadURL := asset.GetBrowserDownloadURL(); re.MatchString(downloadURL) {
+			releaseURL = downloadURL
+		}
+	}
+
+	return releaseURL, nil
+}
+
+func getDownloadRegexp(assetName string) *regexp.Regexp {
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*_Darwin_x86_64\.zip`, assetName))
+	case "linux":
+		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*_Linux_x86_64\.zip`, assetName))
+	default:
+		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*\.zip`, assetName))
+	}
 }

@@ -1,12 +1,14 @@
 package adapter
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/hatchet-dev/hatchet/internal/config/database"
+	"github.com/hatchet-dev/hatchet/internal/migrate"
 	"gorm.io/gorm/logger"
 	gormlogger "gorm.io/gorm/logger"
 
@@ -21,78 +23,84 @@ func New(configFile *database.ConfigFile) (*gorm.DB, error) {
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
 			SlowThreshold: time.Second,
-			LogLevel:      logger.Silent,
+			LogLevel:      logger.Error,
 			Colorful:      false,
 		},
 	)
 
-	if configFile.SQLLite {
+	var db *gorm.DB
+	var err error
+
+	if configFile.Kind == "sqlite" {
 		// we add DisableForeignKeyConstraintWhenMigrating since our sqlite does
 		// not support foreign key constraints
-		return gorm.Open(sqlite.Open(configFile.SQLLitePath), &gorm.Config{
+		db, err = gorm.Open(sqlite.Open(configFile.SQLite.SQLLitePath), &gorm.Config{
 			DisableForeignKeyConstraintWhenMigrating: true,
 			FullSaveAssociations:                     true,
 			Logger:                                   gormLogger,
 		})
-	}
 
-	// connect to default postgres instance first
-	baseDSN := fmt.Sprintf(
-		"user=%s password=%s port=%d host=%s",
-		configFile.PostgresUsername,
-		configFile.PostgresPassword,
-		configFile.PostgresPort,
-		configFile.PostgresHost,
-	)
+		if err != nil {
+			return nil, err
+		}
+	} else if configFile.Kind == "postgres" {
+		// connect to default postgres instance first
+		baseDSN := fmt.Sprintf(
+			"user=%s password=%s port=%d host=%s",
+			configFile.Postgres.PostgresUsername,
+			configFile.Postgres.PostgresPassword,
+			configFile.Postgres.PostgresPort,
+			configFile.Postgres.PostgresHost,
+		)
 
-	if configFile.PostgresForceSSL {
-		baseDSN = baseDSN + " sslmode=require"
-	} else {
-		baseDSN = baseDSN + " sslmode=disable"
-	}
+		if configFile.Postgres.PostgresForceSSL {
+			baseDSN = baseDSN + " sslmode=require"
+		} else {
+			baseDSN = baseDSN + " sslmode=disable"
+		}
 
-	postgresDSN := baseDSN + " database=postgres"
-	targetDSN := baseDSN + " database=" + configFile.PostgresDbName
+		targetDSN := baseDSN + " database=" + configFile.Postgres.PostgresDbName
 
-	defaultDB, err := gorm.Open(postgres.Open(postgresDSN), &gorm.Config{
-		FullSaveAssociations: true,
-		Logger:               gormLogger,
-	})
+		// open the database connection
+		db, err = gorm.Open(postgres.Open(targetDSN), &gorm.Config{
+			FullSaveAssociations: true,
+			Logger:               gormLogger,
+		})
 
-	// attempt to create the database
-	if configFile.PostgresDbName != "" {
-		defaultDB.Exec(fmt.Sprintf("CREATE DATABASE %s;", configFile.PostgresDbName))
-	}
+		// retry the connection 3 times
+		retryCount := 0
+		timeout, _ := time.ParseDuration("5s")
 
-	// open the database connection
-	res, err := gorm.Open(postgres.Open(targetDSN), &gorm.Config{
-		FullSaveAssociations: true,
-		Logger:               gormLogger,
-	})
+		if err != nil {
+			for {
+				gormLogger.Warn(context.Background(), "could not connect to database. Retrying...")
 
-	// retry the connection 3 times
-	retryCount := 0
-	timeout, _ := time.ParseDuration("5s")
+				time.Sleep(timeout)
+				db, err = gorm.Open(postgres.Open(targetDSN), &gorm.Config{
+					FullSaveAssociations: true,
+					Logger:               gormLogger,
+				})
 
-	if err != nil {
-		for {
-			time.Sleep(timeout)
-			res, err = gorm.Open(postgres.Open(targetDSN), &gorm.Config{
-				FullSaveAssociations: true,
-				Logger:               gormLogger,
-			})
+				if retryCount > 3 {
+					return nil, err
+				}
 
-			if retryCount > 3 {
-				return nil, err
+				if err == nil {
+					return db, nil
+				}
+
+				retryCount++
 			}
-
-			if err == nil {
-				return res, nil
-			}
-
-			retryCount++
 		}
 	}
 
-	return res, err
+	if configFile.AutoMigrate {
+		err = migrate.AutoMigrate(db, false)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return db, err
 }

@@ -1,15 +1,10 @@
 package cli
 
 import (
-	"context"
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
-	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/runner/action"
 
 	"github.com/spf13/cobra"
@@ -108,8 +103,8 @@ func init() {
 }
 
 func runMonitorFunc(f action.MonitorFunc) error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err
@@ -121,68 +116,21 @@ func runMonitorFunc(f action.MonitorFunc) error {
 		return err
 	}
 
-	writer, err := getWriter(rc)
+	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler, "monitor")
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
+		StdoutWriter: stdoutWriter,
+		StderrWriter: stderrWriter,
+		ErrHandler:   action.ErrorHandler,
+		ReportKind:   "monitor",
+		RequireInit:  true,
+	})
 
-	policyBytes, err := downloadMonitorPolicy(rc)
+	_, err = action.RunMonitorFunc(f, a, rc)
 
-	if err != nil {
-		return err
-	}
-
-	res, err := f(action, rc, policyBytes)
-
-	if err != nil {
-		return err
-	}
-
-	res.MonitorID = rc.ConfigFile.ModuleMonitorID
-
-	_, err = rc.APIClient.ModulesApi.CreateMonitorResult(
-		context.Background(),
-		swagger.CreateMonitorResultRequest{
-			MonitorId:       rc.ConfigFile.ModuleMonitorID,
-			FailureMessages: res.FailureMessages,
-			SuccessMessage:  res.SuccessMessage,
-			Severity:        res.Severity,
-			Status:          res.Status,
-			Title:           res.Title,
-		},
-		rc.ConfigFile.TeamID,
-		rc.ConfigFile.ModuleID,
-		rc.ConfigFile.ModuleRunID,
-	)
-
-	if err != nil {
-		errorHandler(rc, "monitor", fmt.Sprintf("Could not report monitor result to server"))
-
-		return err
-	}
-
-	if res.Status == "failed" {
-		errorHandler(rc, "monitor", "")
-
-		return err
-	}
-
-	return successHandler(rc, "monitor", "")
-}
-
-func downloadMonitorPolicy(config *runner.Config) ([]byte, error) {
-	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.TeamID, config.ConfigFile.ModuleMonitorID)
-
-	if resp != nil {
-		defer resp.Close()
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ioutil.ReadAll(resp)
+	return err
 }

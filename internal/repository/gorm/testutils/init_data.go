@@ -238,7 +238,7 @@ func InitOrgInviteLinks(t *testing.T, conf *database.Config) error {
 		orgCp := declaredOrg
 
 		for i, declaredOrgInvite := range OrgInviteLinks {
-			invite, err := models.NewOrganizationInviteLink("http://test.example.com", orgCp.ID)
+			invite, err := models.NewOrganizationInviteLink("http://test.example.com", orgCp.ID, orgCp.Owner.Email)
 
 			if err != nil {
 				return err

@@ -30,17 +30,11 @@ type ModulesApiService service
 ModulesApiService Create Module
 Creates a new module.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param body The module to create
  * @param teamId The team id
- * @param optional nil or *ModulesApiCreateModuleOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of CreateModuleRequest) -  The module to create
 @return CreateModuleResponse
 */
-
-type ModulesApiCreateModuleOpts struct {
-    Body optional.Interface
-}
-
-func (a *ModulesApiService) CreateModule(ctx context.Context, teamId string, localVarOptionals *ModulesApiCreateModuleOpts) (CreateModuleResponse, *http.Response, error) {
+func (a *ModulesApiService) CreateModule(ctx context.Context, body CreateModuleRequest, teamId string) (CreateModuleResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -75,11 +69,7 @@ func (a *ModulesApiService) CreateModule(ctx context.Context, teamId string, loc
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
-		
-		localVarOptionalBody:= localVarOptionals.Body.Value()
-		localVarPostBody = &localVarOptionalBody
-	}
+	localVarPostBody = &body
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -148,18 +138,12 @@ func (a *ModulesApiService) CreateModule(ctx context.Context, teamId string, loc
 ModulesApiService Create Module Run
 Creates a new module run.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param body The module run to create
  * @param teamId The team id
  * @param moduleId The module id
- * @param optional nil or *ModulesApiCreateModuleRunOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of CreateModuleRunRequest) -  The module run to create
 @return CreateModuleRunResponse
 */
-
-type ModulesApiCreateModuleRunOpts struct {
-    Body optional.Interface
-}
-
-func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, moduleId string, localVarOptionals *ModulesApiCreateModuleRunOpts) (CreateModuleRunResponse, *http.Response, error) {
+func (a *ModulesApiService) CreateModuleRun(ctx context.Context, body CreateModuleRunRequest, teamId string, moduleId string) (CreateModuleRunResponse, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -195,11 +179,7 @@ func (a *ModulesApiService) CreateModuleRun(ctx context.Context, teamId string, 
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
-		
-		localVarOptionalBody:= localVarOptionals.Body.Value()
-		localVarPostBody = &localVarOptionalBody
-	}
+	localVarPostBody = &body
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -1311,6 +1291,115 @@ func (a *ModulesApiService) GetModuleRun(ctx context.Context, teamId string, mod
 	return localVarReturnValue, localVarHttpResponse, nil
 }
 /*
+ModulesApiService Get Module Run Token (Local)
+Gets a module run token for a local run.
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param teamId The team id
+ * @param moduleId The module id
+ * @param moduleRunId The module run id
+@return GetModuleRunTokenResponse
+*/
+func (a *ModulesApiService) GetModuleRunLocalToken(ctx context.Context, teamId string, moduleId string, moduleRunId string) (GetModuleRunTokenResponse, *http.Response, error) {
+	var (
+		localVarHttpMethod = strings.ToUpper("Get")
+		localVarPostBody   interface{}
+		localVarFileName   string
+		localVarFileBytes  []byte
+		localVarReturnValue GetModuleRunTokenResponse
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token"
+	localVarPath = strings.Replace(localVarPath, "{"+"team_id"+"}", fmt.Sprintf("%v", teamId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"module_id"+"}", fmt.Sprintf("%v", moduleId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"module_run_id"+"}", fmt.Sprintf("%v", moduleRunId), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+		if err == nil { 
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body: localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+		if localVarHttpResponse.StatusCode == 200 {
+			var v GetModuleRunTokenResponse
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 400 {
+			var v ApiErrorBadRequestExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		if localVarHttpResponse.StatusCode == 403 {
+			var v ApiErrorForbiddenExample
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"));
+				if err != nil {
+					newErr.error = err.Error()
+					return localVarReturnValue, localVarHttpResponse, newErr
+				}
+				newErr.model = v
+				return localVarReturnValue, localVarHttpResponse, newErr
+		}
+		return localVarReturnValue, localVarHttpResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHttpResponse, nil
+}
+/*
 ModulesApiService Get logs
 Gets the logs for a module run.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -2083,7 +2172,7 @@ Updates a module.
  * @param teamId The team id
  * @param moduleId The module id
  * @param optional nil or *ModulesApiUpdateModuleOpts - Optional Parameters:
-     * @param "Body" (optional.Interface of CreateModuleRequest) -  The module params to update
+     * @param "Body" (optional.Interface of UpdateModuleRequest) -  The module params to update
 @return UpdateModuleResponse
 */
 

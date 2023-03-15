@@ -12,7 +12,7 @@ import (
 )
 
 // Version will be linked by an ldflag during build
-var Version string = "dev-ce"
+var Version string = "v0.1.0-alpha.0"
 
 func main() {
 	var versionFlag bool
@@ -25,18 +25,18 @@ func main() {
 		os.Exit(0)
 	}
 
-	configLoader := &loader.EnvConfigLoader{}
+	configLoader := &loader.ConfigLoader{}
 	dc, err := configLoader.LoadDatabaseConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load database config: %v", err)
+		fmt.Printf("Fatal: could not load database config: %v\n", err)
 		os.Exit(1)
 	}
 
 	err = migrate.AutoMigrate(dc.GormDB, true)
 
 	if err != nil {
-		fmt.Printf("Fatal: could not run auto migration: %v", err)
+		fmt.Printf("Fatal: could not run auto migration: %v\n", err)
 		os.Exit(1)
 	}
 }

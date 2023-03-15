@@ -79,7 +79,7 @@ func TestCreateUserBadEmail(t *testing.T) {
 func TestCreateUserDuplicate(t *testing.T) {
 	apitest.RunAPITest(t, func(config *server.Config, rr *httptest.ResponseRecorder, req *http.Request) error {
 		apitest.AssertResponseError(t, rr, http.StatusUnauthorized, &types.APIErrors{
-			Errors: []types.APIError{types.InvalidEmailOrPassword},
+			Errors: []types.APIError{types.InvalidEmail},
 		})
 
 		return nil

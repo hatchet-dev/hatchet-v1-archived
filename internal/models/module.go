@@ -14,6 +14,7 @@ type DeploymentMechanism string
 const (
 	DeploymentMechanismGithub DeploymentMechanism = "github"
 	DeploymentMechanismAPI    DeploymentMechanism = "api"
+	DeploymentMechanismLocal  DeploymentMechanism = "local"
 )
 
 type ModuleLockKind string
@@ -58,6 +59,7 @@ func (m *Module) ToAPIType() *types.Module {
 	return &types.Module{
 		APIResourceMeta:         m.ToAPITypeMetadata(),
 		Name:                    m.Name,
+		DeploymentMechanism:     types.DeploymentMechanism(m.DeploymentMechanism),
 		DeploymentConfig:        *m.DeploymentConfig.ToAPIType(),
 		LockID:                  m.LockID,
 		LockKind:                types.ModuleLockKind(m.LockKind),
@@ -79,6 +81,10 @@ type ModuleDeploymentConfig struct {
 
 	ModulePath string
 
+	// Local-related deployment config
+	UserID string
+
+	// Github-related deployment config
 	GithubRepoName   string
 	GithubRepoOwner  string
 	GithubRepoBranch string
@@ -111,6 +117,7 @@ type ModuleRunKind string
 const (
 	ModuleRunKindPlan    ModuleRunKind = "plan"
 	ModuleRunKindApply   ModuleRunKind = "apply"
+	ModuleRunKindInit    ModuleRunKind = "init"
 	ModuleRunKindDestroy ModuleRunKind = "destroy"
 	ModuleRunKindMonitor ModuleRunKind = "monitor"
 )
@@ -309,6 +316,9 @@ type ModuleRunConfig struct {
 	ModuleRunID string
 
 	TriggerKind ModuleRunTriggerKind
+
+	// For locally-triggered runs, this is the hostname of the machine that performed this run
+	LocalHostname string
 
 	GithubCheckID   int64
 	GithubCommentID int64

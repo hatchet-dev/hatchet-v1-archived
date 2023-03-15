@@ -11,15 +11,15 @@ import (
 
 func NewUIServer(configfile *temporalconfig.TemporalConfigFile) (*uiserver.Server, error) {
 	cfg := &uiconfig.Config{
-		Host:                configfile.TemporalUIAddress,
-		Port:                int(configfile.TemporalUIPort),
-		TemporalGRPCAddress: fmt.Sprintf("%s:%d", configfile.TemporalBroadcastAddress, configfile.TemporalFrontendPort),
+		Host:                configfile.UI.TemporalUIAddress,
+		Port:                int(configfile.UI.TemporalUIPort),
+		TemporalGRPCAddress: fmt.Sprintf("%s:%d", configfile.TemporalBroadcastAddress, configfile.Frontend.TemporalFrontendPort),
 		EnableUI:            true,
 		TLS: uiconfig.TLS{
-			CaFile:     configfile.TemporalUITLSRootCAFile,
-			CertFile:   configfile.TemporalUITLSCertFile,
-			KeyFile:    configfile.TemporalUITLSKeyFile,
-			ServerName: configfile.TemporalUITLSServerName,
+			CaFile:     configfile.UI.TemporalUITLSRootCAFile,
+			CertFile:   configfile.UI.TemporalUITLSCertFile,
+			KeyFile:    configfile.UI.TemporalUITLSKeyFile,
+			ServerName: configfile.UI.TemporalUITLSServerName,
 		},
 	}
 

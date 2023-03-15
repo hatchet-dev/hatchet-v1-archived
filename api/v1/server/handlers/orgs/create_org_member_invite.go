@@ -2,9 +2,7 @@ package orgs
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/serverutils/handlerutils"
@@ -78,14 +76,12 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	inviteLink, err := models.NewOrganizationInviteLink(o.Config().ServerRuntimeConfig.ServerURL, org.ID)
+	inviteLink, err := models.NewOrganizationInviteLink(o.Config().ServerRuntimeConfig.ServerURL, org.ID, user.Email)
 
 	if err != nil {
 		o.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
-
-	rawToken := string(inviteLink.Token)
 
 	inviteLink.InviteeEmail = req.InviteeEmail
 
@@ -115,31 +111,23 @@ func (o *OrgCreateMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	tokID := orgMember.InviteLink.ID
-
 	w.WriteHeader(http.StatusCreated)
-	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey()))
+	o.WriteResult(w, r, orgMember.ToAPIType(o.Config().DB.GetEncryptionKey(), o.Config().ServerRuntimeConfig.ServerURL, org.DisplayName))
 
 	// send invite link to member
-	if reqErr := sendInviteEmail(o.Config(), inviteLink.InviteeEmail, rawToken, tokID, org.DisplayName, user.Email); reqErr != nil {
+	if reqErr := sendInviteEmail(o.Config(), inviteLink, inviteLink.InviteeEmail, org.DisplayName, user.Email); reqErr != nil {
 		// we've already written a success message, so don't rewrite it
 		o.HandleAPIErrorNoWrite(w, r, reqErr)
 	}
 }
 
-func sendInviteEmail(config *server.Config, targetEmail, tok, tokID, orgName, inviterAddress string) apierrors.RequestError {
-	// this is the only time we'll recover the raw pw reset token, so we store it in the values
-	queryVals := url.Values{
-		"token":           []string{tok},
-		"invite_id":       []string{tokID},
-		"org_name":        []string{orgName},
-		"inviter_address": []string{inviterAddress},
-	}
+func sendInviteEmail(config *server.Config, inviteLink *models.OrganizationInviteLink, targetEmail, orgName, inviterAddress string) apierrors.RequestError {
+	publicInviteURL := inviteLink.GetPublicInviteLink(config.ServerRuntimeConfig.ServerURL, orgName, inviterAddress)
 
 	err := config.UserNotifier.SendInviteLinkEmail(
 		&notifier.SendInviteLinkEmailOpts{
 			Email:            targetEmail,
-			URL:              fmt.Sprintf("%s/organization_invite/accept?%s", config.ServerRuntimeConfig.ServerURL, queryVals.Encode()),
+			URL:              publicInviteURL,
 			OrganizationName: orgName,
 			InviterAddress:   inviterAddress,
 		},

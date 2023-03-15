@@ -40,6 +40,7 @@ Class | Method | HTTP request | Description
 *ModulesApi* | [**GetModule**](docs/ModulesApi.md#getmodule) | **Get** /api/v1/teams/{team_id}/modules/{module_id} | Get module
 *ModulesApi* | [**GetModuleEnvVars**](docs/ModulesApi.md#getmoduleenvvars) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/env_vars/{module_env_vars_id} | Get Module Env Vars
 *ModulesApi* | [**GetModuleRun**](docs/ModulesApi.md#getmodulerun) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id} | Get module run
+*ModulesApi* | [**GetModuleRunLocalToken**](docs/ModulesApi.md#getmodulerunlocaltoken) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/local_token | Get Module Run Token (Local)
 *ModulesApi* | [**GetModuleRunLogs**](docs/ModulesApi.md#getmodulerunlogs) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/logs | Get logs
 *ModulesApi* | [**GetModuleRunPlanSummary**](docs/ModulesApi.md#getmodulerunplansummary) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/runs/{module_run_id}/plan_summary | Get plan summary
 *ModulesApi* | [**GetModuleTarballURL**](docs/ModulesApi.md#getmoduletarballurl) | **Get** /api/v1/teams/{team_id}/modules/{module_id}/tarball_url | Get Module Tarball URL
@@ -110,6 +111,7 @@ Class | Method | HTTP request | Description
  - [ApiServerMetadataAuth](docs/ApiServerMetadataAuth.md)
  - [CreateModuleRequest](docs/CreateModuleRequest.md)
  - [CreateModuleRequestGithub](docs/CreateModuleRequestGithub.md)
+ - [CreateModuleRequestLocal](docs/CreateModuleRequestLocal.md)
  - [CreateModuleResponse](docs/CreateModuleResponse.md)
  - [CreateModuleRunRequest](docs/CreateModuleRunRequest.md)
  - [CreateModuleRunResponse](docs/CreateModuleRunResponse.md)
@@ -143,6 +145,7 @@ Class | Method | HTTP request | Description
  - [GetModuleEnvVarsVersionResponse](docs/GetModuleEnvVarsVersionResponse.md)
  - [GetModuleResponse](docs/GetModuleResponse.md)
  - [GetModuleRunResponse](docs/GetModuleRunResponse.md)
+ - [GetModuleRunTokenResponse](docs/GetModuleRunTokenResponse.md)
  - [GetModuleTarballUrlResponse](docs/GetModuleTarballUrlResponse.md)
  - [GetModuleValuesResponse](docs/GetModuleValuesResponse.md)
  - [GetMonitorResponse](docs/GetMonitorResponse.md)

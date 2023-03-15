@@ -41,10 +41,9 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 
 	// initialize the server config
 	apiTester := new(APITester)
-	loader := new(loader.EnvConfigLoader)
 
 	// load the shared configuration (server config has to be loaded after database config)
-	sharedConfig, err := loader.LoadSharedConfigFromConfigFile(&shared.ConfigFile{
+	sharedConfig, err := loader.GetSharedConfigFromConfigFile(&shared.ConfigFile{
 		Debug: true,
 	})
 
@@ -54,14 +53,20 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 
 	// wrap the database test
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		apiTester.conf, err = loader.LoadServerConfigFromConfigFile(&server.ConfigFile{
-			Port:             8080,
-			ServerURL:        "https://test.hatchet.run",
-			BasicAuthEnabled: true,
-			CookieName:       "hatchet",
-			CookieSecrets: []string{
-				"random_hash_key_",
-				"random_block_key",
+		apiTester.conf, err = loader.GetServerConfigFromConfigFile("test", &server.ConfigFile{
+			Runtime: server.ConfigFileRuntime{
+				Port:      8080,
+				ServerURL: "https://test.hatchet.run",
+			},
+			Auth: shared.ConfigFileAuth{
+				BasicAuthEnabled: true,
+				Cookie: shared.ConfigFileAuthCookie{
+					Name: "hatchet",
+					Secrets: []string{
+						"random_hash_key_",
+						"random_block_key",
+					},
+				},
 			},
 		}, conf, sharedConfig)
 

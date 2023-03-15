@@ -11,10 +11,12 @@ import {
   AppWrapper,
   ErrorBar,
   SectionAreaWithLogo,
+  Placeholder,
+  Spinner,
 } from "@hatchet-dev/hatchet-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import theme from "shared/theme";
 import { css } from "styled-components";
@@ -24,6 +26,17 @@ const InitiateResetPasswordView: React.FunctionComponent = () => {
   const [success, setSuccess] = useState(false);
   const [err, setErr] = useState("");
   const history = useHistory();
+
+  const metadataQuery = useQuery({
+    queryKey: ["api_metadata"],
+    queryFn: async () => {
+      const res = await api.getServerMetadata();
+      return res;
+    },
+    retry: false,
+  });
+
+  const hasEmailCapabilities = !!metadataQuery.data?.data?.integrations?.email;
 
   const { mutate, isLoading } = useMutation(api.resetPasswordEmail, {
     mutationKey: ["reset_password_email"],
@@ -66,6 +79,29 @@ const InitiateResetPasswordView: React.FunctionComponent = () => {
   };
 
   const renderInnerForm = () => {
+    if (!hasEmailCapabilities) {
+      return (
+        <>
+          <P>
+            Please contact your Hatchet administrator in order to initiate a
+            password reset.
+          </P>
+          <HorizontalSpacer spacepixels={30} />
+          <FlexRowRight>
+            <StandardButton
+              label="Back to Login"
+              material_icon="reply"
+              icon_side="right"
+              on_click={() => {
+                history.push("/login");
+              }}
+              margin={"0"}
+            />
+          </FlexRowRight>
+        </>
+      );
+    }
+
     if (success) {
       return (
         <>
@@ -121,6 +157,14 @@ const InitiateResetPasswordView: React.FunctionComponent = () => {
   };
 
   const renderContents = () => {
+    if (metadataQuery.isLoading) {
+      return (
+        <Placeholder>
+          <Spinner />
+        </Placeholder>
+      );
+    }
+
     return (
       <SectionAreaWithLogo width="400px">
         <HorizontalSpacer spacepixels={18} />

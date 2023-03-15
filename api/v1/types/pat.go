@@ -29,7 +29,7 @@ type CreatePATRequest struct {
 	// the display name for the personal access token
 	// required: true
 	// example: cli-token-1234
-	DisplayName string `json:"display_name" form:"required,max=255,hatchet-name"`
+	DisplayName string `json:"display_name" form:"required,max=255"`
 }
 
 // swagger:model

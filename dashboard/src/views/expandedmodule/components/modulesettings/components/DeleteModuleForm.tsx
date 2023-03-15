@@ -37,6 +37,10 @@ const DeleteModuleForm: React.FC<Props> = ({ team_id, module }) => {
       history.push(`/teams/${team_id}/modules`);
     },
     onError: (err: any) => {
+      setPrompt(false);
+
+      console.log("ON ERROR", err);
+
       if (!err?.error?.errors || err.error.errors.length == 0) {
         setErr("An unexpected error occurred. Please try again.");
         return;

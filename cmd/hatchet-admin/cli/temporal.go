@@ -70,14 +70,14 @@ func init() {
 	internalTokenCreateCmd.PersistentFlags().StringVar(
 		&tokenIssuer,
 		"iss",
-		sc.Config.TemporalClient.GetBroadcastAddress(),
+		"",
 		"The issuer URL for the token (includes the protocol).",
 	)
 
 	internalTokenCreateCmd.PersistentFlags().StringVar(
 		&tokenAudience,
 		"aud",
-		sc.Config.TemporalClient.GetBroadcastAddress(),
+		"",
 		"The audience URL for the token (includes the protocol).",
 	)
 
@@ -92,6 +92,14 @@ func init() {
 }
 
 func runCreateTemporalInternalToken() error {
+	if tokenIssuer == "" {
+		tokenIssuer = sc.Config.TemporalClient.GetBroadcastAddress()
+	}
+
+	if tokenAudience == "" {
+		tokenAudience = sc.Config.TemporalClient.GetBroadcastAddress()
+	}
+
 	internalAuthConfig := &temporal.InternalAuthConfig{
 		InternalNamespace:  temporal.DefaultInternalNamespace,
 		InternalSigningKey: []byte(tokenCreateSigningKey),

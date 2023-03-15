@@ -30,6 +30,10 @@ func NewUserNotifier(opts *UserNotifierOpts) notifier.UserNotifier {
 	return &UserNotifier{opts}
 }
 
+func (s *UserNotifier) GetID() string {
+	return "sendgrid"
+}
+
 func (s *UserNotifier) SendPasswordResetEmail(opts *notifier.SendPasswordResetEmailOpts) error {
 	if allowed := s.opts.isAllowed(opts.Email); !allowed {
 		return fmt.Errorf("target email %s is not in restricted domain group", opts.Email)

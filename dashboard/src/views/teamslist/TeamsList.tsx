@@ -18,6 +18,7 @@ import { relativeDate } from "shared/utils";
 import { useAtom } from "jotai";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useHistory } from "react-router-dom";
+import TeamList from "components/team/teamlist";
 
 const TeamsList: React.FunctionComponent = () => {
   const history = useHistory();
@@ -77,7 +78,7 @@ const TeamsList: React.FunctionComponent = () => {
           />
         </FlexRowRight>
         <HorizontalSpacer spacepixels={20} />
-        <Table columns={columns} data={tableData} dataName="teams" />
+        <TeamList teams={userTeamsQuery.data?.data?.rows} expanded={false} />
         <HorizontalSpacer spacepixels={20} />
       </>
     );

@@ -130,6 +130,12 @@ func (f *FileLogStorageManager) PushLogLine(ctx context.Context, path string, lo
 			if err != nil {
 				return fmt.Errorf("could not create log file: %w", err)
 			}
+
+			file, err = os.OpenFile(logFilePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+
+			if err != nil {
+				return fmt.Errorf("could not open log file after creation: %w", err)
+			}
 		} else {
 			return fmt.Errorf("error opening log file: %w", err)
 		}
@@ -142,6 +148,7 @@ func (f *FileLogStorageManager) PushLogLine(ctx context.Context, path string, lo
 	fileBytes = append(fileBytes, []byte("\n")...)
 
 	if _, err := file.Write(fileBytes); err != nil {
+		fmt.Println("FILE BYTES ARE", string(fileBytes))
 		return fmt.Errorf("error pushing log: %w", err)
 	}
 

@@ -5,6 +5,7 @@ import (
 	goLog "log"
 	"os"
 
+	"github.com/hatchet-dev/hatchet/cmd/cmdutils"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/temporal/server"
 
@@ -21,15 +22,16 @@ type uiConfig struct {
 }
 
 func main() {
-	configLoader := &loader.EnvConfigLoader{}
-	tc, err := configLoader.LoadTemporalWorkerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	interruptChan := cmdutils.InterruptChan()
+	tc, err := configLoader.LoadTemporalConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load server config: %v", err)
+		fmt.Printf("Fatal: could not load server config: %v\n", err)
 		os.Exit(1)
 	}
 
-	s, err := server.NewTemporalServer(tc)
+	s, err := server.NewTemporalServer(tc, interruptChan)
 
 	if err != nil {
 		goLog.Fatal(err)
@@ -38,7 +40,7 @@ func main() {
 	sui, err := server.NewUIServer(tc.ConfigFile)
 
 	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to create UI server. Error: %v.", err))
+		goLog.Fatal(fmt.Sprintf("Unable to create UI server. Error: %v\n", err))
 	}
 
 	go func() {
@@ -50,7 +52,7 @@ func main() {
 	err = s.Start()
 
 	if err != nil {
-		goLog.Fatal(fmt.Sprintf("Unable to start server. Error: %v", err))
+		goLog.Fatal(fmt.Sprintf("Unable to start server. Error: %v\n", err))
 	}
 
 	return

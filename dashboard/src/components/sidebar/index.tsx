@@ -82,18 +82,6 @@ const SideBar: React.FunctionComponent<Props> = ({
     }
   };
 
-  const onSelectTeam = (option: Selection) => {
-    if (option.value == "new_team") {
-      history.push("/organization/teams/create");
-    } else {
-      for (let team of userTeamsQuery.data?.data?.rows) {
-        if (option.value == team.id) {
-          setCurrTeam(team);
-        }
-      }
-    }
-  };
-
   const renderUtil = () => {
     if (isUserView) {
       return (
@@ -188,7 +176,11 @@ const SideBar: React.FunctionComponent<Props> = ({
         {userTeams?.map((row, i) => {
           return (
             <>
-              <ExpandableTeam team={row} links={team_links} expanded={false} />
+              <ExpandableTeam
+                team={row}
+                links={team_links}
+                expanded={currTeam && currTeam.id == row.id}
+              />
               {userTeams.length != i + 1 && (
                 <HorizontalSpacer spacepixels={10} />
               )}

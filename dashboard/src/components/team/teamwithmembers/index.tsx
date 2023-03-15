@@ -163,7 +163,11 @@ const TeamWithMembers: React.FC<Props> = ({
           {collapsible && (
             <ExpandIcon
               className="material-icons"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                setIsExpanded(!isExpanded);
+                setAddMember(false);
+                setErr("");
+              }}
             >
               {isExpanded ? "expand_more" : "expand_less"}
             </ExpandIcon>

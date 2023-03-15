@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hatchet-dev/hatchet/cmd/cmdutils"
 	"github.com/hatchet-dev/hatchet/internal/config/loader"
 	"github.com/hatchet-dev/hatchet/internal/temporal/worker"
 )
 
 // Version will be linked by an ldflag during build
-var Version string = "dev-ce"
+var Version string = "v0.1.0-alpha.0"
 
 func main() {
 	var versionFlag bool
@@ -23,18 +24,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	configLoader := &loader.EnvConfigLoader{}
-	rwc, err := configLoader.LoadRunnerWorkerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	interruptChan := cmdutils.InterruptChan()
+	rwc, err := configLoader.LoadRunnerWorkerConfig()
 
 	if err != nil {
-		fmt.Printf("Fatal: could not load runner worker config: %v", err)
+		fmt.Printf("Fatal: could not load runner worker config: %v\n", err)
 		os.Exit(1)
 	}
 
-	err = worker.StartRunnerWorker(rwc, true)
+	err = worker.StartRunnerWorker(rwc, true, interruptChan)
 
 	if err != nil {
-		fmt.Printf("Fatal: could not start worker: %v", err)
+		fmt.Printf("Fatal: could not start worker: %v\n", err)
 		os.Exit(1)
 	}
 }

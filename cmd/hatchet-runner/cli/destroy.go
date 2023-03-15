@@ -28,8 +28,8 @@ func init() {
 }
 
 func runDestroy() error {
-	configLoader := &loader.EnvConfigLoader{}
-	rc, err := configLoader.LoadRunnerConfigFromEnv()
+	configLoader := &loader.ConfigLoader{}
+	rc, err := configLoader.LoadRunnerConfig()
 
 	if err != nil {
 		return err
@@ -41,19 +41,25 @@ func runDestroy() error {
 		return err
 	}
 
-	writer, err := getWriter(rc)
+	stdoutWriter, stderrWriter, err := action.GetWriters(rc)
 
 	if err != nil {
 		return err
 	}
 
-	action := action.NewRunnerAction(writer, errorHandler, "core")
+	a := action.NewRunnerAction(&action.RunnerActionOpts{
+		StdoutWriter: stdoutWriter,
+		StderrWriter: stderrWriter,
+		ErrHandler:   action.ErrorHandler,
+		ReportKind:   "core",
+		RequireInit:  true,
+	})
 
-	err = action.Destroy(rc, map[string]interface{}{})
+	err = a.Destroy(map[string]interface{}{})
 
 	if err != nil {
 		return err
 	}
 
-	return successHandler(rc, "core", "")
+	return action.SuccessHandler(rc, "core", "")
 }

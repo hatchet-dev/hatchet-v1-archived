@@ -10,7 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/temporal/server/authorizer"
 )
 
-func NewTemporalServer(tconfig *temporalconfig.Config) (temporal.Server, error) {
+func NewTemporalServer(tconfig *temporalconfig.Config, interruptCh <-chan interface{}) (temporal.Server, error) {
 	configfile := tconfig.ConfigFile
 
 	logger := log.NewZapLogger(log.BuildZapLogger(log.Config{
@@ -31,7 +31,7 @@ func NewTemporalServer(tconfig *temporalconfig.Config) (temporal.Server, error) 
 		temporal.ForServices(temporal.Services),
 		temporal.WithConfig(cfg),
 		temporal.WithLogger(logger),
-		temporal.InterruptOn(temporal.InterruptCh()),
+		temporal.InterruptOn(interruptCh),
 		temporal.WithAuthorizer(authorizerAndClaimMapper),
 		temporal.WithClaimMapper(func(cfg *config.Config) authorization.ClaimMapper {
 			return authorizerAndClaimMapper

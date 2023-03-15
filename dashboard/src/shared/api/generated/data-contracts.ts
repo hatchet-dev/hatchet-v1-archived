@@ -109,9 +109,12 @@ export interface APIResourceMeta {
   updated_at?: string;
 }
 
-/** @example {"auth":{"require_email_verification":true}} */
+/** @example {"auth":{"require_email_verification":true},"integrations":{"github_app":true,"email":true},"version":"version"} */
 export interface APIServerMetadata {
   auth?: APIServerMetadataAuth;
+  integrations?: APIServerMetadataIntegrations;
+  /** version for the API server runtime */
+  version?: string;
 }
 
 /** @example {"require_email_verification":true} */
@@ -120,10 +123,19 @@ export interface APIServerMetadataAuth {
   require_email_verification?: boolean;
 }
 
-/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"env_vars":{"key":"env_vars"}} */
+/** @example {"github_app":true,"email":true} */
+export interface APIServerMetadataIntegrations {
+  /** whether the server has email capabilities */
+  email?: boolean;
+  /** whether the server has a Github app integration */
+  github_app?: boolean;
+}
+
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"local":{"local_path":"local_path"},"env_vars":{"key":"env_vars"}} */
 export interface CreateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
+  local?: CreateModuleRequestLocal;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
@@ -158,14 +170,77 @@ export interface CreateModuleRequestGithub {
   path: string;
 }
 
-export type CreateModuleResponse = Module;
+/** @example {"local_path":"local_path"} */
+export interface CreateModuleRequestLocal {
+  /** the local path to the module */
+  local_path?: string;
+}
 
-/** @example {"kind":"kind"} */
+/** @example {"deployment_mechanism":"deployment_mechanism","updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
+export interface CreateModuleResponse {
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  current_env_vars_version_id?: string;
+  current_values_version_id?: string;
+  deployment?: ModuleDeploymentConfig;
+  deployment_mechanism?: string;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  lock_id?: string;
+  lock_kind?: string;
+  /**
+   * the name for the module
+   * @example "eks"
+   */
+  name?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
+
+/** @example {"hostname":"hostname","kind":"kind"} */
 export interface CreateModuleRunRequest {
+  hostname?: string;
   kind?: string;
 }
 
-export type CreateModuleRunResponse = ModuleRun;
+/** @example {"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"} */
+export interface CreateModuleRunResponse {
+  config?: ModuleRunConfig;
+  /**
+   * the time that this resource was created
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  created_at?: string;
+  github_pull_request?: GithubPullRequest;
+  /**
+   * the id of this resource, in UUID format
+   * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
+   */
+  id?: string;
+  kind?: string;
+  monitor_results?: ModuleMonitorResult[];
+  monitors?: ModuleMonitor[];
+  status?: string;
+  status_description?: string;
+  /**
+   * the time that this resource was last updated
+   * @format date-time
+   * @example "2022-12-13T20:06:48.888Z"
+   */
+  updated_at?: string;
+}
 
 /** @example {"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"} */
 export interface CreateModuleValuesRequestGithub {
@@ -320,12 +395,15 @@ export type DeletePATResponse = PersonalAccessToken;
 
 export type DeleteTeamResponse = Team;
 
+export type DeploymentMechanism = string;
+
 export type EmptyResponse = object;
 
-/** @example {"description":"description","status":"status"} */
+/** @example {"report_kind":"report_kind","description":"description","status":"status"} */
 export interface FinalizeModuleRunRequest {
   /** the description for the module run status */
   description: string;
+  report_kind: string;
   status: string;
 }
 
@@ -345,6 +423,11 @@ export type GetModulePlanSummaryResponse = ModulePlannedChangeSummary[];
 export type GetModuleResponse = Module;
 
 export type GetModuleRunResponse = ModuleRun;
+
+/** @example {"token":"token"} */
+export interface GetModuleRunTokenResponse {
+  token?: string;
+}
 
 /** @example {"url":"url"} */
 export interface GetModuleTarballURLResponse {
@@ -435,7 +518,7 @@ export interface ListModuleRunsResponse {
   rows?: ModuleRunOverview[];
 }
 
-/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"}]} */
+/** @example {"pagination":{"next_page":3,"num_pages":10,"current_page":2},"rows":[{"deployment_mechanism":"deployment_mechanism","updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},{"deployment_mechanism":"deployment_mechanism","updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"}]} */
 export interface ListModulesResponse {
   pagination?: PaginationResponse;
   rows?: Module[];
@@ -531,7 +614,7 @@ export interface LoginUserRequest {
 
 export type LoginUserResponse = User;
 
-/** @example {"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
+/** @example {"deployment_mechanism":"deployment_mechanism","updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"} */
 export interface Module {
   /**
    * the time that this resource was created
@@ -542,6 +625,7 @@ export interface Module {
   current_env_vars_version_id?: string;
   current_values_version_id?: string;
   deployment?: ModuleDeploymentConfig;
+  deployment_mechanism?: string;
   /**
    * the id of this resource, in UUID format
    * @example "bb214807-246e-43a5-a25d-41761d1cff9e"
@@ -784,6 +868,8 @@ export interface ModuleRunOverview {
   updated_at?: string;
 }
 
+export type ModuleRunReportKind = string;
+
 export type ModuleRunStatus = string;
 
 export type ModuleRunTriggerKind = string;
@@ -827,7 +913,7 @@ export type MonitorResultSeverity = string;
 
 export type MonitorResultStatus = string;
 
-/** @example {"module":{"updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},"created_at":"2022-12-13T20:06:48.888Z","notification_id":"notification_id","team_id":"team_id","message":"message","title":"title","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","last_notified":"2000-01-23T04:56:07.000Z","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"runs":[{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"},{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"}],"resolved":true} */
+/** @example {"module":{"deployment_mechanism":"deployment_mechanism","updated_at":"2022-12-13T20:06:48.888Z","lock_kind":"lock_kind","current_env_vars_version_id":"current_env_vars_version_id","name":"eks","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","current_values_version_id":"current_values_version_id","deployment":{"path":"path","github_app_installation_id":"github_app_installation_id","github_repo_name":"github_repo_name","github_repo_branch":"github_repo_branch","github_repo_owner":"github_repo_owner"},"lock_id":"lock_id"},"created_at":"2022-12-13T20:06:48.888Z","notification_id":"notification_id","team_id":"team_id","message":"message","title":"title","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","last_notified":"2000-01-23T04:56:07.000Z","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"runs":[{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"},{"github_pull_request":{"github_pull_request_base_branch":"github_pull_request_base_branch","github_pull_request_state":"github_pull_request_state","github_pull_request_head_branch":"github_pull_request_head_branch","github_pull_request_title":"github_pull_request_title","github_repository_owner":"github_repository_owner","github_pull_request_id":0,"github_pull_request_number":6,"github_repository_name":"github_repository_name"},"status_description":"status_description","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","monitor_results":[{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"},{"severity":"severity","module_id":"module_id","updated_at":"2022-12-13T20:06:48.888Z","module_monitor_id":"module_monitor_id","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","module_name":"module_name","module_run_id":"module_run_id","message":"message","title":"title","status":"status"}],"config":{"trigger_kind":"trigger_kind","github_commit_sha":"github_commit_sha","values_version_id":"values_version_id","env_var_version_id":"env_var_version_id"},"monitors":[{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]},{"policy_bytes":"policy_bytes","cron_schedule":"cron_schedule","updated_at":"2022-12-13T20:06:48.888Z","kind":"kind","name":"drift","created_at":"2022-12-13T20:06:48.888Z","description":"detects drift","disabled":true,"id":"bb214807-246e-43a5-a25d-41761d1cff9e","is_default":true,"modules":["modules","modules"]}],"status":"status"}],"resolved":true} */
 export interface Notification {
   /**
    * the time that this resource was created
@@ -919,7 +1005,7 @@ export interface Organization {
   updated_at?: string;
 }
 
-/** @example {"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite_link_url":"invite_link_url"} */
+/** @example {"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","public_invite_link_url":"public_invite_link_url","invite_link_url":"invite_link_url"} */
 export interface OrganizationInvite {
   /**
    * the time that this resource was created
@@ -936,6 +1022,7 @@ export interface OrganizationInvite {
   id?: string;
   invite_link_url?: string;
   invitee_email?: string;
+  public_invite_link_url?: string;
   /**
    * the time that this resource was last updated
    * @format date-time
@@ -968,7 +1055,7 @@ export interface OrganizationInviteSanitized {
   updated_at?: string;
 }
 
-/** @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite_link_url":"invite_link_url"},"user":{"display_name":"User 1","email":"user1@gmail.com"}} */
+/** @example {"updated_at":"2022-12-13T20:06:48.888Z","invite_accepted":true,"created_at":"2022-12-13T20:06:48.888Z","organization_policies":[{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"},{"updated_at":"2022-12-13T20:06:48.888Z","name":"name","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e"}],"id":"bb214807-246e-43a5-a25d-41761d1cff9e","invite":{"invitee_email":"invitee_email","expires":"2000-01-23T04:56:07.000Z","updated_at":"2022-12-13T20:06:48.888Z","created_at":"2022-12-13T20:06:48.888Z","id":"bb214807-246e-43a5-a25d-41761d1cff9e","public_invite_link_url":"public_invite_link_url","invite_link_url":"invite_link_url"},"user":{"display_name":"User 1","email":"user1@gmail.com"}} */
 export interface OrganizationMember {
   /**
    * the time that this resource was created
@@ -1330,6 +1417,7 @@ export interface TerraformLock {
   Who?: string;
 }
 
+/** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"env_vars":{"key":"env_vars"}} */
 export interface UpdateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
@@ -1509,18 +1597,29 @@ export interface AddTeamMemberRequest {
 export interface CreateModuleRequest {
   env_vars?: Record<string, string>;
   github?: CreateModuleRequestGithub;
+  local?: CreateModuleRequestLocal;
+  name?: string;
+  values_github?: CreateModuleValuesRequestGithub;
+  values_raw?: Record<string, object>;
+}
+
+export interface UpdateModuleRequest {
+  env_vars?: Record<string, string>;
+  github?: CreateModuleRequestGithub;
   name?: string;
   values_github?: CreateModuleValuesRequestGithub;
   values_raw?: Record<string, object>;
 }
 
 export interface CreateModuleRunRequest {
+  hostname?: string;
   kind?: string;
 }
 
 export interface FinalizeModuleRunRequest {
   /** the description for the module run status */
   description: string;
+  report_kind: string;
   status: string;
 }
 

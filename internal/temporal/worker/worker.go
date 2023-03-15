@@ -13,7 +13,7 @@ import (
 	hatchetworker "github.com/hatchet-dev/hatchet/internal/config/worker"
 )
 
-func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
+func StartBackgroundWorker(config *hatchetworker.BackgroundConfig, interruptCh <-chan interface{}) error {
 	tc, err := config.TemporalClient.GetClient(enums.BackgroundQueueName)
 
 	if err != nil {
@@ -35,18 +35,23 @@ func StartBackgroundWorker(config *hatchetworker.BackgroundConfig) error {
 
 	backgroundWorker.RegisterWorkflow(notifier.NotifyWorkflow)
 
-	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL)
+	mqc := modulequeuechecker.NewModuleQueueChecker(config.ModuleRunQueueManager, config.DB, *config.TokenOpts, config.ServerURL, config.BroadcastGRPCAddress)
 	qc := queuechecker.NewQueueChecker(config.DB.Repository, mqc)
-	md := monitordispatcher.NewMonitorDispatcher(config.DefaultLogStore, config.DB, *config.TokenOpts, config.ServerURL)
+	md := monitordispatcher.NewMonitorDispatcher(config.DefaultLogStore, config.DB, *config.TokenOpts, config.ServerURL, config.BroadcastGRPCAddress)
 
 	backgroundWorker.RegisterWorkflow(mqc.ScheduleFromQueue)
 	backgroundWorker.RegisterWorkflow(qc.CheckQueues)
 	backgroundWorker.RegisterWorkflow(md.DispatchMonitors)
 
+	go func() {
+		<-interruptCh
+		backgroundWorker.Stop()
+	}()
+
 	return backgroundWorker.Start()
 }
 
-func StartRunnerWorker(config *hatchetworker.RunnerConfig, blocking bool) error {
+func StartRunnerWorker(config *hatchetworker.RunnerConfig, blocking bool, interruptCh <-chan interface{}) error {
 	tc, err := config.TemporalClient.GetClient(enums.ModuleRunQueueName)
 
 	if err != nil {
@@ -65,8 +70,13 @@ func StartRunnerWorker(config *hatchetworker.RunnerConfig, blocking bool) error 
 	runnerWorker.RegisterActivity(mr.Monitor)
 
 	if blocking {
-		return runnerWorker.Run(worker.InterruptCh())
+		return runnerWorker.Run(interruptCh)
 	}
+
+	go func() {
+		<-interruptCh
+		runnerWorker.Stop()
+	}()
 
 	return runnerWorker.Start()
 }

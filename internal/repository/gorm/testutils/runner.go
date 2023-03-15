@@ -45,8 +45,10 @@ func NewTestEnv(t *testing.T) *Tester {
 
 	db, err := adapter.New(&database.ConfigFile{
 		EncryptionKey: string(key[:]),
-		SQLLite:       true,
-		SQLLitePath:   tester.dbFileName,
+		Kind:          "sqlite",
+		SQLite: database.ConfigFileSQLite{
+			SQLLitePath: tester.dbFileName,
+		},
 	})
 
 	if err != nil {
