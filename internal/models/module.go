@@ -59,6 +59,7 @@ func (m *Module) ToAPIType() *types.Module {
 	return &types.Module{
 		APIResourceMeta:         m.ToAPITypeMetadata(),
 		Name:                    m.Name,
+		DeploymentMechanism:     types.DeploymentMechanism(m.DeploymentMechanism),
 		DeploymentConfig:        *m.DeploymentConfig.ToAPIType(),
 		LockID:                  m.LockID,
 		LockKind:                types.ModuleLockKind(m.LockKind),

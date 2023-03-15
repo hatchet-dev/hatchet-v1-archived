@@ -14,6 +14,14 @@ const (
 	ModuleLockKindManual       ModuleLockKind = "manual"
 )
 
+type DeploymentMechanism string
+
+const (
+	DeploymentMechanismGithub DeploymentMechanism = "github"
+	DeploymentMechanismAPI    DeploymentMechanism = "api"
+	DeploymentMechanismLocal  DeploymentMechanism = "local"
+)
+
 // swagger:model
 type Module struct {
 	*APIResourceMeta
@@ -21,6 +29,8 @@ type Module struct {
 	// the name for the module
 	// example: eks
 	Name string `json:"name"`
+
+	DeploymentMechanism DeploymentMechanism `json:"deployment_mechanism"`
 
 	DeploymentConfig ModuleDeploymentConfig `json:"deployment"`
 

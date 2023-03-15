@@ -39,7 +39,7 @@ var rootCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		configLoader := loader.NewConfigLoader(configDirectory)
+		configLoader := loader.NewConfigLoader(Version, configDirectory)
 		interruptChan := cmdutils.InterruptChan()
 
 		startServerOrDie(configLoader, interruptChan)

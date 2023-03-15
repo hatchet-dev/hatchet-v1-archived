@@ -13,6 +13,10 @@ func NewNoOpUserNotifier(l *logger.Logger) notifier.UserNotifier {
 	return &UserNotifier{l}
 }
 
+func (s *UserNotifier) GetID() string {
+	return "noop"
+}
+
 func (s *UserNotifier) SendPasswordResetEmail(opts *notifier.SendPasswordResetEmailOpts) error {
 	return nil
 }

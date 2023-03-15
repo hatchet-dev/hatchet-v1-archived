@@ -88,9 +88,13 @@ type UsageMetric string
 
 // swagger:model
 type APIServerMetadata struct {
+	// version for the API server runtime
+	Version string `json:"version"`
+
 	// auth metadata options
 	Auth *APIServerMetadataAuth `json:"auth"`
 
+	// integration options
 	Integrations *APIServerMetadataIntegrations `json:"integrations"`
 }
 
@@ -104,4 +108,7 @@ type APIServerMetadataAuth struct {
 type APIServerMetadataIntegrations struct {
 	// whether the server has a Github app integration
 	GithubApp bool `json:"github_app"`
+
+	// whether the server has email capabilities
+	Email bool `json:"email"`
 }

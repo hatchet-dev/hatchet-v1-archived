@@ -66,7 +66,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	configLoader := loader.NewConfigLoader(hatchetDir)
+	configLoader := loader.NewConfigLoader(Version, hatchetDir)
 
 	os.Setenv("TEMPORAL_CLIENT_ENABLED", "false")
 	config, v, err = configLoader.LoadCLIConfig()

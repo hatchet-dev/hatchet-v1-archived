@@ -154,6 +154,8 @@ func (a *AuthConfig) IsEmailAllowed(email string) bool {
 }
 
 type ServerRuntimeConfig struct {
+	Version string
+
 	ServerURL            string
 	Port                 int
 	CookieName           string
@@ -198,6 +200,7 @@ func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {
 		},
 		Integrations: &types.APIServerMetadataIntegrations{
 			GithubApp: c.GithubApp != nil,
+			Email:     c.UserNotifier.GetID() != "noop",
 		},
 	}
 }

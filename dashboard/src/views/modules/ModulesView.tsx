@@ -55,10 +55,14 @@ const ModulesView: React.FunctionComponent = () => {
       width: 200,
     },
     {
-      Header: "Repo Name",
-      accessor: "repo_name",
+      Header: "Deployment",
+      accessor: "deployment_mechanism",
       width: 150,
       Cell: ({ row }: any) => {
+        if (row.original.deployment_mechanism == "local") {
+          return <div>local</div>;
+        }
+
         return (
           <GithubAvatarAndName
             account_avatar_url={github}
@@ -101,6 +105,7 @@ const ModulesView: React.FunctionComponent = () => {
     return {
       id: module.id,
       name: module.name,
+      deployment_mechanism: module.deployment_mechanism,
       repo_name: `${module.deployment.github_repo_owner}/${module.deployment.github_repo_name}`,
       repo_branch: module.deployment.github_repo_branch,
       last_deployed: relativeDate(module.updated_at),

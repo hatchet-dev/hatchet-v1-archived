@@ -20,6 +20,7 @@ type SendInviteLinkEmailOpts struct {
 }
 
 type UserNotifier interface {
+	GetID() string
 	SendPasswordResetEmail(opts *SendPasswordResetEmailOpts) error
 	SendVerificationEmail(opts *SendVerificationEmailOpts) error
 	SendInviteLinkEmail(opts *SendInviteLinkEmailOpts) error

@@ -148,11 +148,11 @@ func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, 
 }
 
 type ConfigLoader struct {
-	directory string
+	version, directory string
 }
 
-func NewConfigLoader(directory string) *ConfigLoader {
-	return &ConfigLoader{directory}
+func NewConfigLoader(version, directory string) *ConfigLoader {
+	return &ConfigLoader{version, directory}
 }
 
 // LoadSharedConfig loads the shared configuration
@@ -218,7 +218,7 @@ func (c *ConfigLoader) LoadServerConfig() (res *server.Config, err error) {
 		return nil, err
 	}
 
-	return GetServerConfigFromConfigFile(cf, databaseConfig, sharedConfig)
+	return GetServerConfigFromConfigFile(c.version, cf, databaseConfig, sharedConfig)
 }
 
 // LoadTemporalConfig loads the temporal server configuration
@@ -433,13 +433,14 @@ func GetDatabaseConfigFromConfigFile(dc *database.ConfigFile) (res *database.Con
 	return res, nil
 }
 
-func GetServerConfigFromConfigFile(sc *server.ConfigFile, dbConfig *database.Config, sharedConfig *shared.Config) (res *server.Config, err error) {
+func GetServerConfigFromConfigFile(version string, sc *server.ConfigFile, dbConfig *database.Config, sharedConfig *shared.Config) (res *server.Config, err error) {
 	authConfig := server.AuthConfig{
 		BasicAuthEnabled:       sc.Auth.BasicAuthEnabled,
 		RestrictedEmailDomains: sc.Auth.RestrictedEmailDomains,
 	}
 
 	serverRuntimeConfig := server.ServerRuntimeConfig{
+		Version:                             version,
 		Port:                                sc.Runtime.Port,
 		ServerURL:                           sc.Runtime.ServerURL,
 		BroadcastGRPCAddress:                sc.Runtime.BroadcastGRPCAddress,

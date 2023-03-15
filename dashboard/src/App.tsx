@@ -77,10 +77,10 @@ const DashboardSidebarLinks: SidebarLink[] = [
 ];
 
 const DashboardTeamSidebarLinks: SidebarLink[] = [
-  {
-    name: "Overview",
-    href: "/overview",
-  },
+  // {
+  //   name: "Overview",
+  //   href: "/overview",
+  // },
   {
     name: "Modules",
     href: "/modules",
@@ -93,10 +93,10 @@ const DashboardTeamSidebarLinks: SidebarLink[] = [
   //   name: "Templates",
   //   href: "/templates",
   // },
-  {
-    name: "Integrations",
-    href: "/integrations",
-  },
+  // {
+  //   name: "Integrations",
+  //   href: "/integrations",
+  // },
   {
     name: "Team Settings",
     href: "/settings",

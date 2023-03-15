@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 
 		var err error
 
-		configLoader := loader.NewConfigLoader(configDirectory)
+		configLoader := loader.NewConfigLoader(Version, configDirectory)
 		sc, err = configLoader.LoadServerConfig()
 
 		if err != nil {

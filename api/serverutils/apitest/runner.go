@@ -53,7 +53,7 @@ func RunAPITest(t *testing.T, test APITestFunc, opts *APITesterOpts, initMethods
 
 	// wrap the database test
 	testutils.RunTestWithDatabase(t, func(conf *database.Config) error {
-		apiTester.conf, err = loader.GetServerConfigFromConfigFile(&server.ConfigFile{
+		apiTester.conf, err = loader.GetServerConfigFromConfigFile("test", &server.ConfigFile{
 			Runtime: server.ConfigFileRuntime{
 				Port:      8080,
 				ServerURL: "https://test.hatchet.run",
