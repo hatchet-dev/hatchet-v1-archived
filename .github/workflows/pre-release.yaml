@@ -75,6 +75,45 @@ jobs:
           path: ./release/darwin
           name: mac-binaries
           retention-days: 1
+  build-linux:
+    name: Build Linux binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag name
+        id: tag_name
+        run: |
+          tag=${GITHUB_TAG/refs\/tags\//}
+          echo ::set-output name=tag::$tag
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - name: Build Linux binaries
+        run: |
+          go build -ldflags="-w -s -X 'main.Version=${{steps.tag_name.outputs.tag}}'" -a -o ./amd64/hatchet-server ./cmd/hatchet-server &
+          go build -ldflags="-w -s -X 'github.com/hatchet-dev/hatchet/cmd/hatchet-admin/cli.Version=${{steps.tag_name.outputs.tag}}'" -a -o ./amd64/hatchet-admin ./cmd/hatchet-admin &
+          go build -ldflags="-w -s -X 'github.com/hatchet-dev/hatchet/cmd/hatchet-cli/cli.Version=${{steps.tag_name.outputs.tag}}'" -a -o ./amd64/hatchet ./cmd/hatchet-cli
+          wait
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 1
+      - name: Zip Linux binaries
+        run: |
+          mkdir -p ./release/linux
+          zip --junk-paths ./release/linux/hatchet-server_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip ./amd64/hatchet-server
+          zip --junk-paths ./release/linux/hatchet-admin_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip ./amd64/hatchet-admin
+          zip --junk-paths ./release/linux/hatchet_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip ./amd64/hatchet
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./release/linux
+          name: linux-binaries
+          retention-days: 1
   notarize:
     name: Notarize Darwin binaries
     runs-on: macos-11
@@ -179,6 +218,7 @@ jobs:
     name: Create release and upload assets
     runs-on: ubuntu-latest
     needs:
+      - build-linux
       - build-static
       - notarize
     steps:
@@ -199,6 +239,11 @@ jobs:
         with:
           name: mac-binaries
           path: ./release/darwin
+      - name: Download Linux binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-binaries
+          path: ./release/linux
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -252,4 +297,37 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release/darwin/hatchet_${{steps.tag_name.outputs.tag}}_Darwin_x86_64.zip
           asset_name: hatchet_${{steps.tag_name.outputs.tag}}_Darwin_x86_64.zip
+          asset_content_type: application/zip
+      - name: Upload Linux hatchet-server asset
+        id: upload-linux-hatchet-server-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TAG: ${{ github.ref }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/linux/hatchet-server_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
+          asset_name: hatchet-server_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
+          asset_content_type: application/zip
+      - name: Upload Linux hatchet-admin asset
+        id: upload-linux-hatchet-admin-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TAG: ${{ github.ref }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/linux/hatchet-admin_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
+          asset_name: hatchet-admin_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
+          asset_content_type: application/zip
+      - name: Upload Linux hatchet asset
+        id: upload-linux-hatchet-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TAG: ${{ github.ref }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/linux/hatchet_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
+          asset_name: hatchet_${{steps.tag_name.outputs.tag}}_Linux_x86_64.zip
           asset_content_type: application/zip
