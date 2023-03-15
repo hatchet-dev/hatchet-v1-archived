@@ -12,6 +12,7 @@ const StyledSidebarLink = styled(Link)<{ current: boolean; padding?: string }>`
   color: ${(props) =>
     props.current ? props.theme.text.alt : props.theme.text.default};
   border-radius: 6px;
+  ${(props) => props.current && `background-color: ${props.theme.bg.shadetwo};`}
 
   :hover {
     background-color: ${(props) => props.theme.bg.hover};

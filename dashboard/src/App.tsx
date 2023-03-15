@@ -364,11 +364,18 @@ const AppContents: React.FunctionComponent = () => {
             path="/teams/:team"
             render={() => (
               <WrappedTeamContents>
+                <ModulesView />
+              </WrappedTeamContents>
+            )}
+          ></Route>
+          <Route
+            path="/"
+            render={() => (
+              <WrappedTeamContents>
                 <HomeView />
               </WrappedTeamContents>
             )}
           ></Route>
-          <Route path="/" render={() => <WrappedTeamContents />}></Route>
         </Switch>
       </AuthChecker>
     );
