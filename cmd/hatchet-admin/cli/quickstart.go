@@ -71,7 +71,7 @@ func init() {
 	)
 
 	quickstartCmd.PersistentFlags().StringVar(
-		&generatedConfigDir,
+		&staticDir,
 		"static-dir",
 		"./static",
 		"path to the directory where the static assets should be served from",
