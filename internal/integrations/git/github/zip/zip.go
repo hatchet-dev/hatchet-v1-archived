@@ -129,7 +129,7 @@ func getHatchetAssetDownloadURL(releaseTag, assetName string) (string, error) {
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("release %s does not exist", releaseTag)
+		return "", fmt.Errorf("release %s does not exist: %w", releaseTag, err)
 	}
 
 	re := getDownloadRegexp(assetName)

@@ -103,6 +103,12 @@ func runQuickstart() error {
 		return fmt.Errorf("could not generate internal bearer token: %w", err)
 	}
 
+	err = downloadStaticFiles()
+
+	if err != nil {
+		return fmt.Errorf("could not download static files: %w", err)
+	}
+
 	err = writeGeneratedConfig(generated)
 
 	if err != nil {
