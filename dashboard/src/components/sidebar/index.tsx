@@ -82,18 +82,6 @@ const SideBar: React.FunctionComponent<Props> = ({
     }
   };
 
-  const onSelectTeam = (option: Selection) => {
-    if (option.value == "new_team") {
-      history.push("/organization/teams/create");
-    } else {
-      for (let team of userTeamsQuery.data?.data?.rows) {
-        if (option.value == team.id) {
-          setCurrTeam(team);
-        }
-      }
-    }
-  };
-
   const renderUtil = () => {
     if (isUserView) {
       return (

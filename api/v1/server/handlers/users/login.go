@@ -58,7 +58,7 @@ func (u *UserLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save the user as authenticated in the session
-	_, err = authn.SaveUserAuthenticated(w, r, u.Config(), existingUser)
+	_, err = authn.SaveUserAuthenticated(w, r, u.Config(), existingUser, true)
 
 	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))

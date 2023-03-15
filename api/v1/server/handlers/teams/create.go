@@ -178,6 +178,9 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// create a default drift detection monitor for the team
 	monitor := &models.ModuleMonitor{
 		TeamID:           team.ID,
+		DisplayName:      "Drift Detection",
+		Description:      "Checks for infrastructure drift every 6 hours",
+		CronSchedule:     "0 */6 * * *",
 		Kind:             models.MonitorKindPlan,
 		PresetPolicyName: models.ModuleMonitorPresetPolicyNameDrift,
 		CurrentMonitorPolicyBytesVersion: models.MonitorPolicyBytesVersion{

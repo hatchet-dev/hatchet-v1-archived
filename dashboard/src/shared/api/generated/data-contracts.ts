@@ -109,15 +109,22 @@ export interface APIResourceMeta {
   updated_at?: string;
 }
 
-/** @example {"auth":{"require_email_verification":true}} */
+/** @example {"auth":{"require_email_verification":true},"integrations":{"github_app":true}} */
 export interface APIServerMetadata {
   auth?: APIServerMetadataAuth;
+  integrations?: APIServerMetadataIntegrations;
 }
 
 /** @example {"require_email_verification":true} */
 export interface APIServerMetadataAuth {
   /** whether email verification is required in order to use the api/dashboard */
   require_email_verification?: boolean;
+}
+
+/** @example {"github_app":true} */
+export interface APIServerMetadataIntegrations {
+  /** whether the server has a Github app integration */
+  github_app?: boolean;
 }
 
 /** @example {"values_raw":{"key":"{}"},"github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"name":"name","values_github":{"github_repository_branch":"main","path":"./staging/eks","github_app_installation_id":"bb214807-246e-43a5-a25d-41761d1cff9e","github_repository_owner":"hatchet-dev","github_repository_name":"infra"},"local":{"local_path":"local_path"},"env_vars":{"key":"env_vars"}} */

@@ -73,6 +73,13 @@ var InvalidEmailOrPassword APIError = APIError{
 	Description: "Invalid email or password combination",
 }
 
+const InvalidEmailCode uint = 2404
+
+var InvalidEmail APIError = APIError{
+	Code:        InvalidEmailCode,
+	Description: "Invalid email: email either already exists or is not permitted on this Hatchet instance.",
+}
+
 // Public data about the user that other members of the org and team
 // can access
 // swagger:model

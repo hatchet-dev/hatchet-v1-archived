@@ -90,10 +90,18 @@ type UsageMetric string
 type APIServerMetadata struct {
 	// auth metadata options
 	Auth *APIServerMetadataAuth `json:"auth"`
+
+	Integrations *APIServerMetadataIntegrations `json:"integrations"`
 }
 
 // swagger:model
 type APIServerMetadataAuth struct {
 	// whether email verification is required in order to use the api/dashboard
 	RequireEmailVerification bool `json:"require_email_verification"`
+}
+
+// swagger:model
+type APIServerMetadataIntegrations struct {
+	// whether the server has a Github app integration
+	GithubApp bool `json:"github_app"`
 }

@@ -3,7 +3,9 @@ package authn
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/gorilla/sessions"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
 	"github.com/hatchet-dev/hatchet/internal/models"
@@ -14,8 +16,22 @@ func SaveUserAuthenticated(
 	r *http.Request,
 	config *server.Config,
 	user *models.User,
+	saveNew bool,
 ) (string, error) {
-	session, err := config.UserSessionStore.Get(r, config.UserSessionStore.GetName())
+	var session *sessions.Session
+	var err error
+
+	if saveNew {
+		session, err = config.UserSessionStore.New(r, config.UserSessionStore.GetName())
+
+		// If a new session is retrieved, we ignore this value error. This likely means that the user
+		// has an invalid cookie set on this domain which is being sent in the request.
+		if err != nil && strings.Contains(err.Error(), "the value is not valid") {
+			err = nil
+		}
+	} else {
+		session, err = config.UserSessionStore.Get(r, config.UserSessionStore.GetName())
+	}
 
 	if err != nil {
 		return "", err

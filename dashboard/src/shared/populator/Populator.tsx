@@ -24,7 +24,6 @@ const Populator: React.FunctionComponent<Props> = ({
   const [currOrg, setCurrOrg] = useAtom(currOrgAtom);
   const [currTeam, setCurrTeam] = useAtom(currTeamAtom);
   const orgEnabled = !!organization;
-  const teamEnabled = !!team;
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["current_user_organizations"],
@@ -35,6 +34,10 @@ const Populator: React.FunctionComponent<Props> = ({
     retry: false,
     enabled: orgEnabled,
   });
+
+  // we require that organization check occurs first by making sure the org
+  // query is not loading
+  const teamEnabled = !!team && !isLoading;
 
   const currTeamsQuery = useQuery({
     queryKey: ["current_user_teams", currOrg?.id],
@@ -88,7 +91,11 @@ const Populator: React.FunctionComponent<Props> = ({
           if (currTeamsQuery.data?.data?.rows?.length > 0) {
             setCurrTeam(currTeamsQuery.data?.data?.rows[0]);
           } else {
-            history.push("/organization/teams/create");
+            if (data?.data?.rows?.length == 0) {
+              history.push("/organization/create");
+            } else {
+              history.push("/organization/teams/create");
+            }
           }
         }
       }

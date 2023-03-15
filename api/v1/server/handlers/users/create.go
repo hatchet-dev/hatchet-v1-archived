@@ -36,7 +36,7 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !u.Config().AuthConfig.IsEmailAllowed(request.Email) {
-		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmailOrPassword, http.StatusUnauthorized, "email is not in restricted domain list"))
+		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmail, http.StatusUnauthorized, "email is not in restricted domain list"))
 		return
 	}
 
@@ -50,7 +50,7 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if existingUser != nil {
-		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmailOrPassword, http.StatusUnauthorized, "user already exists"))
+		u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmail, http.StatusUnauthorized, "user already exists"))
 		return
 	}
 
@@ -65,7 +65,7 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, repository.RepositoryUniqueConstraintFailed) {
-			u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmailOrPassword, http.StatusUnauthorized, "unique constraint failed"))
+			u.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.InvalidEmail, http.StatusUnauthorized, "unique constraint failed"))
 			return
 		}
 
@@ -74,7 +74,7 @@ func (u *UserCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save the user as authenticated in the session
-	_, err = authn.SaveUserAuthenticated(w, r, u.Config(), user)
+	_, err = authn.SaveUserAuthenticated(w, r, u.Config(), user, true)
 
 	if err != nil {
 		u.HandleAPIError(w, r, apierrors.NewErrInternal(err))

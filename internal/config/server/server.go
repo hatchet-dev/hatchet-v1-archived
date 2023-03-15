@@ -196,5 +196,8 @@ func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {
 		Auth: &types.APIServerMetadataAuth{
 			RequireEmailVerification: c.AuthConfig.RequireEmailVerification,
 		},
+		Integrations: &types.APIServerMetadataIntegrations{
+			GithubApp: c.GithubApp != nil,
+		},
 	}
 }

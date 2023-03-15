@@ -50,6 +50,7 @@ const TeamManager: React.FunctionComponent<Props> = ({
     },
     onSuccess: (data) => {
       setErr("");
+      refetch();
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {
