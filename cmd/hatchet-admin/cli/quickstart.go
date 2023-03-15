@@ -103,7 +103,7 @@ func runQuickstart() error {
 		return fmt.Errorf("could not generate internal bearer token: %w", err)
 	}
 
-	err = downloadStaticFiles()
+	err = downloadStaticFiles(generated)
 
 	if err != nil {
 		return fmt.Errorf("could not download static files: %w", err)
@@ -359,10 +359,16 @@ func generateBearerToken(generated *generatedConfigFiles) error {
 	return nil
 }
 
-func downloadStaticFiles() error {
+func downloadStaticFiles(generated *generatedConfigFiles) error {
 	color.New(color.FgGreen).Printf("Downloading static files into directory %s\n", staticDir)
 
-	err := os.MkdirAll(generatedConfigDir, os.ModePerm)
+	cwd, err := os.Getwd()
+
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(generatedConfigDir, os.ModePerm)
 
 	if err != nil {
 		return fmt.Errorf("could not create generated config directory: %w", err)
@@ -393,6 +399,9 @@ func downloadStaticFiles() error {
 	if err != nil {
 		return err
 	}
+
+	generated.sc.Runtime.RunStaticFileServer = true
+	generated.sc.Runtime.StaticFileServerPath = filepath.Join(cwd, staticDir)
 
 	return nil
 }
