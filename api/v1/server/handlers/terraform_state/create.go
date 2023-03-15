@@ -1,7 +1,6 @@
 package terraform_state
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/terraform"
 )
 
 type TerraformStateCreateHandler struct {
@@ -46,7 +46,8 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	path := getStatePath(team.ID, module.ID)
+	path := terraform.GetStatePath(team.ID, module.ID)
+	runPath := terraform.GetRunStatePath(team.ID, module.ID, run.ID)
 
 	// read state file
 	fileBytes, err := ioutil.ReadAll(r.Body)
@@ -65,9 +66,14 @@ func (t *TerraformStateCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	return
-}
+	// store secondary state at the run path so it can be recovered later
+	err = t.Config().DefaultFileStore.WriteFile(runPath, fileBytes, true)
 
-func getStatePath(teamID, moduleID string) string {
-	return fmt.Sprintf("%s/%s/terraform.tfstate", teamID, moduleID)
+	if err != nil {
+		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+
+		return
+	}
+
+	return
 }

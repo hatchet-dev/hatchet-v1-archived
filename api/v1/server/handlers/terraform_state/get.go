@@ -11,6 +11,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/models"
+	"github.com/hatchet-dev/hatchet/internal/terraform"
 )
 
 type TerraformStateGetHandler struct {
@@ -31,7 +32,7 @@ func (t *TerraformStateGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	team, _ := r.Context().Value(types.TeamScope).(*models.Team)
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 
-	path := getStatePath(team.ID, module.ID)
+	path := terraform.GetStatePath(team.ID, module.ID)
 
 	fileBytes, err := t.Config().DefaultFileStore.ReadFile(path, true)
 

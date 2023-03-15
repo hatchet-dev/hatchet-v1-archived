@@ -32,7 +32,7 @@ func (m *ModuleDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	// if module is locally deployed, check that the state is empty before allowing destroy
 	if module.DeploymentMechanism == models.DeploymentMechanismLocal {
-		statePath := getStatePath(module.TeamID, module.ID)
+		statePath := terraform.GetStatePath(module.TeamID, module.ID)
 
 		fileBytes, err := m.Config().DefaultFileStore.ReadFile(statePath, true)
 
@@ -71,8 +71,4 @@ func (m *ModuleDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusAccepted)
 	m.WriteResult(w, r, module.ToAPIType())
-}
-
-func getStatePath(teamID, moduleID string) string {
-	return fmt.Sprintf("%s/%s/terraform.tfstate", teamID, moduleID)
 }

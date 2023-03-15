@@ -1,6 +1,17 @@
 package terraform
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func GetStatePath(teamID, moduleID string) string {
+	return fmt.Sprintf("%s/%s/terraform.tfstate", teamID, moduleID)
+}
+
+func GetRunStatePath(teamID, moduleID, runID string) string {
+	return fmt.Sprintf("%s/%s/%s/terraform.tfstate", teamID, moduleID, runID)
+}
 
 func GetInternalStateFromBytes(stateBytes []byte) (*terraformStateInternal, error) {
 	res := &terraformStateInternal{}
