@@ -8,56 +8,56 @@ import (
 )
 
 type TemporalConfigFile struct {
-	TemporalPublicURL          string   `mapstructure:"publicURL" default:"http://127.0.0.1:7233"`
-	TemporalAddress            string   `mapstructure:"address" default:"127.0.0.1"`
-	TemporalBroadcastAddress   string   `mapstructure:"broadcastAddress" default:"127.0.0.1"`
-	TemporalPProfPort          int64    `mapstructure:"pprofPort" default:"9500"`
-	TemporalMetricsAddress     string   `mapstructure:"metricsAddress" default:"127.0.0.1"`
-	TemporalMetricsPort        int64    `mapstructure:"metricsPort" default:"10001"`
-	TemporalLogLevel           string   `mapstructure:"logLevel" default:"info"`
-	TemporalSQLLitePath        string   `mapstructure:"sqlLitePath" default:"/hatchet/temporal.db"`
-	TemporalNamespaces         []string `mapstructure:"namespaces" default:"[\"default\"]"`
-	TemporalInternalNamespace  string   `mapstructure:"internalNamespace" default:"hatchet-internal"`
-	TemporalInternalSigningKey string   `mapstructure:"internalSigningKey" default:"__random_strong_encryption_key__"`
+	TemporalPublicURL          string   `mapstructure:"publicURL" json:"publicURL,omitempty" default:"http://127.0.0.1:7233"`
+	TemporalAddress            string   `mapstructure:"address" json:"address,omitempty" default:"127.0.0.1"`
+	TemporalBroadcastAddress   string   `mapstructure:"broadcastAddress" json:"broadcastAddress,omitempty" default:"127.0.0.1"`
+	TemporalPProfPort          int64    `mapstructure:"pprofPort" json:"pprofPort,omitempty" default:"9500"`
+	TemporalMetricsAddress     string   `mapstructure:"metricsAddress" json:"metricsAddress,omitempty" default:"127.0.0.1"`
+	TemporalMetricsPort        int64    `mapstructure:"metricsPort" json:"metricsPort,omitempty" default:"10001"`
+	TemporalLogLevel           string   `mapstructure:"logLevel" json:"logLevel,omitempty" default:"info"`
+	TemporalSQLLitePath        string   `mapstructure:"sqlLitePath" json:"sqlLitePath,omitempty" default:"/hatchet/temporal.db"`
+	TemporalNamespaces         []string `mapstructure:"namespaces" json:"namespaces,omitempty" default:"[\"default\"]"`
+	TemporalInternalNamespace  string   `mapstructure:"internalNamespace" json:"internalNamespace,omitempty" default:"hatchet-internal"`
+	TemporalInternalSigningKey string   `mapstructure:"internalSigningKey" json:"internalSigningKey,omitempty" default:"__random_strong_encryption_key__"`
 
-	Token shared.ConfigFileAuthToken `mapstructure:"token"`
+	Token shared.ConfigFileAuthToken `mapstructure:"token" json:"token,omitempty"`
 
-	Frontend  TemporalConfigFileFrontend  `mapstructure:"frontend"`
-	Worker    TemporalConfigFileWorker    `mapstructure:"worker"`
-	Internode TemporalConfigFileInternode `mapstructure:"internode"`
-	UI        TemporalConfigFileUI        `mapstructure:"ui"`
+	Frontend  TemporalConfigFileFrontend  `mapstructure:"frontend" json:"frontend,omitempty"`
+	Worker    TemporalConfigFileWorker    `mapstructure:"worker" json:"worker,omitempty"`
+	Internode TemporalConfigFileInternode `mapstructure:"internode" json:"internode,omitempty"`
+	UI        TemporalConfigFileUI        `mapstructure:"ui" json:"ui,omitempty"`
 }
 
 type TemporalConfigFileFrontend struct {
-	TemporalFrontendPort          int64  `mapstructure:"port" default:"7233"`
-	TemporalFrontendTLSServerName string `mapstructure:"tlsServerName"`
-	TemporalFrontendTLSCertFile   string `mapstructure:"tlsCertFile"`
-	TemporalFrontendTLSKeyFile    string `mapstructure:"tlsKeyFile"`
-	TemporalFrontendTLSRootCAFile string `mapstructure:"tlsRootCAFile"`
+	TemporalFrontendPort          int64  `mapstructure:"port" json:"port,omitempty" default:"7233"`
+	TemporalFrontendTLSServerName string `mapstructure:"tlsServerName" json:"tlsServerName,omitempty"`
+	TemporalFrontendTLSCertFile   string `mapstructure:"tlsCertFile" json:"tlsCertFile,omitempty"`
+	TemporalFrontendTLSKeyFile    string `mapstructure:"tlsKeyFile" json:"tlsKeyFile,omitempty"`
+	TemporalFrontendTLSRootCAFile string `mapstructure:"tlsRootCAFile" json:"tlsRootCAFile,omitempty"`
 }
 
 type TemporalConfigFileWorker struct {
-	TemporalWorkerTLSServerName string `mapstructure:"tlsServerName"`
-	TemporalWorkerTLSCertFile   string `mapstructure:"tlsCertFile"`
-	TemporalWorkerTLSKeyFile    string `mapstructure:"tlsKeyFile"`
-	TemporalWorkerTLSRootCAFile string `mapstructure:"tlsRootCAFile"`
+	TemporalWorkerTLSServerName string `mapstructure:"tlsServerName" json:"tlsServerName,omitempty"`
+	TemporalWorkerTLSCertFile   string `mapstructure:"tlsCertFile" json:"tlsCertFile,omitempty"`
+	TemporalWorkerTLSKeyFile    string `mapstructure:"tlsKeyFile" json:"tlsKeyFile,omitempty"`
+	TemporalWorkerTLSRootCAFile string `mapstructure:"tlsRootCAFile" json:"tlsRootCAFile,omitempty"`
 }
 
 type TemporalConfigFileInternode struct {
-	TemporalInternodeTLSServerName string `mapstructure:"tlsServerName"`
-	TemporalInternodeTLSCertFile   string `mapstructure:"tlsCertFile"`
-	TemporalInternodeTLSKeyFile    string `mapstructure:"tlsKeyFile"`
-	TemporalInternodeTLSRootCAFile string `mapstructure:"tlsRootCAFile"`
+	TemporalInternodeTLSServerName string `mapstructure:"tlsServerName" json:"tlsServerName,omitempty"`
+	TemporalInternodeTLSCertFile   string `mapstructure:"tlsCertFile" json:"tlsCertFile,omitempty"`
+	TemporalInternodeTLSKeyFile    string `mapstructure:"tlsKeyFile" json:"tlsKeyFile,omitempty"`
+	TemporalInternodeTLSRootCAFile string `mapstructure:"tlsRootCAFile" json:"tlsRootCAFile,omitempty"`
 }
 
 type TemporalConfigFileUI struct {
-	TemporalUIEnabled       bool   `mapstructure:"enabled" default:"true"`
-	TemporalUIAddress       string `mapstructure:"uiAddress" default:"127.0.0.1"`
-	TemporalUIPort          int64  `mapstructure:"port" default:"8233"`
-	TemporalUITLSServerName string `mapstructure:"tlsServerName"`
-	TemporalUITLSCertFile   string `mapstructure:"tlsCertFile"`
-	TemporalUITLSKeyFile    string `mapstructure:"tlsKeyFile"`
-	TemporalUITLSRootCAFile string `mapstructure:"tlsRootCAFile"`
+	TemporalUIEnabled       bool   `mapstructure:"enabled" json:"enabled,omitempty" default:"true"`
+	TemporalUIAddress       string `mapstructure:"uiAddress" json:"uiAddress,omitempty" default:"127.0.0.1"`
+	TemporalUIPort          int64  `mapstructure:"port" json:"port,omitempty" default:"8233"`
+	TemporalUITLSServerName string `mapstructure:"tlsServerName" json:"tlsServerName,omitempty"`
+	TemporalUITLSCertFile   string `mapstructure:"tlsCertFile" json:"tlsCertFile,omitempty"`
+	TemporalUITLSKeyFile    string `mapstructure:"tlsKeyFile" json:"tlsKeyFile,omitempty"`
+	TemporalUITLSRootCAFile string `mapstructure:"tlsRootCAFile" json:"tlsRootCAFile,omitempty"`
 }
 
 const DefaultInternalNamespace string = "hatchet-internal"

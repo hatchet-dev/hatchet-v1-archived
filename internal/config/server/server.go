@@ -17,66 +17,66 @@ import (
 )
 
 type ConfigFile struct {
-	Runtime ConfigFileRuntime `mapstructure:"runtime"`
+	Runtime ConfigFileRuntime `mapstructure:"runtime" json:"runtime,omitempty"`
 
-	Auth shared.ConfigFileAuth `mapstructure:"auth"`
+	Auth shared.ConfigFileAuth `mapstructure:"auth" json:"auth,omitempty"`
 
-	Notification ConfigFileNotification `mapstructure:"notification"`
+	Notification ConfigFileNotification `mapstructure:"notification" json:"notification,omitempty"`
 
-	VCS ConfigFileVCS `mapstructure:"vcs"`
+	VCS ConfigFileVCS `mapstructure:"vcs" json:"vcs,omitempty"`
 
-	FileStore shared.FileStorageConfigFile `mapstructure:"fileStore"`
+	FileStore shared.FileStorageConfigFile `mapstructure:"fileStore" json:"fileStore,omitempty"`
 
-	LogStore shared.LogStoreConfigFile `mapstructure:"logStore"`
+	LogStore shared.LogStoreConfigFile `mapstructure:"logStore" json:"logStore,omitempty"`
 }
 
 // General server runtime options
 type ConfigFileRuntime struct {
 	// Port is the port that the core server listens on
-	Port int `mapstructure:"port" default:"8080"`
+	Port int `mapstructure:"port" json:"port,omitempty" default:"8080"`
 
 	// ServerURL is the full server URL of the instance, INCLUDING protocol.
 	// We include the protocol as several auth implementations depend on it, like
 	// JWT token and cookies.
-	ServerURL string `mapstructure:"url" validator:"url" default:"http://localhost:8080"`
+	ServerURL string `mapstructure:"url" validator:"url" json:"url,omitempty" default:"http://localhost:8080"`
 
 	// BroadcastGRPCAddress is the endpoint for the grpc server to be used by clients
-	BroadcastGRPCAddress string `mapstructure:"broadcastGRPCAddress" validator:"url" default:"http://localhost:8080"`
+	BroadcastGRPCAddress string `mapstructure:"broadcastGRPCAddress" json:"broadcastGRPCAddress,omitempty" validator:"url" default:"http://localhost:8080"`
 
-	RunBackgroundWorker  bool   `mapstructure:"runBackgroundWorker" default:"false"`
-	RunRunnerWorker      bool   `mapstructure:"runRunnerWorker" default:"false"`
-	RunTemporalServer    bool   `mapstructure:"runTemporalServer" default:"false"`
-	RunStaticFileServer  bool   `mapstructure:"runStaticFileServer" default:"false"`
-	StaticFileServerPath string `mapstructure:"staticFilePath"`
+	RunBackgroundWorker  bool   `mapstructure:"runBackgroundWorker" json:"runBackgroundWorker,omitempty" default:"false"`
+	RunRunnerWorker      bool   `mapstructure:"runRunnerWorker" json:"runRunnerWorker,omitempty" default:"false"`
+	RunTemporalServer    bool   `mapstructure:"runTemporalServer" json:"runTemporalServer,omitempty" default:"false"`
+	RunStaticFileServer  bool   `mapstructure:"runStaticFileServer" json:"runStaticFileServer,omitempty" default:"false"`
+	StaticFileServerPath string `mapstructure:"staticFilePath" json:"staticFilePath,omitempty"`
 
-	PermittedModuleDeploymentMechanisms []string `mapstructure:"permittedModuleDeploymentMechanisms" default:"[\"github\",\"api\",\"local\"]"`
+	PermittedModuleDeploymentMechanisms []string `mapstructure:"permittedModuleDeploymentMechanisms" json:"permittedModuleDeploymentMechanisms,omitempty" default:"[\"github\",\"api\",\"local\"]"`
 }
 
 type ConfigFileNotification struct {
-	Sendgrid ConfigFileNotificationSendgrid `mapstructure:"sendgrid"`
+	Sendgrid ConfigFileNotificationSendgrid `mapstructure:"sendgrid" json:"sendgrid,omitempty"`
 }
 
 type ConfigFileNotificationSendgrid struct {
-	SendgridAPIKey                string `mapstructure:"apiKey"`
-	SendgridPWResetTemplateID     string `mapstructure:"pwResetTemplateID"`
-	SendgridVerifyEmailTemplateID string `mapstructure:"verifyEmailTemplateID"`
-	SendgridInviteLinkTemplateID  string `mapstructure:"inviteLinkTemplateID"`
-	SendgridSenderEmail           string `mapstructure:"senderEmail" validator:"email"`
+	SendgridAPIKey                string `mapstructure:"apiKey" json:"apiKey,omitempty"`
+	SendgridPWResetTemplateID     string `mapstructure:"pwResetTemplateID" json:"pwResetTemplateID,omitempty"`
+	SendgridVerifyEmailTemplateID string `mapstructure:"verifyEmailTemplateID" json:"verifyEmailTemplateID,omitempty"`
+	SendgridInviteLinkTemplateID  string `mapstructure:"inviteLinkTemplateID" json:"inviteLinkTemplateID,omitempty"`
+	SendgridSenderEmail           string `mapstructure:"senderEmail" json:"senderEmail,omitempty" validator:"email"`
 }
 
 type ConfigFileVCS struct {
-	Kind string `mapstructure:"kind"`
+	Kind string `mapstructure:"kind" json:"kind,omitempty"`
 
-	Github ConfigFileGithub `mapstructure:"github"`
+	Github ConfigFileGithub `mapstructure:"github" json:"github,omitempty"`
 }
 
 type ConfigFileGithub struct {
-	GithubAppClientID      string `mapstructure:"appClientID"`
-	GithubAppClientSecret  string `mapstructure:"appClientSecret"`
-	GithubAppName          string `mapstructure:"appName"`
-	GithubAppWebhookSecret string `mapstructure:"appWebhookSecret"`
-	GithubAppID            string `mapstructure:"appID"`
-	GithubAppSecretPath    string `mapstructure:"appSecretPath"`
+	GithubAppClientID      string `mapstructure:"appClientID" json:"appClientID,omitempty"`
+	GithubAppClientSecret  string `mapstructure:"appClientSecret" json:"appClientSecret,omitempty"`
+	GithubAppName          string `mapstructure:"appName" json:"appName,omitempty"`
+	GithubAppWebhookSecret string `mapstructure:"appWebhookSecret" json:"appWebhookSecret,omitempty"`
+	GithubAppID            string `mapstructure:"appID" json:"appID,omitempty"`
+	GithubAppSecretPath    string `mapstructure:"appSecretPath" json:"appSecretPath,omitempty"`
 }
 
 func BindAllEnv(v *viper.Viper) {

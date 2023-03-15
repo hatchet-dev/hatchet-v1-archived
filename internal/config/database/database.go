@@ -7,28 +7,28 @@ import (
 )
 
 type ConfigFile struct {
-	Kind string `mapstructure:"kind" default:"sqlite"`
+	Kind string `mapstructure:"kind" json:"kind,omitempty" default:"sqlite"`
 
-	EncryptionKey string `mapstructure:"encryptionKey" default:"__random_strong_encryption_key__"`
+	EncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
 
-	AutoMigrate bool `mapstructure:"autoMigrate" default:"true"`
+	AutoMigrate bool `mapstructure:"autoMigrate" json:"autoMigrate,omitempty" default:"true"`
 
-	SQLite ConfigFileSQLite `mapstructure:"sqlite"`
+	SQLite ConfigFileSQLite `mapstructure:"sqlite" json:"sqlite,omitempty"`
 
-	Postgres ConfigFilePostgres `mapstructure:"postgres"`
+	Postgres ConfigFilePostgres `mapstructure:"postgres" json:"postgres,omitempty"`
 }
 
 type ConfigFileSQLite struct {
-	SQLLitePath string `mapstructure:"path" default:"/hatchet/hatchet.db"`
+	SQLLitePath string `mapstructure:"path" json:"path,omitempty" default:"/hatchet/hatchet.db"`
 }
 
 type ConfigFilePostgres struct {
-	PostgresHost     string `mapstructure:"host" default:"postgres"`
-	PostgresPort     int    `mapstructure:"port" default:"5432"`
-	PostgresUsername string `mapstructure:"username" default:"hatchet"`
-	PostgresPassword string `mapstructure:"password" default:"hatchet"`
-	PostgresDbName   string `mapstructure:"dbName" default:"hatchet"`
-	PostgresForceSSL bool   `mapstructure:"forceSSL" default:"false"`
+	PostgresHost     string `mapstructure:"host" json:"host,omitempty" default:"postgres"`
+	PostgresPort     int    `mapstructure:"port" json:"port,omitempty" default:"5432"`
+	PostgresUsername string `mapstructure:"username" json:"username,omitempty" default:"hatchet"`
+	PostgresPassword string `mapstructure:"password" json:"password,omitempty" default:"hatchet"`
+	PostgresDbName   string `mapstructure:"dbName" json:"dbName,omitempty" default:"hatchet"`
+	PostgresForceSSL bool   `mapstructure:"forceSSL" json:"forceSSL,omitempty" default:"false"`
 }
 
 type Config struct {

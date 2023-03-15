@@ -9,48 +9,48 @@ import (
 )
 
 type ConfigFile struct {
-	Resources ConfigFileResources `mapstructure:"resources"`
+	Resources ConfigFileResources `mapstructure:"resources" json:"resources,omitempty"`
 
-	GRPC ConfigFileGRPC `mapstructure:"grpc"`
+	GRPC ConfigFileGRPC `mapstructure:"grpc" json:"grpc,omitempty"`
 
-	API ConfigFileAPI `mapstructure:"api"`
+	API ConfigFileAPI `mapstructure:"api" json:"api,omitempty"`
 
-	Github ConfigFileGithub `mapstructure:"github"`
+	Github ConfigFileGithub `mapstructure:"github" json:"github,omitempty"`
 
-	Terraform ConfigFileTerraform `mapstructure:"terraform"`
+	Terraform ConfigFileTerraform `mapstructure:"terraform" json:"terraform,omitempty"`
 }
 
 type ConfigFileResources struct {
-	TeamID          string `mapstructure:"teamID"`
-	ModuleID        string `mapstructure:"moduleID"`
-	ModuleRunID     string `mapstructure:"moduleRunID"`
-	ModuleMonitorID string `mapstructure:"moduleMonitorID"`
+	TeamID          string `mapstructure:"teamID" json:"teamID,omitempty"`
+	ModuleID        string `mapstructure:"moduleID" json:"moduleID,omitempty"`
+	ModuleRunID     string `mapstructure:"moduleRunID" json:"moduleRunID,omitempty"`
+	ModuleMonitorID string `mapstructure:"moduleMonitorID" json:"moduleMonitorID,omitempty"`
 }
 
 type ConfigFileGRPC struct {
 	// GRPC server address
-	GRPCServerAddress string `mapstructure:"serverAddress" default:"http://localhost:8080"`
+	GRPCServerAddress string `mapstructure:"serverAddress" json:"serverAddress,omitempty" default:"http://localhost:8080"`
 
 	// GRPC connection auth
-	GRPCToken string `mapstructure:"token"`
+	GRPCToken string `mapstructure:"token" json:"token,omitempty"`
 }
 
 type ConfigFileAPI struct {
-	APIToken string `mapstructure:"token"`
+	APIToken string `mapstructure:"token" json:"token,omitempty"`
 
-	APIServerAddress string `mapstructure:"serverAddress" default:"http://localhost:8080"`
+	APIServerAddress string `mapstructure:"serverAddress" json:"serverAddress,omitempty" default:"http://localhost:8080"`
 }
 
 type ConfigFileGithub struct {
-	GithubRepositoryName string `mapstructure:"repositoryName"`
-	GithubModulePath     string `mapstructure:"modulePath"`
-	GithubSHA            string `mapstructure:"sha"`
-	GithubRepositoryDest string `mapstructure:"repositoryDest" default:"./bin/tmp"`
+	GithubRepositoryName string `mapstructure:"repositoryName" json:"repositoryName,omitempty"`
+	GithubModulePath     string `mapstructure:"modulePath" json:"modulePath,omitempty"`
+	GithubSHA            string `mapstructure:"sha" json:"sha,omitempty"`
+	GithubRepositoryDest string `mapstructure:"repositoryDest" json:"repositoryDest,omitempty" default:"./bin/tmp"`
 }
 
 type ConfigFileTerraform struct {
 	// TFDir is a relative or absolute path to the terraform directory
-	TFDir string `mapstructure:"dir"`
+	TFDir string `mapstructure:"dir" json:"dir,omitempty"`
 }
 
 type Config struct {

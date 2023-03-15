@@ -8,10 +8,10 @@ import (
 )
 
 type ConfigFile struct {
-	Address        string `mapstructure:"address"`
-	APIToken       string `mapstructure:"apiToken"`
-	OrganizationID string `mapstructure:"organizationID"`
-	TeamID         string `mapstructure:"teamID"`
+	Address        string `mapstructure:"address" json:"address,omitempty"`
+	APIToken       string `mapstructure:"apiToken" json:"apiToken,omitempty"`
+	OrganizationID string `mapstructure:"organizationID" json:"organizationID,omitempty"`
+	TeamID         string `mapstructure:"teamID" json:"teamID,omitempty"`
 }
 
 type Config struct {

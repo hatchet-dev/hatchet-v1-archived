@@ -13,6 +13,7 @@ import (
 	"github.com/antihax/optional"
 	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
+	"github.com/hatchet-dev/hatchet/internal/cliutils"
 	"github.com/hatchet-dev/hatchet/internal/config/runner"
 	"github.com/hatchet-dev/hatchet/internal/opa"
 )
@@ -55,7 +56,7 @@ func NewRunnerAction(opts *RunnerActionOpts) *RunnerAction {
 func (r *RunnerAction) Apply(
 	variables map[string]interface{},
 ) ([]byte, error) {
-	if !commandExists("terraform") {
+	if !cliutils.CommandExists("terraform") {
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
@@ -111,7 +112,7 @@ func (r *RunnerAction) Apply(
 func (r *RunnerAction) Destroy(
 	variables map[string]interface{},
 ) error {
-	if !commandExists("terraform") {
+	if !cliutils.CommandExists("terraform") {
 		return fmt.Errorf("terraform cli command does not exist")
 	}
 
@@ -165,7 +166,7 @@ func (r *RunnerAction) Destroy(
 }
 
 func (r *RunnerAction) Plan(variables map[string]interface{}) ([]byte, []byte, []byte, error) {
-	if !commandExists("terraform") {
+	if !cliutils.CommandExists("terraform") {
 		return nil, nil, nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
@@ -222,7 +223,7 @@ func (r *RunnerAction) Plan(variables map[string]interface{}) ([]byte, []byte, [
 }
 
 func (r *RunnerAction) Init() error {
-	if !commandExists("terraform") {
+	if !cliutils.CommandExists("terraform") {
 		return fmt.Errorf("terraform cli command does not exist")
 	}
 
@@ -304,7 +305,7 @@ func (r *RunnerAction) monitor(
 	policyBytes []byte,
 	populators ...populatorFunc,
 ) (*types.CreateMonitorResultRequest, error) {
-	if !commandExists("terraform") {
+	if !cliutils.CommandExists("terraform") {
 		return nil, fmt.Errorf("terraform cli command does not exist")
 	}
 
@@ -686,9 +687,4 @@ func (r *RunnerAction) output() ([]byte, error) {
 	}
 
 	return cmd.Output()
-}
-
-func commandExists(cmd string) bool {
-	_, err := exec.LookPath(cmd)
-	return err == nil
 }

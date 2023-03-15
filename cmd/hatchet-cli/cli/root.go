@@ -14,7 +14,7 @@ import (
 )
 
 // Version will be linked by an ldflag during build
-var Version string = "dev-ce"
+var Version string = "v0.1.0-alpha.0"
 
 var home string
 var printVersion bool

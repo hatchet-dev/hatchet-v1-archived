@@ -13,29 +13,29 @@ import (
 )
 
 type BackgroundConfigFile struct {
-	ServerURL string `mapstructure:"serverURL"`
+	ServerURL string `mapstructure:"serverURL" json:"serverURL,omitempty"`
 
-	BroadcastGRPCAddress string `mapstructure:"broadcastGRPCAddress" validator:"url" default:"http://localhost:8080"`
+	BroadcastGRPCAddress string `mapstructure:"broadcastGRPCAddress" json:"broadcastGRPCAddress,omitempty" validator:"url" default:"http://localhost:8080"`
 
-	Auth shared.ConfigFileAuth `mapstructure:"auth"`
+	Auth shared.ConfigFileAuth `mapstructure:"auth" json:"auth,omitempty"`
 
-	FileStore shared.FileStorageConfigFile `mapstructure:"fileStore"`
+	FileStore shared.FileStorageConfigFile `mapstructure:"fileStore" json:"fileStore,omitempty"`
 
-	LogStore shared.LogStoreConfigFile `mapstructure:"logStore"`
+	LogStore shared.LogStoreConfigFile `mapstructure:"logStore" json:"logStore,omitempty"`
 
-	Notifier BackgroundConfigFileNotifier `mapstructure:"notifier"`
+	Notifier BackgroundConfigFileNotifier `mapstructure:"notifier" json:"notifier,omitempty"`
 }
 
 type BackgroundConfigFileNotifier struct {
-	Kind string `mapstructure:"kind"`
+	Kind string `mapstructure:"kind" json:"kind,omitempty"`
 
-	Sendgrid BackgroundConfigFileNotifierSendgrid `mapstructure:"sendgrid"`
+	Sendgrid BackgroundConfigFileNotifierSendgrid `mapstructure:"sendgrid" json:"sendgrid,omitempty"`
 }
 
 type BackgroundConfigFileNotifierSendgrid struct {
-	SendgridAPIKey             string `mapstructure:"apiKey"`
-	SendgridIncidentTemplateID string `mapstructure:"incidentTemplateID"`
-	SendgridSenderEmail        string `mapstructure:"senderEmail" validator:"email"`
+	SendgridAPIKey             string `mapstructure:"apiKey" json:"apiKey,omitempty"`
+	SendgridIncidentTemplateID string `mapstructure:"incidentTemplateID" json:"incidentTemplateID,omitempty"`
+	SendgridSenderEmail        string `mapstructure:"senderEmail" json:"senderEmail,omitempty" validator:"email"`
 }
 
 type BackgroundConfig struct {
@@ -95,13 +95,13 @@ func BindAllBackgroundEnv(v *viper.Viper) {
 }
 
 type RunnerConfigFile struct {
-	Provisioner RunnerConfigFileProvisioner `mapstructure:"provisioner"`
+	Provisioner RunnerConfigFileProvisioner `mapstructure:"provisioner" json:"provisioner,omitempty"`
 
-	RunnerGRPCServerAddress string `mapstructure:"grpcServerAddress" default:"http://localhost:8080"`
+	RunnerGRPCServerAddress string `mapstructure:"grpcServerAddress" json:"grpcServerAddress,omitempty" default:"http://localhost:8080"`
 }
 
 type RunnerConfigFileProvisioner struct {
-	Kind string `mapstructure:"kind" default:"local"`
+	Kind string `mapstructure:"kind" json:"kind,omitempty" default:"local"`
 }
 
 type RunnerConfig struct {

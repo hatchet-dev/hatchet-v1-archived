@@ -8,103 +8,103 @@ import (
 )
 
 type ConfigFile struct {
-	Debug bool `mapstructure:"debug" default:"false"`
+	Debug bool `mapstructure:"debug" json:"debug,omitempty" default:"false"`
 
-	Temporal ConfigFileTemporal `mapstructure:"temporal"`
+	Temporal ConfigFileTemporal `mapstructure:"temporal" json:"temporal,omitempty"`
 }
 
 type ConfigFileTemporal struct {
-	Client ConfigFileTemporalClient `mapstructure:"client"`
+	Client ConfigFileTemporalClient `mapstructure:"client" json:"client,omitempty"`
 }
 
 type ConfigFileTemporalClient struct {
 	// Temporal config options
-	TemporalBroadcastAddress string `mapstructure:"broadcastAddress" default:"http://127.0.0.1:7233"`
-	TemporalEnabled          bool   `mapstructure:"enabled" default:"true"`
-	TemporalHostPort         string `mapstructure:"hostPort" default:"127.0.0.1:7233"`
-	TemporalNamespace        string `mapstructure:"namespace" default:"default"`
-	TemporalBearerToken      string `mapstructure:"bearerToken"`
+	TemporalBroadcastAddress string `mapstructure:"broadcastAddress" json:"broadcastAddress,omitempty" default:"http://127.0.0.1:7233"`
+	TemporalEnabled          bool   `mapstructure:"enabled" json:"enabled,omitempty" default:"true"`
+	TemporalHostPort         string `mapstructure:"hostPort" json:"hostPort,omitempty" default:"127.0.0.1:7233"`
+	TemporalNamespace        string `mapstructure:"namespace" json:"namespace,omitempty" default:"default"`
+	TemporalBearerToken      string `mapstructure:"bearerToken" json:"bearerToken,omitempty"`
 
 	// TLS options
-	TemporalClientTLSRootCAFile string `mapstructure:"tlsRootCAFile"`
-	TemporalClientTLSCertFile   string `mapstructure:"tlsCertFile"`
-	TemporalClientTLSKeyFile    string `mapstructure:"tlsKeyFile"`
-	TemporalTLSServerName       string `mapstructure:"tlsServerName"`
+	TemporalClientTLSRootCAFile string `mapstructure:"tlsRootCAFile" json:"tlsRootCAFile,omitempty"`
+	TemporalClientTLSCertFile   string `mapstructure:"tlsCertFile" json:"tlsCertFile,omitempty"`
+	TemporalClientTLSKeyFile    string `mapstructure:"tlsKeyFile" json:"tlsKeyFile,omitempty"`
+	TemporalTLSServerName       string `mapstructure:"tlsServerName" json:"tlsServerName,omitempty"`
 }
 
 type LogStoreConfigFile struct {
-	LogStorageKind string `mapstructure:"kind" default:"file"`
+	LogStorageKind string `mapstructure:"kind" json:"kind,omitempty" default:"file"`
 
-	Redis LogStoreConfigFileRedis `mapstructure:"redis"`
+	Redis LogStoreConfigFileRedis `mapstructure:"redis" json:"redis,omitempty"`
 
-	File LogStoreConfigFileDirectory `mapstructure:"file"`
+	File LogStoreConfigFileDirectory `mapstructure:"file" json:"file,omitempty"`
 }
 
 type LogStoreConfigFileRedis struct {
-	RedisHost     string `mapstructure:"host" default:"redis"`
-	RedisPort     string `mapstructure:"port" default:"6379"`
-	RedisUsername string `mapstructure:"user"`
-	RedisPassword string `mapstructure:"password"`
-	RedisDB       int    `mapstructure:"db" default:"0"`
+	RedisHost     string `mapstructure:"host" json:"host,omitempty" default:"redis"`
+	RedisPort     string `mapstructure:"port" json:"port,omitempty" default:"6379"`
+	RedisUsername string `mapstructure:"user" json:"user,omitempty"`
+	RedisPassword string `mapstructure:"password" json:"password,omitempty"`
+	RedisDB       int    `mapstructure:"db" json:"db,omitempty" default:"0"`
 }
 
 type LogStoreConfigFileDirectory struct {
-	FileDirectory string `mapstructure:"directory" default:"./tmp/logs"`
+	FileDirectory string `mapstructure:"directory" json:"directory,omitempty" default:"./tmp/logs"`
 }
 
 type FileStorageConfigFile struct {
-	FileStorageKind string `mapstructure:"kind" default:"local" validator:"oneof=s3 local"`
+	FileStorageKind string `mapstructure:"kind" json:"kind,omitempty" default:"local" validator:"oneof=s3 local"`
 
-	Local FileStorageConfigFileLocal `mapstructure:"local"`
+	Local FileStorageConfigFileLocal `mapstructure:"local" json:"local,omitempty"`
 
-	S3 FileStorageConfigFileS3 `mapstructure:"s3"`
+	S3 FileStorageConfigFileS3 `mapstructure:"s3" json:"s3,omitempty"`
 }
 
 type FileStorageConfigFileLocal struct {
-	FileDirectory     string `mapstructure:"directory" default:"./tmp/files"`
-	FileEncryptionKey string `mapstructure:"encryptionKey" default:"__random_strong_encryption_key__"`
+	FileDirectory     string `mapstructure:"directory" json:"directory,omitempty" default:"./tmp/files"`
+	FileEncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
 }
 
 type FileStorageConfigFileS3 struct {
-	S3StateAWSAccessKeyID string `mapstructure:"accessKeyID"`
-	S3StateAWSSecretKey   string `mapstructure:"secretKey"`
-	S3StateAWSRegion      string `mapstructure:"region"`
-	S3StateBucketName     string `mapstructure:"bucketName"`
-	S3StateEncryptionKey  string `mapstructure:"encryptionKey" default:"__random_strong_encryption_key__"`
+	S3StateAWSAccessKeyID string `mapstructure:"accessKeyID" json:"accessKeyID,omitempty"`
+	S3StateAWSSecretKey   string `mapstructure:"secretKey" json:"secretKey,omitempty"`
+	S3StateAWSRegion      string `mapstructure:"region" json:"region,omitempty"`
+	S3StateBucketName     string `mapstructure:"bucketName" json:"bucketName,omitempty"`
+	S3StateEncryptionKey  string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
 }
 
 type ConfigFileAuth struct {
 	// RestrictedEmailDomains sets the restricted email domains for the instance.
-	RestrictedEmailDomains []string `mapstructure:"restrictedEmailDomains"`
+	RestrictedEmailDomains []string `mapstructure:"restrictedEmailDomains" json:"restrictedEmailDomains,omitempty"`
 
 	// BasedAuthEnabled controls whether email and password-based login is enabled for this
 	// Hatchet instances
-	BasicAuthEnabled bool `mapstructure:"basicAuthEnabled" default:"true"`
+	BasicAuthEnabled bool `mapstructure:"basicAuthEnabled" json:"basicAuthEnabled,omitempty" default:"true"`
 
 	// Configuration options for the cookie
-	Cookie ConfigFileAuthCookie `mapstructure:"cookie"`
+	Cookie ConfigFileAuthCookie `mapstructure:"cookie" json:"cookie,omitempty"`
 
 	// Configuration options for the token
-	Token ConfigFileAuthToken `mapstructure:"token"`
+	Token ConfigFileAuthToken `mapstructure:"token" json:"token,omitempty"`
 }
 
 type ConfigFileAuthCookie struct {
-	Name     string   `mapstructure:"name" default:"hatchet"`
-	Domain   string   `mapstructure:"domain"`
-	Secrets  []string `mapstructure:"secrets" default:"[\"random_hash_key_\",\"random_block_key\"]"`
-	Insecure bool     `mapstructure:"insecure" default:"false"`
+	Name     string   `mapstructure:"name" json:"name,omitempty" default:"hatchet"`
+	Domain   string   `mapstructure:"domain" json:"domain,omitempty"`
+	Secrets  []string `mapstructure:"secrets" json:"secrets,omitempty" default:"[\"random_hash_key_\",\"random_block_key\"]"`
+	Insecure bool     `mapstructure:"insecure" json:"insecure,omitempty" default:"false"`
 }
 
 type ConfigFileAuthToken struct {
 	// TokenIssuerURL is the endpoint of the issuer, typically equivalent to the server URL.
 	// This field should INCLUDE the protocol.
 	// If this is not set, it is set to the SERVER_URL variable.
-	TokenIssuerURL string `mapstructure:"issuer" validator:"url"`
+	TokenIssuerURL string `mapstructure:"issuer" json:"issuer,omitempty" validator:"url"`
 
 	// TokenAudience is the set of audiences for the JWT token issuer, typically equivalent to the server URL.
 	// This field should INCLUDE the protocol.
 	// If this is not set, it is set to the SERVER_URL variable.
-	TokenAudience []string `mapstructure:"audience" validator:"url"`
+	TokenAudience []string `mapstructure:"audience" json:"audience,omitempty" validator:"url"`
 }
 
 type Config struct {
