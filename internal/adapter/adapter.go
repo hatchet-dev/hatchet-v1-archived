@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/hatchet-dev/hatchet/internal/config/database"
@@ -32,6 +33,15 @@ func New(configFile *database.ConfigFile) (*gorm.DB, error) {
 	var err error
 
 	if configFile.Kind == "sqlite" {
+		// we create the data directory if it does not exist
+		sqliteDir := filepath.Dir(configFile.SQLite.SQLLitePath)
+
+		err = os.MkdirAll(sqliteDir, os.ModePerm)
+
+		if err != nil {
+			return nil, fmt.Errorf("could not create sqlite directory: %w", err)
+		}
+
 		// we add DisableForeignKeyConstraintWhenMigrating since our sqlite does
 		// not support foreign key constraints
 		db, err = gorm.Open(sqlite.Open(configFile.SQLite.SQLLitePath), &gorm.Config{

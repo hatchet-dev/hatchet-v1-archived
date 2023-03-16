@@ -1,0 +1,34 @@
+on:
+  release:
+    types: [released]
+name: Release
+jobs:
+  update-homebrew-repo:
+    name: Update the Homebrew repo with the new versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag name
+        id: tag_name
+        run: |
+          tag=${GITHUB_TAG/refs\/tags\//}
+          echo ::set-output name=tag::$tag
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+      - name: Create formula files
+        run: |
+          sh ./hack/release/create-formulae.sh ${{steps.tag_name.outputs.tag}}
+      - name: Add and commit hatchet.rb file
+        run: |
+          git clone https://abelanger5:${{ secrets.HOMEBREW_GITHUB_TOKEN }}@github.com/hatchet-dev/homebrew-hatchet
+
+          cd homebrew-hatchet
+          git config user.name "Update Bot"
+          git config user.email "support@hatchet.run"
+
+          mv ../hatchet.rb ./Formula/hatchet.rb
+          mv ../hatchet-server.rb ./Formula/hatchet-server.rb
+          mv ../hatchet-admin.rb ./Formula/hatchet-admin.rb
+
+          git add Formula
+          git commit -m "Update to version ${{steps.tag_name.outputs.tag}}"
+          git push origin main

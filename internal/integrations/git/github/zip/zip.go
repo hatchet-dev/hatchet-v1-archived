@@ -115,10 +115,10 @@ const HatchetRepositoryName = "hatchet"
 const HatchetStaticAssetsName = "hatchet-static"
 
 func GetHatchetStaticAssetsDownloadURL(version string) (string, error) {
-	return getHatchetAssetDownloadURL(version, HatchetStaticAssetsName)
+	return getHatchetAssetDownloadURL(version, HatchetStaticAssetsName, false)
 }
 
-func getHatchetAssetDownloadURL(releaseTag, assetName string) (string, error) {
+func getHatchetAssetDownloadURL(releaseTag, assetName string, isPlatformDependent bool) (string, error) {
 	client := github.NewClient(nil)
 
 	rel, _, err := client.Repositories.GetReleaseByTag(
@@ -132,26 +132,33 @@ func getHatchetAssetDownloadURL(releaseTag, assetName string) (string, error) {
 		return "", fmt.Errorf("release %s does not exist: %w", releaseTag, err)
 	}
 
-	re := getDownloadRegexp(assetName)
+	re := getDownloadRegexp(assetName, isPlatformDependent)
 	releaseURL := ""
 
 	// iterate through the assets
 	for _, asset := range rel.Assets {
-		if downloadURL := asset.GetBrowserDownloadURL(); re.MatchString(downloadURL) {
+		downloadURL := asset.GetBrowserDownloadURL()
+
+		if re.MatchString(asset.GetName()) {
 			releaseURL = downloadURL
+			break
 		}
 	}
 
 	return releaseURL, nil
 }
 
-func getDownloadRegexp(assetName string) *regexp.Regexp {
+func getDownloadRegexp(assetName string, isPlatformDependent bool) *regexp.Regexp {
+	if !isPlatformDependent {
+		return regexp.MustCompile(fmt.Sprintf(`%s_.*\.zip`, assetName))
+	}
+
 	switch os := runtime.GOOS; os {
 	case "darwin":
-		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*_Darwin_x86_64\.zip`, assetName))
+		return regexp.MustCompile(fmt.Sprintf(`%s_.*_Darwin_x86_64\.zip`, assetName))
 	case "linux":
-		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*_Linux_x86_64\.zip`, assetName))
+		return regexp.MustCompile(fmt.Sprintf(`%s_.*_Linux_x86_64\.zip`, assetName))
 	default:
-		return regexp.MustCompile(fmt.Sprintf(`(?i)%s_.*\.zip`, assetName))
+		return regexp.MustCompile(fmt.Sprintf(`%s_.*\.zip`, assetName))
 	}
 }
