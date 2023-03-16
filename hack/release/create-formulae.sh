@@ -77,7 +77,7 @@ class HatchetAdmin < Formula
   end
 EOL
 
-    # rm $name
+    rm $name
 }
 
 create_hatchet_formula
