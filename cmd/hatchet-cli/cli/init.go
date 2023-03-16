@@ -61,6 +61,12 @@ func runInit() error {
 		}
 	}
 
+	variables, err := loadVarFile(applyVarFilePath)
+
+	if err != nil {
+		return err
+	}
+
 	if matchedMod != nil {
 		return fmt.Errorf("cannot init module: a module already exists at path %s", path)
 	}
@@ -72,9 +78,7 @@ func runInit() error {
 			Local: &swagger.CreateModuleRequestLocal{
 				LocalPath: path,
 			},
-			ValuesRaw: map[string]interface{}{
-				"test": "testing",
-			},
+			ValuesRaw: variables,
 		},
 		config.ConfigFile.TeamID,
 	)
