@@ -78,16 +78,6 @@ const ModulesView: React.FunctionComponent = () => {
       width: 100,
     },
     {
-      Header: "Branch",
-      accessor: "repo_branch",
-      width: 70,
-    },
-    {
-      Header: "Source",
-      accessor: "source",
-      width: 70,
-    },
-    {
       Header: "Module Path",
       accessor: "path",
     },
@@ -109,7 +99,6 @@ const ModulesView: React.FunctionComponent = () => {
       repo_name: `${module.deployment.github_repo_owner}/${module.deployment.github_repo_name}`,
       repo_branch: module.deployment.github_repo_branch,
       last_deployed: relativeDate(module.updated_at),
-      source: "Github",
       path: module.deployment.path,
     };
   });

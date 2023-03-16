@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/hatchet-dev/hatchet/api/v1/client/swagger"
 	"github.com/spf13/cobra"
 )
 
@@ -141,6 +143,55 @@ func setAPIToken(apiToken string) error {
 
 	if err != nil {
 		return err
+	}
+
+	var shouldSetTeamID = v.GetString("teamID") == ""
+
+	if apiToken != "" && v.GetString("organizationID") == "" {
+		// reload api client with new token
+		clientConf := swagger.NewConfiguration()
+
+		clientConf.AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+
+		config.APIClient = swagger.NewAPIClient(clientConf)
+
+		orgs, _, err := config.APIClient.UsersApi.ListUserOrganizations(
+			context.Background(),
+			&swagger.UsersApiListUserOrganizationsOpts{},
+		)
+
+		if err != nil {
+			return fmt.Errorf("could not list user organizations with this token: %w", err)
+		}
+
+		if len(orgs.Rows) > 0 {
+			err = setOrganization(orgs.Rows[0].Id)
+
+			if err != nil {
+				return err
+			}
+
+			shouldSetTeamID = true
+		}
+	}
+
+	if apiToken != "" && shouldSetTeamID {
+		teams, _, err := config.APIClient.UsersApi.ListUserTeams(
+			context.Background(),
+			&swagger.UsersApiListUserTeamsOpts{},
+		)
+
+		if err != nil {
+			return fmt.Errorf("could not list user teams with this token: %w", err)
+		}
+
+		if len(teams.Rows) > 0 {
+			err = setTeam(teams.Rows[0].Id)
+
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
