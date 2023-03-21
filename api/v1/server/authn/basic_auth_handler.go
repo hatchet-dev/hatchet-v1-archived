@@ -52,7 +52,7 @@ type AuthNBasic struct {
 // ServeHTTP attaches an authenticated subject to the request context,
 // or serves a forbidden error. If authenticated, it calls the next handler.
 func (authn *AuthNBasic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	tokenKind, porterToken, ok := r.BasicAuth()
+	tokenKind, hatchetToken, ok := r.BasicAuth()
 
 	if ok {
 		if tokenKind != "pat" && tokenKind != "mrt" {
@@ -60,13 +60,13 @@ func (authn *AuthNBasic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if porterToken == "" {
-			authn.sendForbiddenError(fmt.Errorf("porter token does not exist"), w, r)
+		if hatchetToken == "" {
+			authn.sendForbiddenError(fmt.Errorf("hatchet token does not exist"), w, r)
 			return
 		}
 
 		if tokenKind == "pat" {
-			pat, err := token.GetPATFromEncoded(porterToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
+			pat, err := token.GetPATFromEncoded(hatchetToken, authn.config.DB.Repository.PersonalAccessToken(), authn.config.TokenOpts)
 
 			if err != nil {
 				authn.sendForbiddenError(err, w, r)
@@ -81,7 +81,7 @@ func (authn *AuthNBasic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			authn.nextWithUserID(w, r, pat.UserID)
 			return
 		} else if tokenKind == "mrt" {
-			mrt, err := token.GetMRTFromEncoded(porterToken, authn.config.DB.Repository.Module(), authn.config.TokenOpts)
+			mrt, err := token.GetMRTFromEncoded(hatchetToken, authn.config.DB.Repository.Module(), authn.config.TokenOpts)
 
 			if err != nil {
 				authn.sendForbiddenError(err, w, r)
