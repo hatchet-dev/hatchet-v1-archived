@@ -20,6 +20,7 @@ const teamHelper =
 const CreateTeams: React.FunctionComponent = () => {
   const [currOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
+  const [createdTeam, setCreatedTeam] = useState(false);
   const history = useHistory();
 
   const mutation = useMutation({
@@ -48,7 +49,12 @@ const CreateTeams: React.FunctionComponent = () => {
   return (
     <FlexCol>
       <SectionArea width="600px">
-        <TeamManager add_team_helper={teamHelper} />
+        <TeamManager
+          add_team_helper={teamHelper}
+          create_team={(t) => {
+            setCreatedTeam(true);
+          }}
+        />
       </SectionArea>
       <HorizontalSpacer spacepixels={24} />
       <FlexRowRight>
@@ -61,6 +67,7 @@ const CreateTeams: React.FunctionComponent = () => {
           }}
           margin={"0"}
           is_loading={mutation.isLoading}
+          disabled={!createdTeam}
         />
       </FlexRowRight>
     </FlexCol>

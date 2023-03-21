@@ -37,6 +37,7 @@ import UserAccountsView from "views/useraccounts/UserAccountsView";
 import CreateMonitorView from "views/createmonitor/CreateMonitorView";
 import ExpandedMonitorView from "views/expandedmonitor/ExpandedMonitorView";
 import Notifications from "views/notifications/Notifications";
+import HatchetErrorBoundary from "shared/errors/ErrorBoundary";
 
 const App: React.FunctionComponent = () => {
   const queryClient = new QueryClient();
@@ -47,7 +48,9 @@ const App: React.FunctionComponent = () => {
         <GlobalStyle />
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>
-            <AppContents />
+            <HatchetErrorBoundary>
+              <AppContents />
+            </HatchetErrorBoundary>
           </QueryClientProvider>
         </BrowserRouter>
       </AppWrapper>
@@ -398,7 +401,9 @@ const WrappedTeamContents: React.FunctionComponent<WrapperContentsProps> = ({
           links={DashboardSidebarLinks}
           team_links={DashboardTeamSidebarLinks}
         />
-        <ViewWrapper>{children}</ViewWrapper>
+        <HatchetErrorBoundary>
+          <ViewWrapper>{children}</ViewWrapper>
+        </HatchetErrorBoundary>
       </Populator>
     </>
   );

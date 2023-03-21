@@ -145,46 +145,85 @@ func setAPIToken(apiToken string) error {
 		return err
 	}
 
-	var shouldSetTeamID = v.GetString("teamID") == ""
+	if apiToken == "" {
+		return nil
+	}
 
-	if apiToken != "" && v.GetString("organizationID") == "" {
-		// reload api client with new token
-		clientConf := swagger.NewConfiguration()
+	// reload api client with new token
+	clientConf := swagger.NewConfiguration()
 
-		clientConf.AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+	clientConf.AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken))
 
-		config.APIClient = swagger.NewAPIClient(clientConf)
+	config.APIClient = swagger.NewAPIClient(clientConf)
 
-		orgs, _, err := config.APIClient.UsersApi.ListUserOrganizations(
-			context.Background(),
-			&swagger.UsersApiListUserOrganizationsOpts{},
-		)
+	// list user organizations to determine if org id needs to be reset
+	orgs, _, err := config.APIClient.UsersApi.ListUserOrganizations(
+		context.Background(),
+		&swagger.UsersApiListUserOrganizationsOpts{},
+	)
 
-		if err != nil {
-			return fmt.Errorf("could not list user organizations with this token: %w", err)
+	if err != nil {
+		return fmt.Errorf("could not list user organizations with this token: %w", err)
+	}
+
+	currOrgID := v.GetString("organizationID")
+
+	var shouldSetOrgID = currOrgID == ""
+
+	if currOrgID != "" {
+		foundOrgID := false
+
+		for _, org := range orgs.Rows {
+			if org.Id == currOrgID {
+				foundOrgID = true
+				break
+			}
 		}
 
+		if !foundOrgID {
+			shouldSetOrgID = true
+		}
+	}
+
+	if shouldSetOrgID {
 		if len(orgs.Rows) > 0 {
 			err = setOrganization(orgs.Rows[0].Id)
 
 			if err != nil {
 				return err
 			}
+		}
+	}
 
+	currTeamID := v.GetString("teamID")
+
+	shouldSetTeamID := currTeamID == ""
+
+	teams, _, err := config.APIClient.UsersApi.ListUserTeams(
+		context.Background(),
+		&swagger.UsersApiListUserTeamsOpts{},
+	)
+
+	if err != nil {
+		return fmt.Errorf("could not list user teams with this token: %w", err)
+	}
+
+	if currTeamID != "" {
+		foundTeamID := false
+
+		for _, team := range teams.Rows {
+			if team.Id == currTeamID {
+				foundTeamID = true
+				break
+			}
+		}
+
+		if !foundTeamID {
 			shouldSetTeamID = true
 		}
 	}
 
-	if apiToken != "" && shouldSetTeamID {
-		teams, _, err := config.APIClient.UsersApi.ListUserTeams(
-			context.Background(),
-			&swagger.UsersApiListUserTeamsOpts{},
-		)
-
-		if err != nil {
-			return fmt.Errorf("could not list user teams with this token: %w", err)
-		}
-
+	if shouldSetTeamID {
 		if len(teams.Rows) > 0 {
 			err = setTeam(teams.Rows[0].Id)
 

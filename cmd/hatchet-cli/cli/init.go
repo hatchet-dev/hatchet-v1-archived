@@ -67,29 +67,35 @@ func runInit() error {
 		return err
 	}
 
-	if matchedMod != nil {
-		return fmt.Errorf("cannot init module: a module already exists at path %s", path)
-	}
+	var modID string
 
-	mod, _, err := config.APIClient.ModulesApi.CreateModule(
-		context.Background(),
-		swagger.CreateModuleRequest{
-			Name: base,
-			Local: &swagger.CreateModuleRequestLocal{
-				LocalPath: path,
+	if matchedMod == nil {
+		mod, _, err := config.APIClient.ModulesApi.CreateModule(
+			context.Background(),
+			swagger.CreateModuleRequest{
+				Name: base,
+				Local: &swagger.CreateModuleRequestLocal{
+					LocalPath: path,
+				},
+				ValuesRaw: variables,
 			},
-			ValuesRaw: variables,
-		},
-		config.ConfigFile.TeamID,
-	)
+			config.ConfigFile.TeamID,
+		)
 
-	if err != nil {
-		return fmt.Errorf("could not create module: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not create module: %w", err)
+		}
+
+		color.New(color.FgGreen).Fprintf(os.Stdout, "successfully created module %s with id %s\n", mod.Name, mod.Id)
+
+		modID = mod.Id
+	} else {
+		color.New(color.FgGreen).Fprintf(os.Stdout, "found existing module %s with id %s\n", matchedMod.Name, matchedMod.Id)
+
+		modID = matchedMod.Id
 	}
 
-	color.New(color.FgGreen).Fprintf(os.Stdout, "successfully created module %s with id %s\n", mod.Name, mod.Id)
-
-	_, a, rc, err := getAction(mod.Id, "init", path)
+	_, a, rc, err := getAction(modID, "init", path)
 
 	if err != nil {
 		return err
