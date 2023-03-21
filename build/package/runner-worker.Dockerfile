@@ -3,7 +3,7 @@
 FROM golang:1.19-alpine as base
 WORKDIR /hatchet
 
-RUN apk update && apk add --no-cache gcc musl-dev git protoc
+RUN apk update && apk add --no-cache wget gcc musl-dev git protoc
 
 COPY go.mod go.sum ./
 COPY /api ./api
@@ -18,6 +18,10 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 RUN --mount=type=cache,target=$GOPATH/pkg/mod \
     go mod download
 
+# install terraform
+RUN wget https://releases.hashicorp.com/terraform/1.1.8/terraform_1.1.8_linux_amd64.zip
+RUN unzip terraform_1.1.8_linux_amd64.zip && rm terraform_1.1.8_linux_amd64.zip
+
 # Go build environment
 # --------------------
 FROM base AS build-go
@@ -29,33 +33,16 @@ RUN sh ./hack/proto/proto.sh
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=$GOPATH/pkg/mod \
-    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-server ./cmd/hatchet-server 
-
-# Webpack build environment
-# -------------------------
-FROM node:16 as build-webpack
-WORKDIR /webpack
-
-ARG NPM_TOKEN
-ENV NPM_TOKEN=$NPM_TOKEN
-
-COPY ./dashboard ./
-
-RUN npm install -g npm@8.1
-
-RUN npm i --legacy-peer-deps
-
-ENV NODE_ENV=production
-
-RUN npm run build
+    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner ./cmd/hatchet-runner & \
+    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner-worker ./cmd/hatchet-runner-worker
 
 # Deployment environment
 # ----------------------
 FROM alpine
 RUN apk update
 
-COPY --from=build-go /hatchet/bin/hatchet-server /hatchet/
-COPY --from=build-webpack /webpack/build /hatchet/static
+COPY --from=base /hatchet/terraform /usr/bin/terraform
+COPY --from=build-go /hatchet/bin/hatchet-runner /hatchet/
+COPY --from=build-go /hatchet/bin/hatchet-runner-worker /hatchet/
 
-EXPOSE 8080
-CMD /hatchet/hatchet-server
+CMD /hatchet/hatchet-runner-worker

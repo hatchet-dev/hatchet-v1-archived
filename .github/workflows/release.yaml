@@ -17,11 +17,26 @@ jobs:
       - name: Login to GHCR
         id: login-ghcr
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Pull and push
+      - name: Pull and push hatchet-server
         run: |
           docker pull ghcr.io/hatchet-dev/hatchet/hatchet-server:${{steps.tag_name.outputs.tag}}
           docker tag ghcr.io/hatchet-dev/hatchet/hatchet-server:${{steps.tag_name.outputs.tag}} ghcr.io/hatchet-dev/hatchet/hatchet-server:latest
           docker push ghcr.io/hatchet-dev/hatchet/hatchet-server:latest
+      - name: Pull and push hatchet-admin
+        run: |
+          docker pull ghcr.io/hatchet-dev/hatchet/hatchet-admin:${{steps.tag_name.outputs.tag}}
+          docker tag ghcr.io/hatchet-dev/hatchet/hatchet-admin:${{steps.tag_name.outputs.tag}} ghcr.io/hatchet-dev/hatchet/hatchet-admin:latest
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-admin:latest
+      - name: Pull and push hatchet-runner
+        run: |
+          docker pull ghcr.io/hatchet-dev/hatchet/hatchet-runner:${{steps.tag_name.outputs.tag}}
+          docker tag ghcr.io/hatchet-dev/hatchet/hatchet-runner:${{steps.tag_name.outputs.tag}} ghcr.io/hatchet-dev/hatchet/hatchet-runner:latest
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-runner:latest
+      - name: Pull and push hatchet-runner-worker
+        run: |
+          docker pull ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:${{steps.tag_name.outputs.tag}}
+          docker tag ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:${{steps.tag_name.outputs.tag}} ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:latest
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:latest
   update-homebrew-repo:
     name: Update the Homebrew repo with the new versions
     runs-on: ubuntu-latest
