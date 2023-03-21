@@ -10,7 +10,7 @@ COPY /api ./api
 COPY /cmd ./cmd
 COPY /ee ./ee
 COPY /internal ./internal
-COPY /scripts ./scripts
+COPY /hack ./hack
 COPY /pkg ./pkg
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
@@ -54,8 +54,6 @@ RUN apk update
 
 COPY --from=build-go /hatchet/bin/hatchet-server /hatchet/
 COPY --from=build-webpack /webpack/build /hatchet/static
-
-ENV STATIC_FILE_PATH=/hatchet/static
 
 EXPOSE 8080
 CMD /hatchet/hatchet-server

@@ -174,16 +174,12 @@ type Change struct {
 }
 
 type Resource struct {
-	Addr         string `json:"addr"`
-	Resource     string `json:"resource"`
-	ResourceType string `json:"resource_type"`
-	ResourceName string `json:"resource_name"`
-	Provider     string `json:"implied_provider"`
-
-	// auxiliary types added to resouce
-	// these are used by porter internally
-	// to mark which resources in particular errored out
-	Errored Errored `json:"errored,omitempty"`
+	Addr         string  `json:"addr"`
+	Resource     string  `json:"resource"`
+	ResourceType string  `json:"resource_type"`
+	ResourceName string  `json:"resource_name"`
+	Provider     string  `json:"implied_provider"`
+	Errored      Errored `json:"errored,omitempty"`
 }
 
 type Errored struct {
