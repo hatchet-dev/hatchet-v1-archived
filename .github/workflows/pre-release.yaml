@@ -22,10 +22,81 @@ jobs:
         run: |
           DOCKER_BUILDKIT=1 docker build -f ./build/package/server.Dockerfile \
             -t ghcr.io/hatchet-dev/hatchet/hatchet-server:${{steps.tag_name.outputs.tag}} \
+            --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} \
+            --build-arg VERSION=${{steps.tag_name.outputs.tag}} \
             . 
       - name: Push to GHCR
         run: |
           docker push ghcr.io/hatchet-dev/hatchet/hatchet-server:${{steps.tag_name.outputs.tag}}
+  build-push-hatchet-admin:
+    name: Build and push a new hatchet-admin docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag name
+        id: tag_name
+        run: echo "tag=${GITHUB_TAG/refs\/tags\//}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to GHCR
+        id: login-ghcr
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f ./build/package/admin.Dockerfile \
+            -t ghcr.io/hatchet-dev/hatchet/hatchet-admin:${{steps.tag_name.outputs.tag}} \
+            --build-arg VERSION=${{steps.tag_name.outputs.tag}} \
+            . 
+      - name: Push to GHCR
+        run: |
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-admin:${{steps.tag_name.outputs.tag}}
+  build-push-hatchet-runner:
+    name: Build and push a new hatchet-runner docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag name
+        id: tag_name
+        run: echo "tag=${GITHUB_TAG/refs\/tags\//}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to GHCR
+        id: login-ghcr
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f ./build/package/runner.Dockerfile \
+            -t ghcr.io/hatchet-dev/hatchet/hatchet-runner:${{steps.tag_name.outputs.tag}} \
+            --build-arg VERSION=${{steps.tag_name.outputs.tag}} \
+            . 
+      - name: Push to GHCR
+        run: |
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-runner:${{steps.tag_name.outputs.tag}}
+  build-push-hatchet-runner-worker:
+    name: Build and push a new hatchet-runner-worker docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag name
+        id: tag_name
+        run: echo "tag=${GITHUB_TAG/refs\/tags\//}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to GHCR
+        id: login-ghcr
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f ./build/package/runner-worker.Dockerfile \
+            -t ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:${{steps.tag_name.outputs.tag}} \
+            --build-arg VERSION=${{steps.tag_name.outputs.tag}} \
+            . 
+      - name: Push to GHCR
+        run: |
+          docker push ghcr.io/hatchet-dev/hatchet/hatchet-runner-worker:${{steps.tag_name.outputs.tag}}
   build-static:
     name: Build static assets
     runs-on: ubuntu-latest

@@ -29,33 +29,13 @@ RUN sh ./hack/proto/proto.sh
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=$GOPATH/pkg/mod \
-    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-server ./cmd/hatchet-server 
-
-# Webpack build environment
-# -------------------------
-FROM node:16 as build-webpack
-WORKDIR /webpack
-
-ARG NPM_TOKEN
-ENV NPM_TOKEN=$NPM_TOKEN
-
-COPY ./dashboard ./
-
-RUN npm install -g npm@8.1
-
-RUN npm i --legacy-peer-deps
-
-ENV NODE_ENV=production
-
-RUN npm run build
+    go build -ldflags="-w -s -X 'github.com/hatchet-dev/hatchet/cmd/hatchet-admin/cli.Version=${version}'" -a -o ./bin/hatchet-admin ./cmd/hatchet-admin 
 
 # Deployment environment
 # ----------------------
 FROM alpine
 RUN apk update
 
-COPY --from=build-go /hatchet/bin/hatchet-server /hatchet/
-COPY --from=build-webpack /webpack/build /hatchet/static
+COPY --from=build-go /hatchet/bin/hatchet-admin /hatchet/
 
-EXPOSE 8080
-CMD /hatchet/hatchet-server
+CMD /hatchet/hatchet-admin
