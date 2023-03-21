@@ -33,7 +33,10 @@ RUN sh ./hack/proto/proto.sh
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=$GOPATH/pkg/mod \
-    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner ./cmd/hatchet-runner & \
+    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner ./cmd/hatchet-runner
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=$GOPATH/pkg/mod \
     go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner-worker ./cmd/hatchet-runner-worker
 
 # Deployment environment
