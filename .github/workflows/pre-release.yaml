@@ -20,7 +20,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Build
         run: |
-          docker build -f ./build/package/server.Dockerfile \
+          DOCKER_BUILDKIT=1 docker build -f ./build/package/server.Dockerfile \
             -t ghcr.io/hatchet-dev/hatchet/hatchet-server:${{steps.tag_name.outputs.tag}} \
             . 
       - name: Push to GHCR
