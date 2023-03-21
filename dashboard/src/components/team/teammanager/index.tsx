@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import { CreateTeamRequest } from "shared/api/generated/data-contracts";
+import { CreateTeamRequest, Team } from "shared/api/generated/data-contracts";
 import { currOrgAtom } from "shared/atoms/atoms";
 import { useAtom } from "jotai";
 import CreateTeamForm from "../createteamform";
@@ -19,6 +19,7 @@ const defaultAddTeamHelper =
   "Add organization members by entering their email and assigning them a role.";
 
 type Props = {
+  create_team?: (team: Team) => void;
   can_remove?: boolean;
   header_level?: "H2" | "H3";
   add_team_helper?: string;
@@ -28,6 +29,7 @@ const TeamManager: React.FunctionComponent<Props> = ({
   can_remove = false,
   header_level = "H2",
   add_team_helper = defaultAddTeamHelper,
+  create_team,
 }) => {
   const [currOrg] = useAtom(currOrgAtom);
   const [err, setErr] = useState("");
@@ -51,6 +53,7 @@ const TeamManager: React.FunctionComponent<Props> = ({
     onSuccess: (data) => {
       setErr("");
       refetch();
+      create_team && create_team(data?.data);
     },
     onError: (err: any) => {
       if (!err?.error?.errors || err.error.errors.length == 0) {

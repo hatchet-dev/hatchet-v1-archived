@@ -101,6 +101,8 @@ const Populator: React.FunctionComponent<Props> = ({
       }
     }
   }, [
+    currOrg,
+    data,
     currTeam,
     currTeamsQuery.data,
     currTeamsQuery.isFetching,

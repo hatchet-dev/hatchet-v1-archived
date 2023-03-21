@@ -235,13 +235,17 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
         <HorizontalSpacer spacepixels={20} />
         <UpdateModuleName module={module} setModuleName={setName} />
         <HorizontalSpacer spacepixels={24} />
-        <ExpandableSettings text="Github settings">
-          <SelectGitSource
-            set_request={setGithubParams}
-            current_params={currentGithubParams}
-          />
-        </ExpandableSettings>
-        <HorizontalSpacer spacepixels={8} />
+        {module?.deployment_mechanism == "github" && (
+          <ExpandableSettings text="Github settings">
+            <SelectGitSource
+              set_request={setGithubParams}
+              current_params={currentGithubParams}
+            />
+          </ExpandableSettings>
+        )}
+        {module?.deployment_mechanism == "github" && (
+          <HorizontalSpacer spacepixels={8} />
+        )}
         <ExpandableSettings text="Values configuration">
           <SetModuleValues
             set_github_values={setGithubValueParams}

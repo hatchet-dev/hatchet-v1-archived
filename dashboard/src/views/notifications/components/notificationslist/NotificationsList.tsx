@@ -44,7 +44,7 @@ const NotificationsList: React.FC<Props> = ({ notifications }) => {
 
   return (
     <NotificationListContainer width="460px">
-      {notifications.map((notif) => {
+      {notifications?.map((notif) => {
         return (
           <NotificationMetaContainer
             key={notif.id}
