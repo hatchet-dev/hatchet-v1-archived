@@ -1,3 +1,5 @@
+ARG VERSION=v0.0.1
+
 # Base Go environment
 # -------------------
 FROM golang:1.19-alpine as base
@@ -22,14 +24,14 @@ RUN --mount=type=cache,target=$GOPATH/pkg/mod \
 # --------------------
 FROM base AS build-go
 
-ARG version=v0.0.1
+ARG VERSION
 
 # build proto files
 RUN sh ./hack/proto/proto.sh
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=$GOPATH/pkg/mod \
-    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-server ./cmd/hatchet-server 
+    go build -ldflags="-w -s -X 'main.Version=${VERSION}'" -a -o ./bin/hatchet-server ./cmd/hatchet-server 
 
 # Webpack build environment
 # -------------------------
