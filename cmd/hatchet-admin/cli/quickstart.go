@@ -31,6 +31,7 @@ var certDir string
 var staticDir string
 var generatedConfigDir string
 var skip []string
+var overwrite bool
 
 const (
 	StageCerts  string = "certs"
@@ -91,6 +92,13 @@ func init() {
 		[]string{},
 		"a list of steps to skip. possible values are \"certs\", \"static\", \"keys\", or \"tokens\"",
 	)
+
+	quickstartCmd.PersistentFlags().BoolVar(
+		&overwrite,
+		"overwrite",
+		true,
+		"whether generated files should be overwritten, if they exist",
+	)
 }
 
 func runQuickstart() error {
@@ -98,6 +106,23 @@ func runQuickstart() error {
 
 	if err != nil {
 		return fmt.Errorf("could not get base config files: %w", err)
+	}
+
+	if !overwrite {
+		sharedPath := filepath.Join(generatedConfigDir, "./shared.yaml")
+		temporalPath := filepath.Join(generatedConfigDir, "./temporal.yaml")
+		serverPath := filepath.Join(generatedConfigDir, "./server.yaml")
+		databasePath := filepath.Join(generatedConfigDir, "./database.yaml")
+		backgroundWorkerPath := filepath.Join(generatedConfigDir, "./background_worker.yaml")
+
+		if fileExists(sharedPath) &&
+			fileExists(temporalPath) &&
+			fileExists(serverPath) &&
+			fileExists(databasePath) &&
+			fileExists(backgroundWorkerPath) {
+			fmt.Printf("skipping quickstart because all generated files exist\n")
+			return nil
+		}
 	}
 
 	if !shouldSkip(StageCerts) {
@@ -448,65 +473,84 @@ func writeGeneratedConfig(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not create generated config directory: %w", err)
 	}
 
-	sharedConfigBytes, err := yaml.Marshal(generated.shared)
+	if sharedPath := filepath.Join(generatedConfigDir, "./shared.yaml"); overwrite || !fileExists(sharedPath) {
+		sharedConfigBytes, err := yaml.Marshal(generated.shared)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(sharedPath, sharedConfigBytes, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not write shared.yaml file: %w", err)
+		}
 	}
 
-	err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./shared.yaml"), sharedConfigBytes, 0666)
+	if databasePath := filepath.Join(generatedConfigDir, "./database.yaml"); overwrite || !fileExists(databasePath) {
+		databaseConfigBytes, err := yaml.Marshal(generated.dc)
 
-	if err != nil {
-		return fmt.Errorf("could not write shared.yaml file: %w", err)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(databasePath, databaseConfigBytes, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not write database.yaml file: %w", err)
+		}
+
 	}
 
-	databaseConfigBytes, err := yaml.Marshal(generated.dc)
+	if serverPath := filepath.Join(generatedConfigDir, "./server.yaml"); overwrite || !fileExists(serverPath) {
+		serverConfigBytes, err := yaml.Marshal(generated.sc)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(serverPath, serverConfigBytes, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not write server.yaml file: %w", err)
+		}
 	}
 
-	err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./database.yaml"), databaseConfigBytes, 0666)
+	if backgroundWorkerPath := filepath.Join(generatedConfigDir, "./background_worker.yaml"); overwrite || !fileExists(backgroundWorkerPath) {
+		backgroundWorkerConfigBytes, err := yaml.Marshal(generated.bwc)
 
-	if err != nil {
-		return fmt.Errorf("could not write database.yaml file: %w", err)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./background_worker.yaml"), backgroundWorkerConfigBytes, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not write background_worker.yaml file: %w", err)
+		}
 	}
 
-	serverConfigBytes, err := yaml.Marshal(generated.sc)
+	if temporalPath := filepath.Join(generatedConfigDir, "./temporal.yaml"); overwrite || !fileExists(temporalPath) {
+		temporalConfigBytes, err := yaml.Marshal(generated.tc)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./server.yaml"), serverConfigBytes, 0666)
+		err = ioutil.WriteFile(temporalPath, temporalConfigBytes, 0666)
 
-	if err != nil {
-		return fmt.Errorf("could not write server.yaml file: %w", err)
-	}
-
-	backgroundWorkerConfigBytes, err := yaml.Marshal(generated.bwc)
-
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./background_worker.yaml"), backgroundWorkerConfigBytes, 0666)
-
-	if err != nil {
-		return fmt.Errorf("could not write background_worker.yaml file: %w", err)
-	}
-
-	temporalConfigBytes, err := yaml.Marshal(generated.tc)
-
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./temporal.yaml"), temporalConfigBytes, 0666)
-
-	if err != nil {
-		return fmt.Errorf("could not write temporal.yaml file: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not write temporal.yaml file: %w", err)
+		}
 	}
 
 	return nil
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
