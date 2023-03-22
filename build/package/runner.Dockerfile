@@ -1,3 +1,5 @@
+ARG VERSION=v0.0.1
+
 # Base Go environment
 # -------------------
 FROM golang:1.19-alpine as base
@@ -26,14 +28,14 @@ RUN unzip terraform_1.1.8_linux_amd64.zip && rm terraform_1.1.8_linux_amd64.zip
 # --------------------
 FROM base AS build-go
 
-ARG version=v0.0.1
+ARG VERSION
 
 # build proto files
 RUN sh ./hack/proto/proto.sh
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=$GOPATH/pkg/mod \
-    go build -ldflags="-w -s -X 'main.Version=${version}'" -a -o ./bin/hatchet-runner ./cmd/hatchet-runner
+    go build -ldflags="-w -s -X 'main.Version=${VERSION}'" -a -o ./bin/hatchet-runner ./cmd/hatchet-runner
 
 # Deployment environment
 # ----------------------

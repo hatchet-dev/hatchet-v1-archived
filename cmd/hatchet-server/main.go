@@ -27,7 +27,6 @@ import (
 
 var printVersion bool
 var configDirectory string
-var configPreset string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -62,13 +61,6 @@ func main() {
 		"config",
 		"",
 		"The path the config folder.",
-	)
-
-	rootCmd.PersistentFlags().StringVar(
-		&configPreset,
-		"preset",
-		"",
-		"The preset config (options: \"local\").",
 	)
 
 	if err := rootCmd.Execute(); err != nil {

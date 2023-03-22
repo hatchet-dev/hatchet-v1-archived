@@ -30,6 +30,14 @@ import (
 var certDir string
 var staticDir string
 var generatedConfigDir string
+var skip []string
+
+const (
+	StageCerts  string = "certs"
+	StageKeys   string = "keys"
+	StageTokens string = "tokens"
+	StageStatic string = "static"
+)
 
 var quickstartCmd = &cobra.Command{
 	Use:   "quickstart",
@@ -76,6 +84,13 @@ func init() {
 		"./static",
 		"path to the directory where the static assets should be served from",
 	)
+
+	quickstartCmd.PersistentFlags().StringArrayVar(
+		&skip,
+		"skip",
+		[]string{},
+		"a list of steps to skip. possible values are \"certs\", \"static\", \"keys\", or \"tokens\"",
+	)
 }
 
 func runQuickstart() error {
@@ -85,28 +100,36 @@ func runQuickstart() error {
 		return fmt.Errorf("could not get base config files: %w", err)
 	}
 
-	err = setupCerts(generated)
+	if !shouldSkip(StageCerts) {
+		err = setupCerts(generated)
 
-	if err != nil {
-		return fmt.Errorf("could not setup certs: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not setup certs: %w", err)
+		}
 	}
 
-	err = generateKeys(generated)
+	if !shouldSkip(StageKeys) {
+		err = generateKeys(generated)
 
-	if err != nil {
-		return fmt.Errorf("could not generate server keys: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not generate server keys: %w", err)
+		}
 	}
 
-	err = generateBearerToken(generated)
+	if !shouldSkip(StageTokens) {
+		err = generateBearerToken(generated)
 
-	if err != nil {
-		return fmt.Errorf("could not generate internal bearer token: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not generate internal bearer token: %w", err)
+		}
 	}
 
-	err = downloadStaticFiles(generated)
+	if !shouldSkip(StageStatic) {
+		err = downloadStaticFiles(generated)
 
-	if err != nil {
-		return fmt.Errorf("could not download static files: %w", err)
+		if err != nil {
+			return fmt.Errorf("could not download static files: %w", err)
+		}
 	}
 
 	err = writeGeneratedConfig(generated)
@@ -116,6 +139,16 @@ func runQuickstart() error {
 	}
 
 	return nil
+}
+
+func shouldSkip(stage string) bool {
+	for _, skipStage := range skip {
+		if stage == skipStage {
+			return true
+		}
+	}
+
+	return false
 }
 
 func loadBaseConfigFiles() (*generatedConfigFiles, error) {
