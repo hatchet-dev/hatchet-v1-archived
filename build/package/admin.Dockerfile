@@ -34,7 +34,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 # Deployment environment
 # ----------------------
 FROM alpine
-RUN apk update && apk add --no-cache openssl
+RUN apk update && apk add --no-cache openssl bash
 
 COPY --from=build-go /hatchet/bin/hatchet-admin /hatchet/
 
