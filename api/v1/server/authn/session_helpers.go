@@ -103,7 +103,9 @@ func ValidateOAuthState(
 	}
 
 	if isOAuthTriggeredVal, exists := session.Values["oauth_triggered"]; exists {
-		isOAuthTriggered, ok := isOAuthTriggeredVal.(bool)
+		var ok bool
+
+		isOAuthTriggered, ok = isOAuthTriggeredVal.(bool)
 
 		isOAuthTriggered = ok && isOAuthTriggered
 	}

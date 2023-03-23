@@ -59,7 +59,7 @@ const SideBar: React.FunctionComponent<Props> = ({
   });
 
   const userTeamsQuery = useQuery({
-    queryKey: ["current_user_teams", currOrg.id],
+    queryKey: ["current_user_teams", currOrg?.id],
     queryFn: async () => {
       const res = await api.listUserTeams({
         organization_id: currOrg.id,
