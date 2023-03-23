@@ -127,14 +127,14 @@ const ModulesView: React.FunctionComponent = () => {
       <HorizontalSpacer spacepixels={12} />
       <P>Modules are all Terraform modules which have a Terraform state.</P>
       <FlexRowRight>
-        <Filter />
         <StandardButton
           label="Create module"
           material_icon="add"
           on_click={handleCreateModuleClick}
+          margin="0"
         />
       </FlexRowRight>
-      <HorizontalSpacer spacepixels={12} />
+      <HorizontalSpacer spacepixels={30} />
       {renderModules()}
       <FlexRowRight>
         <Paginator

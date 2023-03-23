@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -162,7 +161,7 @@ type OrganizationInviteLink struct {
 	// Whether the invite link has been used
 	Used bool
 
-	// Hashed before write
+	// Encrypted before write
 	Token []byte
 
 	// Encrypted before write
@@ -241,15 +240,6 @@ func (o *OrganizationInviteLink) BeforeCreate(tx *gorm.DB) error {
 		return err
 	}
 
-	// hash the token before write
-	hashedTok, err := bcrypt.GenerateFromPassword([]byte(o.Token), 8)
-
-	if err != nil {
-		return err
-	}
-
-	o.Token = hashedTok
-
 	expiryTime := time.Now().Add(24 * time.Hour)
 
 	o.Expires = &expiryTime
@@ -263,9 +253,7 @@ func (o *OrganizationInviteLink) IsExpired() bool {
 }
 
 func (o *OrganizationInviteLink) VerifyToken(tok []byte) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(o.Token, tok)
-
-	return err == nil, err
+	return string(tok) == string(o.Token), nil
 }
 
 func (o *OrganizationInviteLink) Encrypt(key *[32]byte) error {
@@ -277,6 +265,14 @@ func (o *OrganizationInviteLink) Encrypt(key *[32]byte) error {
 		}
 
 		o.InviteLinkURL = ciphertext
+
+		ciphertext, err = encryption.Encrypt(o.Token, key)
+
+		if err != nil {
+			return err
+		}
+
+		o.Token = ciphertext
 		o.HasEncryptedFields.FieldsAreEncrypted = true
 	}
 
@@ -292,6 +288,15 @@ func (o *OrganizationInviteLink) Decrypt(key *[32]byte) error {
 		}
 
 		o.InviteLinkURL = plaintext
+
+		plaintext, err = encryption.Decrypt(o.Token, key)
+
+		if err != nil {
+			return err
+		}
+
+		o.Token = plaintext
+
 		o.HasEncryptedFields.FieldsAreEncrypted = false
 	}
 

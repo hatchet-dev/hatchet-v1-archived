@@ -59,6 +59,8 @@ func (o *OrgAcceptMemberInviteHandler) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
+	invite.Decrypt(o.Config().DB.GetEncryptionKey())
+
 	// validate the hashed token
 	valid, err := invite.VerifyToken([]byte(urlParamInviteTok))
 

@@ -162,14 +162,14 @@ const MonitoringView: React.FunctionComponent = () => {
         This dashboard displays all monitors that are set up for your modules.
       </P>
       <FlexRowRight>
-        <Filter />
         <StandardButton
           label="Create monitor"
           material_icon="add"
           on_click={handleCreateMonitorClick}
+          margin="0"
         />
       </FlexRowRight>
-      <HorizontalSpacer spacepixels={12} />
+      <HorizontalSpacer spacepixels={30} />
       {renderMonitors()}
       <FlexRowRight>
         <Paginator

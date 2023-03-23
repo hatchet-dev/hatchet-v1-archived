@@ -81,7 +81,6 @@ const TemplatesView: React.FunctionComponent = () => {
         remote Terraform registry or linked directly from Github.
       </P>
       <FlexRowRight>
-        <Filter />
         <StandardButton
           label="Add template"
           material_icon="add"

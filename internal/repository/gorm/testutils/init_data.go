@@ -244,13 +244,13 @@ func InitOrgInviteLinks(t *testing.T, conf *database.Config) error {
 				return err
 			}
 
+			OrgInviteLinksUnencryptedTok[invite.ID] = string(invite.Token)
+
 			err = invite.Encrypt(conf.GetEncryptionKey())
 
 			if err != nil {
 				return err
 			}
-
-			OrgInviteLinksUnencryptedTok[invite.ID] = string(invite.Token)
 
 			invite.InviteeEmail = declaredOrgInvite.InviteeEmail
 
