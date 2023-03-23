@@ -18,7 +18,7 @@ type TemporalConfigFile struct {
 	TemporalSQLLitePath        string   `mapstructure:"sqlLitePath" json:"sqlLitePath,omitempty" default:"/hatchet/temporal.db"`
 	TemporalNamespaces         []string `mapstructure:"namespaces" json:"namespaces,omitempty" default:"[\"default\"]"`
 	TemporalInternalNamespace  string   `mapstructure:"internalNamespace" json:"internalNamespace,omitempty" default:"hatchet-internal"`
-	TemporalInternalSigningKey string   `mapstructure:"internalSigningKey" json:"internalSigningKey,omitempty" default:"__random_strong_encryption_key__"`
+	TemporalInternalSigningKey string   `mapstructure:"internalSigningKey" json:"internalSigningKey,omitempty"`
 
 	Token shared.ConfigFileAuthToken `mapstructure:"token" json:"token,omitempty"`
 
