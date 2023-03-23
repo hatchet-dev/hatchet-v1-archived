@@ -127,7 +127,6 @@ const ModulesView: React.FunctionComponent = () => {
       <HorizontalSpacer spacepixels={12} />
       <P>Modules are all Terraform modules which have a Terraform state.</P>
       <FlexRowRight>
-        <Filter />
         <StandardButton
           label="Create module"
           material_icon="add"
