@@ -129,7 +129,7 @@ func loadConfigFromViper(bindFunc func(v *viper.Viper), configFile interface{}, 
 	bindFunc(v)
 
 	for _, f := range files {
-		err := v.ReadConfig(bytes.NewBuffer(f))
+		err := v.MergeConfig(bytes.NewBuffer(f))
 
 		if err != nil {
 			return nil, fmt.Errorf("could not load viper config: %w", err)
