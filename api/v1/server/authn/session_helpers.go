@@ -73,8 +73,6 @@ func SaveOAuthState(
 	// need state parameter to validate when redirected
 	session.Values["state"] = string(stateBytes)
 
-	fmt.Println("WROTE STATE PARAM", session.Values["state"])
-
 	// need a parameter to indicate that this was triggered through the oauth flow
 	session.Values["oauth_triggered"] = true
 
