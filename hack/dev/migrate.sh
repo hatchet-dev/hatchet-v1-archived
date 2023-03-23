@@ -1,3 +1,7 @@
 #!/bin/bash
 
-env $(cat .env | xargs) go run -tags ee ./cmd/hatchet-server-migrate/main.go
+set -a
+. .env
+set +a
+
+go run -tags ee ./cmd/hatchet-server-migrate/main.go

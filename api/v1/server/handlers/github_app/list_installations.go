@@ -1,6 +1,7 @@
 package github_app
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -38,6 +39,20 @@ func (g *ListGithubAppInstallationsHandler) ServeHTTP(w http.ResponseWriter, r *
 	gais, paginate, err := g.Repo().GithubAppInstallation().ListGithubAppInstallationsByUserID(user.ID, repository.WithPage(req.PaginationRequest))
 
 	if err != nil {
+		if errors.Is(err, repository.RepositoryErrorNotFound) {
+			resp := &types.ListGithubAppInstallationsResponse{
+				Pagination: &types.PaginationResponse{
+					NumPages:    1,
+					CurrentPage: 1,
+					NextPage:    1,
+				},
+				Rows: make([]*types.GithubAppInstallation, 0),
+			}
+
+			g.WriteResult(w, r, resp)
+			return
+		}
+
 		g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return
 	}
