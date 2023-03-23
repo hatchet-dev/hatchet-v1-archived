@@ -81,6 +81,8 @@ func WithURLParamInviteTok(orgInitDataIndex uint, inviteeEmail string) GenerateU
 		orgMember, _ := config.DB.Repository.Org().ReadOrgMemberByUserOrInviteeEmail(testutils.OrgModels[orgInitDataIndex].ID, inviteeEmail, false)
 		invite := &orgMember.InviteLink
 
+		invite.Decrypt(config.DB.GetEncryptionKey())
+
 		currParams[string(types.URLParamOrgMemberInviteTok)] = testutils.OrgInviteLinksUnencryptedTok[invite.ID]
 
 		return currParams
