@@ -9,7 +9,7 @@ import (
 type ConfigFile struct {
 	Kind string `mapstructure:"kind" json:"kind,omitempty" default:"sqlite"`
 
-	EncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
+	EncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty"`
 
 	AutoMigrate bool `mapstructure:"autoMigrate" json:"autoMigrate,omitempty" default:"true"`
 

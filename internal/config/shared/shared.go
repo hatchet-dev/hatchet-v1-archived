@@ -62,7 +62,7 @@ type FileStorageConfigFile struct {
 
 type FileStorageConfigFileLocal struct {
 	FileDirectory     string `mapstructure:"directory" json:"directory,omitempty" default:"./tmp/files"`
-	FileEncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
+	FileEncryptionKey string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty"`
 }
 
 type FileStorageConfigFileS3 struct {
@@ -70,7 +70,7 @@ type FileStorageConfigFileS3 struct {
 	S3StateAWSSecretKey   string `mapstructure:"secretKey" json:"secretKey,omitempty"`
 	S3StateAWSRegion      string `mapstructure:"region" json:"region,omitempty"`
 	S3StateBucketName     string `mapstructure:"bucketName" json:"bucketName,omitempty"`
-	S3StateEncryptionKey  string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty" default:"__random_strong_encryption_key__"`
+	S3StateEncryptionKey  string `mapstructure:"encryptionKey" json:"encryptionKey,omitempty"`
 }
 
 type ConfigFileAuth struct {
@@ -91,7 +91,7 @@ type ConfigFileAuth struct {
 type ConfigFileAuthCookie struct {
 	Name     string   `mapstructure:"name" json:"name,omitempty" default:"hatchet"`
 	Domain   string   `mapstructure:"domain" json:"domain,omitempty"`
-	Secrets  []string `mapstructure:"secrets" json:"secrets,omitempty" default:"[\"random_hash_key_\",\"random_block_key\"]"`
+	Secrets  []string `mapstructure:"secrets" json:"secrets,omitempty"`
 	Insecure bool     `mapstructure:"insecure" json:"insecure,omitempty" default:"false"`
 }
 

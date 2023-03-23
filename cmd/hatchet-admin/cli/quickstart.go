@@ -59,6 +59,7 @@ type generatedConfigFiles struct {
 	shared *shared.ConfigFile
 	dc     *database.ConfigFile
 	bwc    *worker.BackgroundConfigFile
+	rwc    *worker.RunnerConfigFile
 	tc     *temporal.TemporalConfigFile
 }
 
@@ -106,23 +107,6 @@ func runQuickstart() error {
 
 	if err != nil {
 		return fmt.Errorf("could not get base config files: %w", err)
-	}
-
-	if !overwrite {
-		sharedPath := filepath.Join(generatedConfigDir, "./shared.yaml")
-		temporalPath := filepath.Join(generatedConfigDir, "./temporal.yaml")
-		serverPath := filepath.Join(generatedConfigDir, "./server.yaml")
-		databasePath := filepath.Join(generatedConfigDir, "./database.yaml")
-		backgroundWorkerPath := filepath.Join(generatedConfigDir, "./background_worker.yaml")
-
-		if fileExists(sharedPath) &&
-			fileExists(temporalPath) &&
-			fileExists(serverPath) &&
-			fileExists(databasePath) &&
-			fileExists(backgroundWorkerPath) {
-			fmt.Printf("skipping quickstart because all generated files exist\n")
-			return nil
-		}
 	}
 
 	if !shouldSkip(StageCerts) {
@@ -178,68 +162,75 @@ func shouldSkip(stage string) bool {
 
 func loadBaseConfigFiles() (*generatedConfigFiles, error) {
 	res := &generatedConfigFiles{}
+	var err error
 
-	configFileBytes, err := ioutil.ReadFile(filepath.Join(configDirectory, "shared.yaml"))
-
-	if err != nil {
-		return nil, err
-	}
-
-	res.shared, err = loader.LoadSharedConfigFile(configFileBytes)
+	res.shared, err = loader.LoadSharedConfigFile(getFiles("shared.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	configFileBytes, err = ioutil.ReadFile(filepath.Join(configDirectory, "database.yaml"))
+	res.dc, err = loader.LoadDatabaseConfigFile(getFiles("database.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	res.dc, err = loader.LoadDatabaseConfigFile(configFileBytes)
+	res.sc, err = loader.LoadServerConfigFile(getFiles("server.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	configFileBytes, err = ioutil.ReadFile(filepath.Join(configDirectory, "server.yaml"))
+	res.bwc, err = loader.LoadBackgroundWorkerConfigFile(getFiles("background_worker.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	res.sc, err = loader.LoadServerConfigFile(configFileBytes)
+	res.rwc, err = loader.LoadRunnerWorkerConfigFile(getFiles("runner_worker.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	configFileBytes, err = ioutil.ReadFile(filepath.Join(configDirectory, "background_worker.yaml"))
-
-	if err != nil {
-		return nil, err
-	}
-
-	res.bwc, err = loader.LoadBackgroundWorkerConfigFile(configFileBytes)
-
-	if err != nil {
-		return nil, err
-	}
-
-	configFileBytes, err = ioutil.ReadFile(filepath.Join(configDirectory, "temporal.yaml"))
-
-	if err != nil {
-		return nil, err
-	}
-
-	res.tc, err = loader.LoadTemporalConfigFile(configFileBytes)
+	res.tc, err = loader.LoadTemporalConfigFile(getFiles("temporal.yaml")...)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+func getFiles(name string) [][]byte {
+	files := [][]byte{}
+
+	basePath := filepath.Join(configDirectory, name)
+
+	if fileExists(basePath) {
+		configFileBytes, err := ioutil.ReadFile(basePath)
+
+		if err != nil {
+			panic(err)
+		}
+
+		files = append(files, configFileBytes)
+	}
+
+	generatedPath := filepath.Join(generatedConfigDir, name)
+
+	if fileExists(generatedPath) {
+		generatedFileBytes, err := ioutil.ReadFile(filepath.Join(generatedConfigDir, name))
+
+		if err != nil {
+			panic(err)
+		}
+
+		files = append(files, generatedFileBytes)
+	}
+
+	return files
 }
 
 //go:embed certs/cluster-cert.conf
@@ -257,88 +248,98 @@ var GenerateCertsScript string
 func setupCerts(generated *generatedConfigFiles) error {
 	color.New(color.FgGreen).Printf("Generating certificates in cert directory %s\n", certDir)
 
-	// verify that bash and openssl are installed on the system
-	if !cliutils.CommandExists("openssl") {
-		return fmt.Errorf("openssl must be installed and available in your $PATH")
+	// if we determine we should write the root CA file, we regenerate ALL certificates
+	if shouldWriteConfig(generated.shared.Temporal.Client.TemporalClientTLSRootCAFile) {
+		generated.shared.Temporal.Client.TemporalEnabled = true
+
+		// verify that bash and openssl are installed on the system
+		if !cliutils.CommandExists("openssl") {
+			return fmt.Errorf("openssl must be installed and available in your $PATH")
+		}
+
+		if !cliutils.CommandExists("bash") {
+			return fmt.Errorf("bash must be installed and available in your $PATH")
+		}
+
+		cwd, err := os.Getwd()
+
+		if err != nil {
+			return err
+		}
+
+		// write certificate config files to system
+		fullPathCertDir := filepath.Join(cwd, certDir)
+
+		err = os.MkdirAll(fullPathCertDir, os.ModePerm)
+
+		if err != nil {
+			return fmt.Errorf("could not create cert directory: %w", err)
+		}
+
+		err = os.WriteFile(filepath.Join(fullPathCertDir, "./cluster-cert.conf"), ClusterCertConf, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not create cluster-cert.conf file: %w", err)
+		}
+
+		err = os.WriteFile(filepath.Join(fullPathCertDir, "./internal-admin-client-cert.conf"), InternalAdminClientCertConf, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not create internal-admin-client-cert.conf file: %w", err)
+		}
+
+		err = os.WriteFile(filepath.Join(fullPathCertDir, "./worker-client-cert.conf"), WorkerClientCertConf, 0666)
+
+		if err != nil {
+			return fmt.Errorf("could not create worker-client-cert.conf file: %w", err)
+		}
+
+		// run openssl commands
+		c := exec.Command("bash", "-s", "-", fullPathCertDir)
+
+		c.Stdin = strings.NewReader(GenerateCertsScript)
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+
+		err = c.Run()
+
+		if err != nil {
+			return err
+		}
+
+		generated.shared.Temporal.Client.TemporalClientTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
+		generated.shared.Temporal.Client.TemporalClientTLSCertFile = filepath.Join(fullPathCertDir, "client-internal-admin.pem")
+		generated.shared.Temporal.Client.TemporalClientTLSKeyFile = filepath.Join(fullPathCertDir, "client-internal-admin.key")
+		generated.shared.Temporal.Client.TemporalTLSServerName = "cluster"
+
+		generated.tc.Frontend.TemporalFrontendTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
+		generated.tc.Frontend.TemporalFrontendTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
+		generated.tc.Frontend.TemporalFrontendTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
+		generated.tc.Frontend.TemporalFrontendTLSServerName = "cluster"
+
+		generated.tc.Internode.TemporalInternodeTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
+		generated.tc.Internode.TemporalInternodeTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
+		generated.tc.Internode.TemporalInternodeTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
+		generated.tc.Internode.TemporalInternodeTLSServerName = "cluster"
+
+		generated.tc.Worker.TemporalWorkerTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
+		generated.tc.Worker.TemporalWorkerTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
+		generated.tc.Worker.TemporalWorkerTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
+		generated.tc.Worker.TemporalWorkerTLSServerName = "cluster"
+
+		generated.tc.UI.TemporalUITLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
+		generated.tc.UI.TemporalUITLSCertFile = filepath.Join(fullPathCertDir, "client-internal-admin.pem")
+		generated.tc.UI.TemporalUITLSKeyFile = filepath.Join(fullPathCertDir, "client-internal-admin.key")
+		generated.tc.UI.TemporalUITLSServerName = "cluster"
+	} else {
+		fmt.Println("skipping certificate generation because root CA is already set")
 	}
-
-	if !cliutils.CommandExists("bash") {
-		return fmt.Errorf("bash must be installed and available in your $PATH")
-	}
-
-	cwd, err := os.Getwd()
-
-	if err != nil {
-		return err
-	}
-
-	// write certificate config files to system
-	fullPathCertDir := filepath.Join(cwd, certDir)
-
-	err = os.MkdirAll(fullPathCertDir, os.ModePerm)
-
-	if err != nil {
-		return fmt.Errorf("could not create cert directory: %w", err)
-	}
-
-	err = os.WriteFile(filepath.Join(fullPathCertDir, "./cluster-cert.conf"), ClusterCertConf, 0666)
-
-	if err != nil {
-		return fmt.Errorf("could not create cluster-cert.conf file: %w", err)
-	}
-
-	err = os.WriteFile(filepath.Join(fullPathCertDir, "./internal-admin-client-cert.conf"), InternalAdminClientCertConf, 0666)
-
-	if err != nil {
-		return fmt.Errorf("could not create internal-admin-client-cert.conf file: %w", err)
-	}
-
-	err = os.WriteFile(filepath.Join(fullPathCertDir, "./worker-client-cert.conf"), WorkerClientCertConf, 0666)
-
-	if err != nil {
-		return fmt.Errorf("could not create worker-client-cert.conf file: %w", err)
-	}
-
-	// run openssl commands
-	c := exec.Command("bash", "-s", "-", fullPathCertDir)
-
-	c.Stdin = strings.NewReader(GenerateCertsScript)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
-	err = c.Run()
-
-	if err != nil {
-		return err
-	}
-
-	generated.shared.Temporal.Client.TemporalEnabled = true
-	generated.shared.Temporal.Client.TemporalClientTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
-	generated.shared.Temporal.Client.TemporalClientTLSCertFile = filepath.Join(fullPathCertDir, "client-internal-admin.pem")
-	generated.shared.Temporal.Client.TemporalClientTLSKeyFile = filepath.Join(fullPathCertDir, "client-internal-admin.key")
-	generated.shared.Temporal.Client.TemporalTLSServerName = "cluster"
-
-	generated.tc.Frontend.TemporalFrontendTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
-	generated.tc.Frontend.TemporalFrontendTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
-	generated.tc.Frontend.TemporalFrontendTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
-	generated.tc.Frontend.TemporalFrontendTLSServerName = "cluster"
-
-	generated.tc.Internode.TemporalInternodeTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
-	generated.tc.Internode.TemporalInternodeTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
-	generated.tc.Internode.TemporalInternodeTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
-	generated.tc.Internode.TemporalInternodeTLSServerName = "cluster"
-
-	generated.tc.Worker.TemporalWorkerTLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
-	generated.tc.Worker.TemporalWorkerTLSCertFile = filepath.Join(fullPathCertDir, "cluster.pem")
-	generated.tc.Worker.TemporalWorkerTLSKeyFile = filepath.Join(fullPathCertDir, "cluster.key")
-	generated.tc.Worker.TemporalWorkerTLSServerName = "cluster"
-
-	generated.tc.UI.TemporalUITLSRootCAFile = filepath.Join(fullPathCertDir, "ca.cert")
-	generated.tc.UI.TemporalUITLSCertFile = filepath.Join(fullPathCertDir, "client-internal-admin.pem")
-	generated.tc.UI.TemporalUITLSKeyFile = filepath.Join(fullPathCertDir, "client-internal-admin.key")
-	generated.tc.UI.TemporalUITLSServerName = "cluster"
 
 	return nil
+}
+
+func shouldWriteConfig(conf string) bool {
+	return overwrite || conf == ""
 }
 
 func generateKeys(generated *generatedConfigFiles) error {
@@ -356,14 +357,18 @@ func generateKeys(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not generate block key for instance: %w", err)
 	}
 
-	generated.sc.Auth.Cookie.Secrets = []string{
-		cookieHashKey,
-		cookieBlockKey,
+	if overwrite || (generated.sc.Auth.Cookie.Secrets == nil || len(generated.sc.Auth.Cookie.Secrets) == 0) {
+		generated.sc.Auth.Cookie.Secrets = []string{
+			cookieHashKey,
+			cookieBlockKey,
+		}
 	}
 
-	generated.bwc.Auth.Cookie.Secrets = []string{
-		cookieHashKey,
-		cookieBlockKey,
+	if overwrite || (generated.bwc.Auth.Cookie.Secrets == nil || len(generated.bwc.Auth.Cookie.Secrets) == 0) {
+		generated.bwc.Auth.Cookie.Secrets = []string{
+			cookieHashKey,
+			cookieBlockKey,
+		}
 	}
 
 	databaseEncryptionKey, err := encryption.GenerateRandomBytes(16)
@@ -372,7 +377,9 @@ func generateKeys(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not generate database encryption key for instance: %w", err)
 	}
 
-	generated.dc.EncryptionKey = databaseEncryptionKey
+	if shouldWriteConfig(generated.dc.EncryptionKey) {
+		generated.dc.EncryptionKey = databaseEncryptionKey
+	}
 
 	fileStoreEncryptionKey, err := encryption.GenerateRandomBytes(16)
 
@@ -380,8 +387,13 @@ func generateKeys(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not generate file storage encryption key for instance: %w", err)
 	}
 
-	generated.sc.FileStore.Local.FileEncryptionKey = fileStoreEncryptionKey
-	generated.bwc.FileStore.Local.FileEncryptionKey = fileStoreEncryptionKey
+	if shouldWriteConfig(generated.sc.FileStore.Local.FileEncryptionKey) {
+		generated.sc.FileStore.Local.FileEncryptionKey = fileStoreEncryptionKey
+	}
+
+	if shouldWriteConfig(generated.bwc.FileStore.Local.FileEncryptionKey) {
+		generated.bwc.FileStore.Local.FileEncryptionKey = fileStoreEncryptionKey
+	}
 
 	temporalInternalSigningKey, err := encryption.GenerateRandomBytes(16)
 
@@ -389,7 +401,9 @@ func generateKeys(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not generate temporal internal signing key for instance: %w", err)
 	}
 
-	generated.tc.TemporalInternalSigningKey = temporalInternalSigningKey
+	if shouldWriteConfig(generated.tc.TemporalInternalSigningKey) {
+		generated.tc.TemporalInternalSigningKey = temporalInternalSigningKey
+	}
 
 	return nil
 }
@@ -412,54 +426,60 @@ func generateBearerToken(generated *generatedConfigFiles) error {
 		return err
 	}
 
-	generated.shared.Temporal.Client.TemporalBearerToken = token
+	if shouldWriteConfig(generated.shared.Temporal.Client.TemporalBearerToken) {
+		generated.shared.Temporal.Client.TemporalBearerToken = token
+	}
 
 	return nil
 }
 
 func downloadStaticFiles(generated *generatedConfigFiles) error {
-	color.New(color.FgGreen).Printf("Downloading static files into directory %s\n", staticDir)
+	if shouldWriteConfig(generated.sc.Runtime.StaticFileServerPath) {
+		color.New(color.FgGreen).Printf("Downloading static files into directory %s\n", staticDir)
+		cwd, err := os.Getwd()
 
-	cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		err = os.MkdirAll(generatedConfigDir, os.ModePerm)
+
+		if err != nil {
+			return fmt.Errorf("could not create generated config directory: %w", err)
+		}
+
+		downloadURL, err := github_zip.GetHatchetStaticAssetsDownloadURL(Version)
+
+		if err != nil {
+			return err
+		}
+
+		zipDownloader := github_zip.ZIPDownloader{
+			SourceURL:           downloadURL,
+			ZipFolderDest:       ".",
+			ZipName:             "./static.zip",
+			AssetFolderDest:     "./static",
+			RemoveAfterDownload: true,
+		}
+
+		err = zipDownloader.DownloadToFile()
+
+		if err != nil {
+			return err
+		}
+
+		err = zipDownloader.UnzipToDir()
+
+		if err != nil {
+			return err
+		}
+
+		generated.sc.Runtime.RunStaticFileServer = true
+
+		generated.sc.Runtime.StaticFileServerPath = filepath.Join(cwd, staticDir)
+	} else {
+
 	}
-
-	err = os.MkdirAll(generatedConfigDir, os.ModePerm)
-
-	if err != nil {
-		return fmt.Errorf("could not create generated config directory: %w", err)
-	}
-
-	downloadURL, err := github_zip.GetHatchetStaticAssetsDownloadURL(Version)
-
-	if err != nil {
-		return err
-	}
-
-	zipDownloader := github_zip.ZIPDownloader{
-		SourceURL:           downloadURL,
-		ZipFolderDest:       ".",
-		ZipName:             "./static.zip",
-		AssetFolderDest:     "./static",
-		RemoveAfterDownload: true,
-	}
-
-	err = zipDownloader.DownloadToFile()
-
-	if err != nil {
-		return err
-	}
-
-	err = zipDownloader.UnzipToDir()
-
-	if err != nil {
-		return err
-	}
-
-	generated.sc.Runtime.RunStaticFileServer = true
-	generated.sc.Runtime.StaticFileServerPath = filepath.Join(cwd, staticDir)
 
 	return nil
 }
@@ -473,75 +493,87 @@ func writeGeneratedConfig(generated *generatedConfigFiles) error {
 		return fmt.Errorf("could not create generated config directory: %w", err)
 	}
 
-	if sharedPath := filepath.Join(generatedConfigDir, "./shared.yaml"); overwrite || !fileExists(sharedPath) {
-		sharedConfigBytes, err := yaml.Marshal(generated.shared)
+	sharedPath := filepath.Join(generatedConfigDir, "./shared.yaml")
+	sharedConfigBytes, err := yaml.Marshal(generated.shared)
 
-		if err != nil {
-			return err
-		}
-
-		err = ioutil.WriteFile(sharedPath, sharedConfigBytes, 0666)
-
-		if err != nil {
-			return fmt.Errorf("could not write shared.yaml file: %w", err)
-		}
+	if err != nil {
+		return err
 	}
 
-	if databasePath := filepath.Join(generatedConfigDir, "./database.yaml"); overwrite || !fileExists(databasePath) {
-		databaseConfigBytes, err := yaml.Marshal(generated.dc)
+	err = ioutil.WriteFile(sharedPath, sharedConfigBytes, 0666)
 
-		if err != nil {
-			return err
-		}
-
-		err = ioutil.WriteFile(databasePath, databaseConfigBytes, 0666)
-
-		if err != nil {
-			return fmt.Errorf("could not write database.yaml file: %w", err)
-		}
-
+	if err != nil {
+		return fmt.Errorf("could not write shared.yaml file: %w", err)
 	}
 
-	if serverPath := filepath.Join(generatedConfigDir, "./server.yaml"); overwrite || !fileExists(serverPath) {
-		serverConfigBytes, err := yaml.Marshal(generated.sc)
+	databasePath := filepath.Join(generatedConfigDir, "./database.yaml")
 
-		if err != nil {
-			return err
-		}
+	databaseConfigBytes, err := yaml.Marshal(generated.dc)
 
-		err = ioutil.WriteFile(serverPath, serverConfigBytes, 0666)
-
-		if err != nil {
-			return fmt.Errorf("could not write server.yaml file: %w", err)
-		}
+	if err != nil {
+		return err
 	}
 
-	if backgroundWorkerPath := filepath.Join(generatedConfigDir, "./background_worker.yaml"); overwrite || !fileExists(backgroundWorkerPath) {
-		backgroundWorkerConfigBytes, err := yaml.Marshal(generated.bwc)
+	err = ioutil.WriteFile(databasePath, databaseConfigBytes, 0666)
 
-		if err != nil {
-			return err
-		}
-
-		err = ioutil.WriteFile(filepath.Join(generatedConfigDir, "./background_worker.yaml"), backgroundWorkerConfigBytes, 0666)
-
-		if err != nil {
-			return fmt.Errorf("could not write background_worker.yaml file: %w", err)
-		}
+	if err != nil {
+		return fmt.Errorf("could not write database.yaml file: %w", err)
 	}
 
-	if temporalPath := filepath.Join(generatedConfigDir, "./temporal.yaml"); overwrite || !fileExists(temporalPath) {
-		temporalConfigBytes, err := yaml.Marshal(generated.tc)
+	serverPath := filepath.Join(generatedConfigDir, "./server.yaml")
 
-		if err != nil {
-			return err
-		}
+	serverConfigBytes, err := yaml.Marshal(generated.sc)
 
-		err = ioutil.WriteFile(temporalPath, temporalConfigBytes, 0666)
+	if err != nil {
+		return err
+	}
 
-		if err != nil {
-			return fmt.Errorf("could not write temporal.yaml file: %w", err)
-		}
+	err = ioutil.WriteFile(serverPath, serverConfigBytes, 0666)
+
+	if err != nil {
+		return fmt.Errorf("could not write server.yaml file: %w", err)
+	}
+
+	backgroundWorkerPath := filepath.Join(generatedConfigDir, "./background_worker.yaml")
+
+	backgroundWorkerConfigBytes, err := yaml.Marshal(generated.bwc)
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(backgroundWorkerPath, backgroundWorkerConfigBytes, 0666)
+
+	if err != nil {
+		return fmt.Errorf("could not write background_worker.yaml file: %w", err)
+	}
+
+	runnerWorkerPath := filepath.Join(generatedConfigDir, "./runner_worker.yaml")
+
+	runnerWorkerConfigBytes, err := yaml.Marshal(generated.rwc)
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(runnerWorkerPath, runnerWorkerConfigBytes, 0666)
+
+	if err != nil {
+		return fmt.Errorf("could not write runner_worker.yaml file: %w", err)
+	}
+
+	temporalPath := filepath.Join(generatedConfigDir, "./temporal.yaml")
+
+	temporalConfigBytes, err := yaml.Marshal(generated.tc)
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(temporalPath, temporalConfigBytes, 0666)
+
+	if err != nil {
+		return fmt.Errorf("could not write temporal.yaml file: %w", err)
 	}
 
 	return nil
