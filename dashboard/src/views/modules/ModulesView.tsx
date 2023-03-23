@@ -131,9 +131,10 @@ const ModulesView: React.FunctionComponent = () => {
           label="Create module"
           material_icon="add"
           on_click={handleCreateModuleClick}
+          margin="0"
         />
       </FlexRowRight>
-      <HorizontalSpacer spacepixels={12} />
+      <HorizontalSpacer spacepixels={30} />
       {renderModules()}
       <FlexRowRight>
         <Paginator

@@ -166,9 +166,10 @@ const MonitoringView: React.FunctionComponent = () => {
           label="Create monitor"
           material_icon="add"
           on_click={handleCreateMonitorClick}
+          margin="0"
         />
       </FlexRowRight>
-      <HorizontalSpacer spacepixels={12} />
+      <HorizontalSpacer spacepixels={30} />
       {renderMonitors()}
       <FlexRowRight>
         <Paginator
