@@ -18,7 +18,7 @@ type GithubWebhook struct {
 	// Encrypted data that contains the webhook signing secret
 	SigningSecret []byte
 
-	GithubAppInstallations []GithubAppInstallation `gorm:"many2many:github_app_installations;"`
+	GithubAppInstallations []GithubAppInstallation `gorm:"many2many:github_webhooks_to_app_installations;"`
 }
 
 func NewGithubWebhook(teamID, repoOwner, repoName string) (*GithubWebhook, error) {
