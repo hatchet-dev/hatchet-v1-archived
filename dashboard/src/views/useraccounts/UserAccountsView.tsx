@@ -112,7 +112,7 @@ const UserAccountsView: React.FunctionComponent = () => {
             label="Install"
             material_icon="add"
             on_click={() => {
-              window.open("/api/v1/github_app/install");
+              window.open("/api/v1/oauth/github_app");
             }}
           />
         </FlexRowRight>
