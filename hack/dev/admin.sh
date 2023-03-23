@@ -1,3 +1,7 @@
 #!/bin/bash
 
-env $(cat .env | xargs) go run ./cmd/hatchet-admin "$@"
+set -a
+. .env
+set +a
+
+go run ./cmd/hatchet-admin "$@"

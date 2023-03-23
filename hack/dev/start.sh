@@ -1,4 +1,7 @@
 #!/bin/bash
 
-env $(cat .env | xargs) air -c .air.toml &
-  cd ./dashboard && npm start
+set -a
+. .env
+set +a
+
+air -c .air.toml & cd ./dashboard && npm start

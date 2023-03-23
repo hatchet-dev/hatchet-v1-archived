@@ -120,7 +120,7 @@ const UserAccountsView: React.FunctionComponent = () => {
         <Table
           columns={columns}
           data={tableData}
-          dataName="personal access tokens"
+          dataName="github app installations"
         />
       </>
     );

@@ -89,9 +89,6 @@ const TemplatesView: React.FunctionComponent = () => {
       </FlexRowRight>
       <HorizontalSpacer spacepixels={12} />
       <Table columns={columns} data={data} onRowClick={handleModuleClick} />
-      <FlexRowRight>
-        <Paginator />
-      </FlexRowRight>
     </>
   );
 };
