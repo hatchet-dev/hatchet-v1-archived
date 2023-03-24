@@ -6,9 +6,21 @@ Hatchet is a continuous integration and deployment (CI/CD) solution for Terrafor
 2. Integrations with Git-based repositories, which can be configured to run pipelines automatically against pull requests and merges.
 3. An extensive monitoring integration built using Open Policy Agent, an industry-standard policy as code framework.
 
+## How does it work?
+
+Hatchet is a self-hosted solution for Terraform management that runs on your infrastructure. After installing Hatchet, you can deploy infrastructure through either [local deployments](/getting-started/modules/local-deployment) or [Github-based deployments](/getting-started/modules/github-deployment).
+
+The Hatchet architecture can be grouped into three main components:
+
+- **Hatchet Control Plane**: This encompasses the Hatchet API server, background workers, database, and a few other services. Hatchet uses a custom build of [Temporal](https://temporal.io/) to manage the execution of Terraform runs.
+- **Hatchet Worker**: The worker that executes your Terraform runs.
+- **Hatchet Client**: The web interface for Hatchet. This is where you view the status of your runs and configure your pipelines.
+
+While there are a lot of moving pieces, the [getting started](/getting-started) guides will make it simple to deploy these components. After you've gotten a basic installation up and running, you can start to customize your instance by consulting the [config file references](/managing-hatchet/config-file-reference).
+
 ## How is this different from other tools?
 
-Hatchet was created due to the lack of open-source and self-hostable alternatives to Terraform Cloud. While Terraform Enterprise is offered as a self-hosted alternative to Terraform Cloud, Hatchet provides a self-hosted setup from Day 1 without requiring an expensive enterprise license.
+Hatchet was created due to the lack of open-source, self-hostable, and scalable alternatives to Terraform Cloud. Hatchet focuses on making it as easy as possible to manage your deployment pipelines, while also providing the flexibility to customize your deployment to your specific needs.
 
 ### Why self-hosted?
 
@@ -18,4 +30,8 @@ For many organizations, it's essential that sensitive data never leaves your int
 
 While there are many benefits to being open source, one strength of Hatchet is the flexibility it provides for customizing different aspects of your deployment pipelines by extending our open-source repository. For example, if you'd like to load in your cloud credentials from a custom secret storage engine, you can simply write a credential plugin for Hatchet. We aim to make everything customizable -- down to even the theme of the Hatchet dashboard.
 
-**These two features of Hatchet -- being open-source and self-hosted -- work hand-in-hand to give you the best possible solution for infrastructure management.**
+### How are you scalable?
+
+Hatchet is built on top of Temporal, an open-source workflow engine. Temporal is a horizontally scalable system that can run thousands of workflows in parallel. This means that you can run as many Terraform runs as you need with relatively simple configuration management.
+
+**These three features of Hatchet -- being open-source, self-hosted, and focused on scalability -- work hand-in-hand to give you the best possible solution for infrastructure management.**
