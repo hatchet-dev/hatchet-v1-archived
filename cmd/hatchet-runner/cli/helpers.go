@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -28,6 +29,13 @@ func downloadGithubRepoContents(config *runner.Config) error {
 	}
 
 	dstDir := config.ConfigFile.Github.GithubRepositoryDest
+
+	// make dest directory
+	err = os.MkdirAll(dstDir, os.ModePerm)
+
+	if err != nil {
+		return err
+	}
 
 	zipDownload := &github_zip.ZIPDownloader{
 		SourceURL:           resp.Url,
