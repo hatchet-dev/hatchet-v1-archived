@@ -55,7 +55,7 @@ func RunMonitorFunc(f MonitorFunc, action *RunnerAction, rc *runner.Config) (str
 }
 
 func DownloadMonitorPolicy(config *runner.Config) ([]byte, error) {
-	resp, _, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.Resources.TeamID, config.ConfigFile.Resources.ModuleMonitorID)
+	resp, apiErr, err := config.FileClient.GetMonitorPolicy(config.ConfigFile.Resources.TeamID, config.ConfigFile.Resources.ModuleMonitorID)
 
 	if resp != nil {
 		defer resp.Close()
@@ -63,6 +63,14 @@ func DownloadMonitorPolicy(config *runner.Config) ([]byte, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if apiErr != nil {
+		return nil, fmt.Errorf(apiErr.Description)
+	}
+
+	if resp == nil {
+		return nil, fmt.Errorf("empty body from server")
 	}
 
 	return ioutil.ReadAll(resp)

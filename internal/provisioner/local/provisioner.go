@@ -159,7 +159,7 @@ func (l *LocalProvisioner) getMonitorFunc(opts *provisioner.ProvisionOpts, monit
 		env := opts.Env
 		env = append(env, cmdProv.Environ()...)
 
-		env = append(env, fmt.Sprintf("MODULE_MONITOR_ID=%s", monitorID))
+		env = append(env, fmt.Sprintf("RUNNER_MODULE_MONITOR_ID=%s", monitorID))
 
 		env = append(env, "PATH=/usr/local/bin:/usr/bin:/bin")
 
