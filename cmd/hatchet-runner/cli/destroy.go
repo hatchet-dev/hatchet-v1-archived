@@ -48,6 +48,7 @@ func runDestroy() error {
 	}
 
 	a := action.NewRunnerAction(&action.RunnerActionOpts{
+		Config:       rc,
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
 		ErrHandler:   action.ErrorHandler,
