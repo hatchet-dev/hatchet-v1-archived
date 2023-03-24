@@ -148,6 +148,10 @@ func (c *Client) GetClient(queueName string) (client.Client, error) {
 	return tc, nil
 }
 
+func (c *Client) GetOpts() *ClientOpts {
+	return c.opts
+}
+
 func (c *Client) GetBroadcastAddress() string {
 	return c.opts.BroadcastAddress
 }

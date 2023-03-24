@@ -788,11 +788,14 @@ func GetRunnerWorkerConfigFromConfigFile(
 	var provisioner provisioner.Provisioner
 
 	if wc.Provisioner.Kind == "local" {
-		provisioner = local.NewLocalProvisioner()
+		provisioner = local.NewLocalProvisioner(&local.LocalProvisionerOpts{
+			BinaryPath: wc.Provisioner.Local.BinaryPath,
+		})
 	}
 
 	return &worker.RunnerConfig{
-		Config:             *sharedConfig,
-		DefaultProvisioner: provisioner,
+		ProvisionerMechanism: wc.ProvisionerMechanism,
+		Config:               *sharedConfig,
+		DefaultProvisioner:   provisioner,
 	}, nil
 }
