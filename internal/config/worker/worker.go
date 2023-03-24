@@ -95,6 +95,8 @@ func BindAllBackgroundEnv(v *viper.Viper) {
 }
 
 type RunnerConfigFile struct {
+	ProvisionerMechanism string `mapstructure:"provisioner_mechanism" json:"provisioner_mechanism,omitempty" default:"centralized" validator:"oneof=centralized decentralized"`
+
 	Provisioner RunnerConfigFileProvisioner `mapstructure:"provisioner" json:"provisioner,omitempty"`
 
 	RunnerGRPCServerAddress string `mapstructure:"grpcServerAddress" json:"grpcServerAddress,omitempty" default:"http://localhost:8080"`
@@ -102,15 +104,25 @@ type RunnerConfigFile struct {
 
 type RunnerConfigFileProvisioner struct {
 	Kind string `mapstructure:"kind" json:"kind,omitempty" default:"local"`
+
+	Local LocalProvisionerConfig `mapstructure:"local" json:"local,omitempty"`
+}
+
+type LocalProvisionerConfig struct {
+	BinaryPath string `mapstructure:"binaryPath" json:"binaryPath,omitempty"`
 }
 
 type RunnerConfig struct {
 	shared.Config
+
+	ProvisionerMechanism string
 
 	DefaultProvisioner provisioner.Provisioner
 }
 
 func BindAllRunnerEnv(v *viper.Viper) {
 	v.BindEnv("provisioner.kind", "RUNNER_WORKER_PROVISIONER_KIND")
+	v.BindEnv("provisioner.local.binaryPath", "RUNNER_WORKER_PROVISIONER_LOCAL_BINARY_PATH")
+
 	v.BindEnv("grpcServerAddress", "RUNNER_WORKER_GRPC_SERVER_ADDRESS")
 }

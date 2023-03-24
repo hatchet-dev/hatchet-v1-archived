@@ -9,10 +9,15 @@ import (
 )
 
 type LocalProvisioner struct {
+	binaryPath string
 }
 
-func NewLocalProvisioner() *LocalProvisioner {
-	return &LocalProvisioner{}
+type LocalProvisionerOpts struct {
+	BinaryPath string
+}
+
+func NewLocalProvisioner(opts *LocalProvisionerOpts) *LocalProvisioner {
+	return &LocalProvisioner{opts.BinaryPath}
 }
 
 func (l *LocalProvisioner) RunPlan(opts *provisioner.ProvisionOpts) error {
@@ -125,7 +130,7 @@ func (l *LocalProvisioner) RunAfterApplyMonitor(opts *provisioner.ProvisionOpts,
 
 func (l *LocalProvisioner) getRunFunc(opts *provisioner.ProvisionOpts, arg string) func() error {
 	return func() error {
-		cmdProv := exec.Command("./bin/hatchet-runner", arg)
+		cmdProv := exec.Command(l.binaryPath, arg)
 		cmdProv.Stdout = os.Stdout
 		cmdProv.Stderr = os.Stderr
 
@@ -148,7 +153,7 @@ func (l *LocalProvisioner) getRunFunc(opts *provisioner.ProvisionOpts, arg strin
 
 func (l *LocalProvisioner) getMonitorFunc(opts *provisioner.ProvisionOpts, monitorID string, policy []byte, arg string) func() error {
 	return func() error {
-		cmdProv := exec.Command("./bin/hatchet-runner", "monitor", arg)
+		cmdProv := exec.Command(l.binaryPath, "monitor", arg)
 		cmdProv.Stdout = os.Stdout
 		cmdProv.Stderr = os.Stderr
 		env := opts.Env
