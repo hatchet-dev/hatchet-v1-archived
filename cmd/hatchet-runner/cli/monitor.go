@@ -123,6 +123,7 @@ func runMonitorFunc(f action.MonitorFunc) error {
 	}
 
 	a := action.NewRunnerAction(&action.RunnerActionOpts{
+		Config:       rc,
 		StdoutWriter: stdoutWriter,
 		StderrWriter: stderrWriter,
 		ErrHandler:   action.ErrorHandler,
