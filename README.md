@@ -8,7 +8,7 @@ Hatchet is a continuous integration and deployment (CI/CD) solution for Terrafor
 
 ## How does it work?
 
-Hatchet is a self-hosted solution for Terraform management that runs on your infrastructure. After installing Hatchet, you can deploy infrastructure through either [local deployments](/getting-started/modules/local-deployment) or [Github-based deployments](/getting-started/modules/github-deployment).
+Hatchet is a self-hosted solution for Terraform management that runs on your infrastructure. After installing Hatchet, you can deploy infrastructure through either [local deployments](https://docs.hatchet.run/getting-started/modules/local-deployment) or [Github-based deployments](https://docs.hatchet.run/getting-started/modules/github-deployment).
 
 The Hatchet architecture can be grouped into three main components:
 
@@ -16,7 +16,7 @@ The Hatchet architecture can be grouped into three main components:
 - **Hatchet Worker**: The worker that executes your Terraform runs.
 - **Hatchet Client**: The web interface for Hatchet. This is where you view the status of your runs and configure your pipelines.
 
-While there are a lot of moving pieces, the [getting started](/getting-started) guides will make it simple to deploy these components. After you've gotten a basic installation up and running, you can start to customize your instance by consulting the [config file references](/managing-hatchet/config-file-reference).
+While there are a lot of moving pieces, the [getting started](https://docs.hatchet.run/getting-started) guides will make it simple to deploy these components. After you've gotten a basic installation up and running, you can start to customize your instance by consulting the [config file references](https://docs.hatchet.run/managing-hatchet/config-file-reference).
 
 ## How is this different from other tools?
 
