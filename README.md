@@ -10,15 +10,15 @@ Hatchet is a continuous integration and deployment (CI/CD) solution for Terrafor
 
 ## How does it work?
 
-Hatchet is a self-hosted solution for Terraform management that runs on your infrastructure. After installing Hatchet, you can deploy infrastructure through either [local deployments](https://docs.hatchet.run/getting-started/modules/local-deployment) or [Github-based deployments](https://docs.hatchet.run/getting-started/modules/github-deployment).
-
-The Hatchet architecture can be grouped into three main components:
+Hatchet is self-hosted and runs entirely on your infrastructure. The Hatchet architecture can be grouped into three main components:
 
 - **Hatchet Control Plane**: This encompasses the Hatchet API server, background workers, database, and a few other services. Hatchet uses a custom build of [Temporal](https://temporal.io/) to manage the execution of Terraform runs.
 - **Hatchet Worker**: The worker that executes your Terraform runs.
 - **Hatchet Client**: The web interface for Hatchet. This is where you view the status of your runs and configure your pipelines.
 
-While there are a lot of moving pieces, the [getting started](https://docs.hatchet.run/getting-started) guides will make it simple to deploy these components. After you've gotten a basic installation up and running, you can start to customize your instance by consulting the [config file references](https://docs.hatchet.run/managing-hatchet/config-file-reference).
+While there are a few moving pieces, the [getting started](https://docs.hatchet.run/getting-started/setup) guides will make it simple to deploy these components. After you've gotten a basic installation up and running, you can start to customize your instance by consulting the [config file references](https://docs.hatchet.run/managing-hatchet/config-file-reference).
+
+After installing Hatchet, you can deploy infrastructure through either [local deployments](https://docs.hatchet.run/getting-started/modules/local-deployment) or [Github-based deployments](https://docs.hatchet.run/getting-started/modules/github-deployment).
 
 ## How is this different from other tools?
 
@@ -34,6 +34,6 @@ While there are many benefits to being open source, one strength of Hatchet is t
 
 ### How are you scalable?
 
-Hatchet is built on top of Temporal, an open-source workflow engine. Temporal is a horizontally scalable system that can run thousands of workflows in parallel. This means that you can run as many Terraform runs as you need with relatively simple configuration management.
+Hatchet is built on top of Temporal, an open-source workflow engine. Temporal is a horizontally scalable system that can run thousands of workflows in parallel across as many tenants as you need.
 
 **These three features of Hatchet -- being open-source, self-hosted, and focused on scalability -- work hand-in-hand to give you the best possible solution for infrastructure management.**
