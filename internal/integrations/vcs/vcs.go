@@ -8,22 +8,28 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
-type VCSProviderKind string
+type VCSRepositoryKind string
 
 const (
-	// enumeration of in-tree providers
-	VCSProviderKindGithub VCSProviderKind = "github"
-	VCSProviderKindGitlab VCSProviderKind = "gitlab"
+	// enumeration of in-tree repository kinds
+	VCSRepositoryKindGithub VCSRepositoryKind = "github"
+	VCSRepositoryKindGitlab VCSRepositoryKind = "gitlab"
 )
 
-// VCSProvider provides an interface to implement for new version control providers
+// VCSRepository provides an interface to implement for new version control providers
 // (github, gitlab, etc)
-type VCSProvider interface {
+type VCSRepository interface {
 	// GetKind returns the kind of VCS provider -- used for downstream integrations
-	GetKind() VCSProviderKind
+	GetKind() VCSRepositoryKind
+
+	// GetRepoOwner returns the owner of the repository
+	GetRepoOwner() string
+
+	// GetRepoName returns the name of the repository
+	GetRepoName() string
 
 	// SetupRepository sets up a VCS repository on Hatchet.
-	SetupRepository(teamID string, r VCSRepo) error
+	SetupRepository(teamID string) error
 
 	// GetArchiveLink returns an archive link for a specific repo SHA
 	GetArchiveLink(ref string) (*url.URL, error)
@@ -32,13 +38,13 @@ type VCSProvider interface {
 	GetBranch(name string) (VCSBranch, error)
 
 	// CreateOrUpdatePR stores pull request information using this VCS provider
-	CreateOrUpdatePR(pr VCSProviderPullRequest)
+	CreateOrUpdatePR(pr VCSRepositoryPullRequest)
 
 	// CreateOrUpdateCheckRun creates a new "check" to run against a PR
-	CreateOrUpdateCheckRun(pr VCSProviderPullRequest, mod *models.Module) error
+	CreateOrUpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module) error
 
 	// CreateOrUpdateComment creates or updates a comment on a pull or merge request
-	CreateOrUpdateComment(pr VCSProviderPullRequest, mod *models.Module, body string) error
+	CreateOrUpdateComment(pr VCSRepositoryPullRequest, mod *models.Module, body string) error
 
 	// ReadFile returns a file by a SHA reference or path
 	ReadFile(ref, path string) (io.ReadCloser, error)
@@ -47,38 +53,37 @@ type VCSProvider interface {
 	CompareCommits(base, head string) (CommitsComparison, error)
 }
 
-type VCSProviderFactory interface {
-	// GetVCSProviderFromModule returns the corresponding VCS provider for the module.
+type VCSProvider interface {
+	// GetVCSRepositoryFromModule returns the corresponding VCS repository for the module.
 	// Callers should likely use the package method GetVCSProviderFromModule.
-	GetVCSProviderFromModule(mod *models.Module) (VCSProvider, error)
+	GetVCSRepositoryFromModule(mod *models.Module) (VCSRepository, error)
 }
 
 // GetVCSProviderFromModule returns the corresponding VCS provider for the module
-func GetVCSProviderFromModule(allProviders map[VCSProviderKind]VCSProviderFactory, mod *models.Module) (VCSProvider, error) {
-	var providerFact VCSProviderFactory
-	var providerKind VCSProviderKind
+func GetVCSProviderFromModule(allProviders map[VCSRepositoryKind]VCSProvider, mod *models.Module) (VCSRepository, error) {
+	var repoKind VCSRepositoryKind
 
 	if mod.DeploymentMechanism == models.DeploymentMechanismGithub {
-		providerKind = VCSProviderKindGithub
+		repoKind = VCSRepositoryKindGithub
 
 	} else if mod.DeploymentMechanism == models.DeploymentMechanismGitlab {
-		providerKind = VCSProviderKindGitlab
+		repoKind = VCSRepositoryKindGitlab
 	} else {
 		return nil, fmt.Errorf("module %s does not use a VCS integration", mod.ID)
 	}
 
-	providerFact, exists := allProviders[providerKind]
+	provider, exists := allProviders[repoKind]
 
 	if !exists {
-		return nil, fmt.Errorf("VCS provider kind '%s' is not registered on this Hatchet instance", providerKind)
+		return nil, fmt.Errorf("VCS provider kind '%s' is not registered on this Hatchet instance", repoKind)
 	}
 
-	return providerFact.GetVCSProviderFromModule(mod)
+	return provider.GetVCSRepositoryFromModule(mod)
 }
 
-// VCSProviderPullRequest abstracts the underlying pull or merge request methods to only
+// VCSRepositoryPullRequest abstracts the underlying pull or merge request methods to only
 // extract relevant information.
-type VCSProviderPullRequest interface {
+type VCSRepositoryPullRequest interface {
 	GetRepoOwner() string
 	GetPRNumber() int64
 	GetRepoName() string
@@ -88,19 +93,6 @@ type VCSProviderPullRequest interface {
 	GetHeadBranch() string
 	GetTitle() string
 	GetState() string
-}
-
-type VCSRepoKind string
-
-const (
-	VCSRepoKindGithub = "github"
-	VCSRepoKindGitlab = "gitlab"
-)
-
-type VCSRepo interface {
-	GetKind() VCSRepoKind
-	GetRepoName() string
-	GetRepoOwner() string
 }
 
 type VCSBranch interface {
