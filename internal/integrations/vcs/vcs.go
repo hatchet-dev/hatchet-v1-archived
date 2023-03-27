@@ -38,7 +38,7 @@ type VCSRepository interface {
 	GetBranch(name string) (VCSBranch, error)
 
 	// CreateOrUpdatePR stores pull request information using this VCS provider
-	CreateOrUpdatePR(pr VCSRepositoryPullRequest)
+	CreateOrUpdatePR(pr VCSRepositoryPullRequest) error
 
 	// CreateOrUpdateCheckRun creates a new "check" to run against a PR
 	CreateOrUpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module) error
