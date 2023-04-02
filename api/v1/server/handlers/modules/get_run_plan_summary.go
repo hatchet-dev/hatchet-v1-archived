@@ -46,7 +46,7 @@ func (m *ModuleGetPlanSummaryHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 
 		// find the corresponding run for that SHA
 		planKind := models.ModuleRunKindPlan
-		planRuns, err := m.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
+		planRuns, err := m.Repo().Module().ListModuleRunsByVCSSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

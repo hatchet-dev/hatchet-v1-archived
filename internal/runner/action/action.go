@@ -63,7 +63,7 @@ func (r *RunnerAction) Apply(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if r.config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.VCS.VCSSHA != "" {
 		planPath = "./plan.tfplan"
 
 		err := r.downloadPlanToFile(planPath)
@@ -119,7 +119,7 @@ func (r *RunnerAction) Destroy(
 	var planPath string
 
 	// download plan, if github commit sha is passed in
-	if r.config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.VCS.VCSSHA != "" {
 		planPath = "./plan.tfplan"
 
 		err := r.downloadPlanToFile(planPath)
@@ -362,7 +362,7 @@ func (r *RunnerAction) populatePlan(
 	input map[string]interface{},
 ) error {
 	// if there's a github SHA that we can retrieve the plan from, download the plan to a file
-	if r.config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile.VCS.VCSSHA != "" {
 		planPath := "./plan.tfplan"
 
 		err := r.downloadPlanToFile(planPath)
@@ -472,13 +472,13 @@ func (r *RunnerAction) copyVarsToFile(vars map[string]interface{}, targetPath st
 }
 
 func (r *RunnerAction) downloadModuleValues() (map[string]interface{}, error) {
-	if r.config.ConfigFile != nil && r.config.ConfigFile.Github.GithubSHA != "" {
+	if r.config.ConfigFile != nil && r.config.ConfigFile.VCS.VCSSHA != "" {
 		vals, _, err := r.config.APIClient.ModulesApi.GetCurrentModuleValues(
 			context.Background(),
 			r.config.ConfigFile.Resources.TeamID,
 			r.config.ConfigFile.Resources.ModuleID,
 			&swagger.ModulesApiGetCurrentModuleValuesOpts{
-				GithubSha: optional.NewString(r.config.ConfigFile.Github.GithubSHA),
+				GithubSha: optional.NewString(r.config.ConfigFile.VCS.VCSSHA),
 			},
 		)
 

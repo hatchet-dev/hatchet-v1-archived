@@ -43,7 +43,7 @@ func (t *TerraformPlanGetBySHAHandler) ServeHTTP(w http.ResponseWriter, r *http.
 
 	// find the corresponding run for that SHA
 	planKind := models.ModuleRunKindPlan
-	planRuns, err := t.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
+	planRuns, err := t.Repo().Module().ListModuleRunsByVCSSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
 
 	if err != nil {
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))

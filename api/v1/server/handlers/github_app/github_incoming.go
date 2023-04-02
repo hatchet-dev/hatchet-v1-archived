@@ -116,7 +116,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEvent(team *models.Team
 
 	// call create or update on the PR
 	// get the VCSRepository from the repo name + owner (without a module)
-	mods, err := g.Repo().Module().ListGithubRepositoryModules(team.ID, vcsPR.GetRepoOwner(), vcsPR.GetRepoName())
+	mods, err := g.Repo().Module().ListVCSRepositoryModules(team.ID, vcsPR.GetRepoOwner(), vcsPR.GetRepoName())
 
 	if err != nil {
 		return err
@@ -263,7 +263,7 @@ func (g *GithubIncomingWebhookHandler) VCS_newPlanFromPR(
 
 	// check if there's an existing plan for that specific commit SHA. If so, don't queue another run
 	planKind := models.ModuleRunKindPlan
-	existingRun, _ := g.Repo().Module().ListModuleRunsByGithubSHA(mod.ID, pr.GetHeadSHA(), &planKind)
+	existingRun, _ := g.Repo().Module().ListModuleRunsByVCSSHA(mod.ID, pr.GetHeadSHA(), &planKind)
 
 	if existingRun != nil && len(existingRun) > 0 {
 		return nil

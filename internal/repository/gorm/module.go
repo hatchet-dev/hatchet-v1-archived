@@ -93,7 +93,7 @@ func (repo *ModuleRepository) ListModulesByIDs(teamID string, ids []string, opts
 	return mods, paginatedResult, nil
 }
 
-func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
+func (repo *ModuleRepository) ListVCSRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
 	var mods []*models.Module
 
 	db := repo.db.Joins("DeploymentConfig").Where("team_id = ? AND DeploymentConfig.github_repo_owner = ? AND DeploymentConfig.github_repo_name = ?", teamID, repoOwner, repoName)
@@ -133,7 +133,7 @@ func (repo *ModuleRepository) ReadModuleRunWithStateLock(moduleID string) (*mode
 	return mod, nil
 }
 
-func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, repository.RepositoryError) {
+func (repo *ModuleRepository) ListModuleRunsByVCSSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, repository.RepositoryError) {
 	mods := make([]*models.ModuleRun, 0)
 
 	db := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.github_commit_sha = ?", moduleID, githubSHA)

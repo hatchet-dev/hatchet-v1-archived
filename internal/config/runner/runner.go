@@ -15,7 +15,7 @@ type ConfigFile struct {
 
 	API ConfigFileAPI `mapstructure:"api" json:"api,omitempty"`
 
-	Github ConfigFileGithub `mapstructure:"github" json:"github,omitempty"`
+	VCS ConfigFileVCS `mapstructure:"vcs" json:"github,omitempty"`
 
 	Terraform ConfigFileTerraform `mapstructure:"terraform" json:"terraform,omitempty"`
 }
@@ -41,11 +41,11 @@ type ConfigFileAPI struct {
 	APIServerAddress string `mapstructure:"serverAddress" json:"serverAddress,omitempty" default:"http://localhost:8080"`
 }
 
-type ConfigFileGithub struct {
-	GithubRepositoryName string `mapstructure:"repositoryName" json:"repositoryName,omitempty"`
-	GithubModulePath     string `mapstructure:"modulePath" json:"modulePath,omitempty"`
-	GithubSHA            string `mapstructure:"sha" json:"sha,omitempty"`
-	GithubRepositoryDest string `mapstructure:"repositoryDest" json:"repositoryDest,omitempty" default:"./bin/tmp"`
+type ConfigFileVCS struct {
+	VCSRepositoryName string `mapstructure:"repositoryName" json:"repositoryName,omitempty"`
+	VCSModulePath     string `mapstructure:"modulePath" json:"modulePath,omitempty"`
+	VCSSHA            string `mapstructure:"sha" json:"sha,omitempty"`
+	VCSRepositoryDest string `mapstructure:"repositoryDest" json:"repositoryDest,omitempty" default:"./bin/tmp"`
 }
 
 type ConfigFileTerraform struct {
@@ -91,10 +91,10 @@ func BindAllEnv(v *viper.Viper) {
 	v.BindEnv("api.serverAddress", "RUNNER_API_SERVER_ADDRESS")
 	v.BindEnv("api.token", "RUNNER_API_TOKEN")
 
-	v.BindEnv("github.repositoryName", "RUNNER_GITHUB_REPOSITORY_NAME")
-	v.BindEnv("github.modulePath", "RUNNER_GITHUB_MODULE_PATH")
-	v.BindEnv("github.sha", "RUNNER_GITHUB_SHA")
-	v.BindEnv("github.repositoryDest", "RUNNER_GITHUB_REPOSITORY_DEST")
+	v.BindEnv("vcs.repositoryName", "RUNNER_VCS_REPOSITORY_NAME")
+	v.BindEnv("vcs.modulePath", "RUNNER_VCS_MODULE_PATH")
+	v.BindEnv("vcs.sha", "RUNNER_VCS_SHA")
+	v.BindEnv("vcs.repositoryDest", "RUNNER_VCS_REPOSITORY_DEST")
 
 	v.BindEnv("terraform.dir", "RUNNER_TERRAFORM_DIR")
 }

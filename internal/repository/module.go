@@ -23,9 +23,9 @@ type ModuleRepository interface {
 	// ListModulesByIDs lists all modules matching a list of IDs
 	ListModulesByIDs(teamID string, ids []string, opts ...QueryOption) ([]*models.Module, *PaginatedResult, RepositoryError)
 
-	// ListGithubRepositoryModules lists modules that use the github deployment mechanism belonging
+	// ListVCSRepositoryModules lists modules that use the VCS deployment mechanism belonging
 	// to a specific repo owner and name
-	ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, RepositoryError)
+	ListVCSRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, RepositoryError)
 
 	// UpdateModule updates any modified values for a module
 	UpdateModule(module *models.Module) (*models.Module, RepositoryError)
@@ -42,7 +42,7 @@ type ModuleRepository interface {
 	ReadModuleRunByID(moduleID, moduleRunID string) (*models.ModuleRun, RepositoryError)
 
 	// ReadModuleRunByGithubSHA finds a run by its Github SHA
-	ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, RepositoryError)
+	ListModuleRunsByVCSSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, RepositoryError)
 
 	// ListCompletedModuleRunsByLogLocation lists all module runs with a given log location
 	ListCompletedModuleRunsByLogLocation(location string, opts ...QueryOption) ([]*models.ModuleRun, *PaginatedResult, RepositoryError)
