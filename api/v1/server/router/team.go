@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/hatchet-dev/hatchet/api/serverutils/endpoint"
 	"github.com/hatchet-dev/hatchet/api/serverutils/router"
+	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/github_app"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/notifications"
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers/teams"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
@@ -517,7 +518,7 @@ func GetTeamRoutes(
 		},
 	)
 
-	githubIncomingWebhookHandler := teams.NewGithubIncomingWebhookHandler(
+	githubIncomingWebhookHandler := github_app.NewGithubIncomingWebhookHandler(
 		config,
 		factory.GetDecoderValidator(),
 		factory.GetResultWriter(),
