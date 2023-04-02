@@ -35,7 +35,7 @@ func (m *ModuleGetPlanSummaryHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 
 	// if this is an apply, get the corresponding plan by the SHA, if it exists
 	if run.Kind == models.ModuleRunKindApply {
-		if run.ModuleRunConfig.GithubCommitSHA == "" {
+		if run.ModuleRunConfig.GitCommitSHA == "" {
 			m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 				Code:        types.ErrCodeBadRequest,
 				Description: "cannot request plan summary for run that doesn't have a commit SHA",
@@ -46,7 +46,7 @@ func (m *ModuleGetPlanSummaryHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 
 		// find the corresponding run for that SHA
 		planKind := models.ModuleRunKindPlan
-		planRuns, err := m.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GithubCommitSHA, &planKind)
+		planRuns, err := m.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

@@ -112,7 +112,7 @@ func (g *GithubIncomingWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.
 
 func (g *GithubIncomingWebhookHandler) processPullRequestEvent(team *models.Team, event *githubsdk.PullRequestEvent, r *http.Request) error {
 	// convert event to a vcs.VCSRepositoryPullRequest
-	vcsPR := github.ToVCSRepositoryPullRequest(event)
+	vcsPR := github.ToVCSRepositoryPullRequest(*event.GetRepo().GetOwner().Login, event.GetRepo().GetName(), event.GetPullRequest())
 
 	// call create or update on the PR
 	// get the VCSRepository from the repo name + owner (without a module)
@@ -135,7 +135,7 @@ func (g *GithubIncomingWebhookHandler) processPullRequestEvent(team *models.Team
 			continue
 		}
 
-		_, err = vcsRepo.CreateOrUpdatePR(vcsPR)
+		err = vcsRepo.CreateOrUpdatePRInDatabase(mod.TeamID, vcsPR)
 
 		if err != nil {
 			err = multierror.Append(err)
@@ -292,7 +292,10 @@ func (g *GithubIncomingWebhookHandler) VCS_newPlanFromPR(
 		commentBody = "## Hatchet Plan\nLock is currently held by a different PR. Queued..."
 	}
 
-	vcsCheck, err := vcsRepo.CreateOrUpdateCheckRun(pr, mod, nil)
+	vcsCheck, err := vcsRepo.CreateCheckRun(pr, mod, vcs.VCSCheckRun{
+		Name:   fmt.Sprintf("Hatchet plan for %s", mod.DeploymentConfig.ModulePath),
+		Status: vcs.VCSCheckRunStatusInProgress,
+	})
 
 	if err != nil {
 		return fmt.Errorf("error creating new github check run for owner: %s repo %s prNumber: %d. Error: %w",
@@ -324,7 +327,7 @@ func (g *GithubIncomingWebhookHandler) VCS_newPlanFromPR(
 		},
 	}
 
-	vcsRepo.PopulateModuleRun(run, vcsCheck, vcsComment)
+	vcsRepo.PopulateModuleRun(run, pr.GetVCSID(), vcsCheck, vcsComment)
 
 	desc, err := runutils.GenerateRunDescription(g.Config(), mod, run, run.Status, nil)
 
@@ -390,7 +393,7 @@ func (g *GithubIncomingWebhookHandler) VCS_shouldTrigger(
 
 		fileNames := make([]string, 0)
 
-		for _, file := range commitsRes.Files {
+		for _, file := range commitsRes.GetFiles() {
 			fileNames = append(fileNames, file.GetFilename())
 		}
 

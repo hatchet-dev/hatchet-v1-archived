@@ -14,7 +14,7 @@ import (
 )
 
 func GetGithubProvider(config *server.Config) (res github.GithubVCSProvider, reqErr apierrors.RequestError) {
-	vcsFact, exists := config.VCSProviders[vcs.VCSRepositoryKindGithub]
+	vcsProvider, exists := config.VCSProviders[vcs.VCSRepositoryKindGithub]
 
 	if !exists {
 		return res, apierrors.NewErrPassThroughToClient(types.APIError{
@@ -23,7 +23,7 @@ func GetGithubProvider(config *server.Config) (res github.GithubVCSProvider, req
 		}, http.StatusNotAcceptable)
 	}
 
-	res, err := github.ToGithubVCSProviderFactory(vcsFact)
+	res, err := github.ToGithubVCSProvider(vcsProvider)
 
 	if err != nil {
 		return res, apierrors.NewErrPassThroughToClient(types.APIError{

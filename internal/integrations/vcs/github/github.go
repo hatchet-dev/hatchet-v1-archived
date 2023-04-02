@@ -25,11 +25,11 @@ func NewGithubVCSProvider(appConf *GithubAppConf, repo repository.Repository) Gi
 	}
 }
 
-func ToGithubVCSProviderFactory(provider vcs.VCSProvider) (res GithubVCSProvider, err error) {
+func ToGithubVCSProvider(provider vcs.VCSProvider) (res GithubVCSProvider, err error) {
 	res, ok := provider.(GithubVCSProvider)
 
 	if !ok {
-		return res, fmt.Errorf("could not convert VCS provider factory to Github VCS provider factory: %w", err)
+		return res, fmt.Errorf("could not convert VCS provider to Github VCS provider: %w", err)
 	}
 
 	return res, nil
@@ -127,37 +127,174 @@ func (g *GithubVCSRepository) SetupRepository(teamID string) error {
 	return nil
 }
 
-// OnPullRequestEvent is triggered when a new pull request is opened, closed, edited, etc.
-func (g *GithubVCSRepository) OnPullRequestEvent(pr vcs.VCSRepositoryPullRequest) error {
-	panic("unimplemented")
-}
-
 // GetArchiveLink returns an archive link for a specific repo SHA
 func (g *GithubVCSRepository) GetArchiveLink(ref string) (*url.URL, error) {
-	panic("unimplemented")
+	gURL, _, err := g.client.Repositories.GetArchiveLink(
+		context.TODO(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		githubsdk.Zipball,
+		&githubsdk.RepositoryContentGetOptions{
+			Ref: ref,
+		},
+		false,
+	)
+
+	return gURL, err
 }
 
 // GetBranch gets a full branch (name and sha)
 func (g *GithubVCSRepository) GetBranch(name string) (vcs.VCSBranch, error) {
-	panic("unimplemented")
+	branchResp, _, err := g.client.Repositories.GetBranch(
+		context.TODO(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		name,
+		false,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &GithubBranch{branchResp}, nil
 }
 
-// CreateOrUpdatePR stores pull request information using this VCS provider
-func (g *GithubVCSRepository) CreateOrUpdatePR(pr vcs.VCSRepositoryPullRequest) (vcs.VCSObjectID, error) {
-	panic("unimplemented")
+func (g *GithubVCSRepository) GetPR(mod *models.Module, run *models.ModuleRun) (vcs.VCSRepositoryPullRequest, error) {
+	if run.ModuleRunConfig.GithubPullRequestID == 0 {
+		return nil, fmt.Errorf("module run does not have github pull request id param set")
+	}
+
+	repoPR, err := g.repo.GithubPullRequest().ReadGithubPullRequestByGithubID(mod.TeamID, run.ModuleRunConfig.GithubPullRequestID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ghPR, _, err := g.client.PullRequests.Get(
+		context.Background(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		int(repoPR.GithubPullRequestNumber),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ToVCSRepositoryPullRequest(g.GetRepoOwner(), g.GetRepoName(), ghPR), nil
 }
 
-// CreateOrUpdateCheckRun creates a new "check" to run against a PR
-func (g *GithubVCSRepository) CreateOrUpdateCheckRun(pr vcs.VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun) (vcs.VCSObjectID, error) {
-	panic("unimplemented")
+// CreateOrUpdatePRInDatabase stores pull request information using this VCS provider
+func (g *GithubVCSRepository) CreateOrUpdatePRInDatabase(teamID string, pr vcs.VCSRepositoryPullRequest) error {
+	ghID := pr.GetVCSID().GetIDInt64()
+	repoPR, err := g.repo.GithubPullRequest().ReadGithubPullRequestByGithubID(teamID, *ghID)
+
+	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
+		return err
+	}
+
+	if repoPR == nil {
+		// create a PR object in the db
+		repoPR, err = g.repo.GithubPullRequest().CreateGithubPullRequest(&models.GithubPullRequest{
+			TeamID:                      teamID,
+			GithubRepositoryOwner:       g.GetRepoOwner(),
+			GithubRepositoryName:        g.GetRepoName(),
+			GithubPullRequestID:         *ghID,
+			GithubPullRequestTitle:      pr.GetTitle(),
+			GithubPullRequestNumber:     pr.GetPRNumber(),
+			GithubPullRequestHeadBranch: pr.GetHeadBranch(),
+			GithubPullRequestBaseBranch: pr.GetBaseBranch(),
+			GithubPullRequestState:      pr.GetState(),
+		})
+
+		if err != nil {
+			return err
+		}
+	} else {
+		repoPR.GithubPullRequestTitle = pr.GetTitle()
+		repoPR.GithubPullRequestHeadBranch = pr.GetHeadBranch()
+		repoPR.GithubPullRequestBaseBranch = pr.GetBaseBranch()
+		repoPR.GithubPullRequestState = pr.GetState()
+
+		repoPR, err = g.repo.GithubPullRequest().UpdateGithubPullRequest(repoPR)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-// CreateOrUpdateComment creates or updates a comment on a pull or merge request
+func (g *GithubVCSRepository) CreateCheckRun(
+	pr vcs.VCSRepositoryPullRequest,
+	mod *models.Module,
+	checkRun vcs.VCSCheckRun,
+) (vcs.VCSObjectID, error) {
+	checkResp, _, err := g.client.Checks.CreateCheckRun(
+		context.Background(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		githubsdk.CreateCheckRunOptions{
+			Name:    checkRun.Name,
+			HeadSHA: pr.GetHeadSHA(),
+			Status:  githubsdk.String(string(checkRun.Status)),
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error creating new github check run for owner: %s repo %s prNumber: %d. Error: %w",
+			g.GetRepoOwner(), g.GetRepoName(), pr.GetPRNumber(), err)
+	}
+
+	return vcs.NewVCSObjectInt(checkResp.GetID()), nil
+}
+
+func (g *GithubVCSRepository) UpdateCheckRun(pr vcs.VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun, checkRun vcs.VCSCheckRun) (vcs.VCSObjectID, error) {
+	if run == nil {
+		return nil, fmt.Errorf("run cannot be nil")
+	}
+
+	checkResp, _, err := g.client.Checks.UpdateCheckRun(
+		context.Background(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		run.ModuleRunConfig.GithubCheckID,
+		githubsdk.UpdateCheckRunOptions{
+			Name:       checkRun.Name,
+			Status:     githubsdk.String(string(checkRun.Status)),
+			Conclusion: githubsdk.String(string(checkRun.Conclusion)),
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error updating new github check run for owner: %s repo %s prNumber: %d. Error: %w",
+			g.GetRepoOwner(), g.GetRepoName(), pr.GetPRNumber(), err)
+	}
+
+	return vcs.NewVCSObjectInt(checkResp.GetID()), nil
+}
+
+// CreateOrUpdateComment creates a comment on a pull/merge request
 func (g *GithubVCSRepository) CreateOrUpdateComment(pr vcs.VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun, body string) (vcs.VCSObjectID, error) {
 	if run != nil && run.ModuleRunConfig.GithubCommentID != 0 {
-		g.repo.GithubPullRequest().ReadGithubPullRequestCommentByGithubID(mod.ID, run.ModuleRunConfig.GithubCommentID)
+		commentResp, _, err := g.client.Issues.EditComment(
+			context.Background(),
+			g.GetRepoOwner(),
+			g.GetRepoName(),
+			run.ModuleRunConfig.GithubCommentID,
+			&githubsdk.IssueComment{
+				Body: githubsdk.String(body),
+			},
+		)
 
-		// g.client.
+		if err != nil {
+			return nil, fmt.Errorf("error updating github comment for owner: %s repo %s prNumber: %d. Error: %w",
+				g.GetRepoOwner(), g.GetRepoName(), pr.GetPRNumber(), err)
+		}
+
+		return vcs.NewVCSObjectInt(commentResp.GetID()), nil
 	}
 
 	// if no existing id, create the id
@@ -181,17 +318,41 @@ func (g *GithubVCSRepository) CreateOrUpdateComment(pr vcs.VCSRepositoryPullRequ
 
 // ReadFile returns a file by a SHA reference or path
 func (g *GithubVCSRepository) ReadFile(ref, path string) (io.ReadCloser, error) {
-	panic("unimplemented")
+	file, _, err := g.client.Repositories.DownloadContents(
+		context.Background(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		path,
+		&githubsdk.RepositoryContentGetOptions{
+			Ref: ref,
+		},
+	)
+
+	return file, err
 }
 
 // CompareCommits compares a base commit with a head commit
-func (g *GithubVCSRepository) CompareCommits(base, head string) (vcs.CommitsComparison, error) {
-	panic("unimplemented")
+func (g *GithubVCSRepository) CompareCommits(base, head string) (vcs.VCSCommitsComparison, error) {
+	commitsRes, _, err := g.client.Repositories.CompareCommits(
+		context.Background(),
+		g.GetRepoOwner(),
+		g.GetRepoName(),
+		base,
+		head,
+		&githubsdk.ListOptions{},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &GithubCommitsComparison{commitsRes}, nil
 }
 
 // PopulateModuleRun adds additional fields to the module run config. Should be called
 // before creating the module run.
-func (g *GithubVCSRepository) PopulateModuleRun(run *models.ModuleRun, checkRunID, commentID vcs.VCSObjectID) {
+func (g *GithubVCSRepository) PopulateModuleRun(run *models.ModuleRun, prID, checkRunID, commentID vcs.VCSObjectID) {
 	run.ModuleRunConfig.GithubCheckID = *checkRunID.GetIDInt64()
 	run.ModuleRunConfig.GithubCommentID = *checkRunID.GetIDInt64()
+	run.ModuleRunConfig.GithubPullRequestID = *prID.GetIDInt64()
 }

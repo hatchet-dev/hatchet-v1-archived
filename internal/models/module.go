@@ -85,11 +85,12 @@ type ModuleDeploymentConfig struct {
 	// Local-related deployment config
 	UserID string
 
-	// Github-related deployment config
-	GithubRepoName   string
-	GithubRepoOwner  string
-	GithubRepoBranch string
+	// Git-related deployment config
+	GitRepoName   string
+	GitRepoOwner  string
+	GitRepoBranch string
 
+	// Github-related deployment config
 	GithubAppInstallationID string
 	GithubAppInstallation   GithubAppInstallation `gorm:"foreignKey:GithubAppInstallationID"`
 }
@@ -97,9 +98,9 @@ type ModuleDeploymentConfig struct {
 func (m *ModuleDeploymentConfig) ToAPIType() *types.ModuleDeploymentConfig {
 	return &types.ModuleDeploymentConfig{
 		Path:                    m.ModulePath,
-		GithubRepoName:          m.GithubRepoName,
-		GithubRepoOwner:         m.GithubRepoOwner,
-		GithubRepoBranch:        m.GithubRepoBranch,
+		GitRepoName:             m.GitRepoName,
+		GitRepoOwner:            m.GitRepoOwner,
+		GitRepoBranch:           m.GitRepoBranch,
 		GithubAppInstallationID: m.GithubAppInstallationID,
 	}
 }
@@ -325,8 +326,9 @@ type ModuleRunConfig struct {
 	LocalHostname string
 
 	// Github-specific fields
-	GithubCheckID   int64
-	GithubCommentID int64
+	GithubCheckID       int64
+	GithubCommentID     int64
+	GithubPullRequestID int64
 
 	ModuleValuesVersionID string
 	ModuleValuesVersion   ModuleValuesVersion `gorm:"foreignKey:ModuleValuesVersionID"`

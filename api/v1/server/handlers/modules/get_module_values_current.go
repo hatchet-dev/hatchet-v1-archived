@@ -11,9 +11,9 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/db"
-	githubv "github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/github"
+	vcsvalues "github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/vcs"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
 
-	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
@@ -54,22 +54,16 @@ func (m *ModuleValuesCurrentGetHandler) ServeHTTP(w http.ResponseWriter, r *http
 	switch mvv.Kind {
 	case models.ModuleValuesVersionKindDatabase:
 		valuesManager = db.NewDatabaseValuesStore(m.Repo())
-	case models.ModuleValuesVersionKindGithub:
-		gai, err := m.Repo().GithubAppInstallation().ReadGithubAppInstallationByID(mvv.GithubAppInstallationID)
+	case models.ModuleValuesVersionKindVCS:
+		vcsRepo, err := vcs.GetVCSRepositoryFromModule(m.Config().VCSProviders, module)
 
 		if err != nil {
-			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
 			return
 		}
 
-		githubClient, err := github.GetGithubAppClientFromGAI(m.Config(), gai)
-
-		if err != nil {
-			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-			return
-		}
-
-		valuesManager = githubv.NewGithubValuesStore(githubClient, sha)
+		valuesManager = vcsvalues.NewGithubValuesStore(vcsRepo, sha)
 	default:
 		m.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 			Code:        types.ErrCodeBadRequest,

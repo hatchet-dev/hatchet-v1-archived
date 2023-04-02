@@ -16,6 +16,31 @@ const (
 	VCSRepositoryKindGitlab VCSRepositoryKind = "gitlab"
 )
 
+type VCSCheckRunStatus string
+
+const (
+	VCSCheckRunStatusQueued     VCSCheckRunStatus = "queued"
+	VCSCheckRunStatusInProgress VCSCheckRunStatus = "in_progress"
+	VCSCheckRunStatusCompleted  VCSCheckRunStatus = "completed"
+)
+
+type VCSCheckRunConclusion string
+
+const (
+	VCSCheckRunConclusionSuccess        VCSCheckRunConclusion = "success"
+	VCSCheckRunConclusionFailure        VCSCheckRunConclusion = "failure"
+	VCSCheckRunConclusionCancelled      VCSCheckRunConclusion = "cancelled"
+	VCSCheckRunConclusionSkipped        VCSCheckRunConclusion = "skipped"
+	VCSCheckRunConclusionTimedOut       VCSCheckRunConclusion = "timed_out"
+	VCSCheckRunConclusionActionRequired VCSCheckRunConclusion = "action_required"
+)
+
+type VCSCheckRun struct {
+	Name       string
+	Status     VCSCheckRunStatus
+	Conclusion VCSCheckRunConclusion
+}
+
 // VCSRepository provides an interface to implement for new version control providers
 // (github, gitlab, etc)
 type VCSRepository interface {
@@ -37,12 +62,21 @@ type VCSRepository interface {
 	// GetBranch gets a full branch (name and sha)
 	GetBranch(name string) (VCSBranch, error)
 
-	// CreateOrUpdatePR stores pull request information using this VCS provider
-	CreateOrUpdatePR(pr VCSRepositoryPullRequest) (VCSObjectID, error)
+	// GetPR retrieves a pull request from the VCS provider
+	GetPR(mod *models.Module, run *models.ModuleRun) (VCSRepositoryPullRequest, error)
+
+	// CreateOrUpdatePRInDatabase stores pull request information using this VCS provider
+	CreateOrUpdatePRInDatabase(teamID string, pr VCSRepositoryPullRequest) error
+
+	// CreateCheckRun creates a new "check" to run against a PR
+	CreateCheckRun(
+		pr VCSRepositoryPullRequest,
+		mod *models.Module,
+		checkRun VCSCheckRun,
+	) (VCSObjectID, error)
 
 	// CreateOrUpdateCheckRun creates a new "check" to run against a PR
-	// Note that run MAY be nil, implementations should check if the run is nil before reading from it
-	CreateOrUpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun) (VCSObjectID, error)
+	UpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun, checkRun VCSCheckRun) (VCSObjectID, error)
 
 	// CreateOrUpdateComment creates or updates a comment on a pull or merge request
 	// Note that run MAY be nil, implementations should check if the run is nil before reading from it
@@ -50,13 +84,13 @@ type VCSRepository interface {
 
 	// PopulateModuleRun adds additional fields to the module run config. Should be called
 	// before creating the module run.
-	PopulateModuleRun(run *models.ModuleRun, checkRunID, commentID VCSObjectID)
+	PopulateModuleRun(run *models.ModuleRun, prID, checkRunID, commentID VCSObjectID)
 
 	// ReadFile returns a file by a SHA reference or path
 	ReadFile(ref, path string) (io.ReadCloser, error)
 
 	// CompareCommits compares a base commit with a head commit
-	CompareCommits(base, head string) (CommitsComparison, error)
+	CompareCommits(base, head string) (VCSCommitsComparison, error)
 }
 
 // VCSObjectID is a generic method for retrieving IDs from the underlying VCS repository.
@@ -133,6 +167,7 @@ func GetVCSRepositoryFromModule(allProviders map[VCSRepositoryKind]VCSProvider, 
 // extract relevant information.
 type VCSRepositoryPullRequest interface {
 	GetRepoOwner() string
+	GetVCSID() VCSObjectID
 	GetPRNumber() int64
 	GetRepoName() string
 	GetBaseSHA() string
@@ -148,8 +183,8 @@ type VCSBranch interface {
 	GetLatestRef() string
 }
 
-type CommitsComparison struct {
-	Files []CommitFile
+type VCSCommitsComparison interface {
+	GetFiles() []CommitFile
 }
 
 type CommitFile struct {

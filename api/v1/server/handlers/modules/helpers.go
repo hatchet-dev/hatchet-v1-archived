@@ -129,9 +129,9 @@ func createLocalRun(config *server.Config, module *models.Module, kind models.Mo
 func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleRequestGithub, team *models.Team, user *models.User) (*models.ModuleDeploymentConfig, apierrors.RequestError) {
 	res := &models.ModuleDeploymentConfig{
 		ModulePath:              req.Path,
-		GithubRepoName:          req.GithubRepositoryName,
-		GithubRepoOwner:         req.GithubRepositoryOwner,
-		GithubRepoBranch:        req.GithubRepositoryBranch,
+		GitRepoName:             req.GithubRepositoryName,
+		GitRepoOwner:            req.GithubRepositoryOwner,
+		GitRepoBranch:           req.GithubRepositoryBranch,
 		GithubAppInstallationID: req.GithubAppInstallationID,
 	}
 
@@ -141,20 +141,20 @@ func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleR
 		return nil, reqErr
 	}
 
-	fact := config.VCSProviders[vcs.VCSProviderKindGithub]
-	githubFact, err := github.ToGithubVCSProviderFactory(fact)
+	fact := config.VCSProviders[vcs.VCSRepositoryKindGithub]
+	provider, err := github.ToGithubVCSProvider(fact)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
 	}
 
-	githubVCS, err := githubFact.GetVCSProviderFromGAI(gai)
+	githubVCS, err := provider.GetVCSRepositoryFromGAI(gai)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
 	}
 
-	err = githubVCS.SetupRepository(team.ID, github.NewGithubVCSRepo(req.GithubRepositoryOwner, req.GithubRepositoryName))
+	err = githubVCS.SetupRepository(team.ID)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
@@ -235,11 +235,11 @@ func createModuleValuesGithub(config *server.Config, module *models.Module, req 
 	mvv := &models.ModuleValuesVersion{
 		ModuleID:                module.ID,
 		Version:                 prevVersion + 1,
-		Kind:                    models.ModuleValuesVersionKindGithub,
-		GithubValuesPath:        req.Path,
-		GithubRepoOwner:         req.GithubRepositoryOwner,
-		GithubRepoName:          req.GithubRepositoryName,
-		GithubRepoBranch:        req.GithubRepositoryBranch,
+		Kind:                    models.ModuleValuesVersionKindVCS,
+		GitValuesPath:           req.Path,
+		GitRepoOwner:            req.GithubRepositoryOwner,
+		GitRepoName:             req.GithubRepositoryName,
+		GitRepoBranch:           req.GithubRepositoryBranch,
 		GithubAppInstallationID: req.GithubAppInstallationID,
 	}
 

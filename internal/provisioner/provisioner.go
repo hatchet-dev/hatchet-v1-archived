@@ -58,7 +58,7 @@ func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_TOKEN=%s", tok))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_SERVER_ADDRESS=%s", opts.ServerURL))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_SHA=%s", opts.ModuleRun.ModuleRunConfig.GitCommitSHA))
-	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GithubRepoName))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GitRepoName))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
 
 	for key, val := range opts.EnvVars {

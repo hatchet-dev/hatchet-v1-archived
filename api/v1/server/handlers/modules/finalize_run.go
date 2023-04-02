@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -11,12 +10,10 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
-	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/notifications"
 	"github.com/hatchet-dev/hatchet/internal/runutils"
-
-	githubsdk "github.com/google/go-github/v49/github"
 )
 
 type ModuleRunFinalizeHandler struct {
@@ -116,7 +113,15 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	// write the github comment if all monitors have succeeded for the plan, or one monitor has failed
 	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
-		client, err := github.GetGithubAppClientFromModule(m.Config(), module)
+		vcsRepo, err := vcs.GetVCSRepositoryFromModule(m.Config().VCSProviders, module)
+
+		if err != nil {
+			m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+			return
+		}
+
+		pr, err := vcsRepo.GetPR(module, run)
 
 		if err != nil {
 			m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
@@ -140,15 +145,14 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 			commentBody = getFailedMonitorGithubComment(m.Config(), module, monitor, run, monitorResultAPIType.Message)
 
-			_, _, err = client.Checks.UpdateCheckRun(
-				context.Background(),
-				module.DeploymentConfig.GithubRepoOwner,
-				module.DeploymentConfig.GithubRepoName,
-				run.ModuleRunConfig.GithubCheckID,
-				githubsdk.UpdateCheckRunOptions{
+			_, err = vcsRepo.UpdateCheckRun(
+				pr,
+				module,
+				run,
+				vcs.VCSCheckRun{
 					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
-					Status:     githubsdk.String("completed"),
-					Conclusion: githubsdk.String("failure"),
+					Status:     vcs.VCSCheckRunStatusCompleted,
+					Conclusion: vcs.VCSCheckRunConclusionFailure,
 				},
 			)
 
@@ -169,15 +173,14 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 			commentBody = getSuccessfulPlanGithubComment(m.Config(), module, run, fileBytes)
 
-			_, _, err = client.Checks.UpdateCheckRun(
-				context.Background(),
-				module.DeploymentConfig.GithubRepoOwner,
-				module.DeploymentConfig.GithubRepoName,
-				run.ModuleRunConfig.GithubCheckID,
-				githubsdk.UpdateCheckRunOptions{
+			_, err = vcsRepo.UpdateCheckRun(
+				pr,
+				module,
+				run,
+				vcs.VCSCheckRun{
 					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
-					Status:     githubsdk.String("completed"),
-					Conclusion: githubsdk.String("success"),
+					Status:     vcs.VCSCheckRunStatusCompleted,
+					Conclusion: vcs.VCSCheckRunConclusionSuccess,
 				},
 			)
 
@@ -190,15 +193,20 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 			// otherwise, write that the module run failed
 			commentBody = getFailedPlanGithubComment(m.Config(), module, run, run.StatusDescription)
 
-			_, _, err = client.Checks.UpdateCheckRun(
-				context.Background(),
-				module.DeploymentConfig.GithubRepoOwner,
-				module.DeploymentConfig.GithubRepoName,
-				run.ModuleRunConfig.GithubCheckID,
-				githubsdk.UpdateCheckRunOptions{
+			if err != nil {
+				m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
+				return
+			}
+
+			_, err = vcsRepo.UpdateCheckRun(
+				pr,
+				module,
+				run,
+				vcs.VCSCheckRun{
 					Name:       fmt.Sprintf("Hatchet plan for %s", module.DeploymentConfig.ModulePath),
-					Status:     githubsdk.String("completed"),
-					Conclusion: githubsdk.String("failure"),
+					Status:     vcs.VCSCheckRunStatusCompleted,
+					Conclusion: vcs.VCSCheckRunConclusionFailure,
 				},
 			)
 
@@ -209,14 +217,11 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 			}
 		}
 
-		_, _, err = client.Issues.EditComment(
-			context.Background(),
-			module.DeploymentConfig.GithubRepoOwner,
-			module.DeploymentConfig.GithubRepoName,
-			run.ModuleRunConfig.GithubCommentID,
-			&githubsdk.IssueComment{
-				Body: &commentBody,
-			},
+		_, err = vcsRepo.CreateOrUpdateComment(
+			pr,
+			module,
+			run,
+			commentBody,
 		)
 
 		if err != nil {
@@ -303,8 +308,8 @@ func getShortSHA(run *models.ModuleRun) string {
 func getCommitSHALink(module *models.Module, run *models.ModuleRun) string {
 	return fmt.Sprintf(
 		"https://github.com/%s/%s/commit/%s",
-		module.DeploymentConfig.GithubRepoOwner,
-		module.DeploymentConfig.GithubRepoName,
+		module.DeploymentConfig.GitRepoOwner,
+		module.DeploymentConfig.GitRepoName,
 		run.ModuleRunConfig.GitCommitSHA,
 	)
 }

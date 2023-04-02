@@ -6,45 +6,50 @@ import (
 )
 
 type ghPullRequest struct {
-	e *githubsdk.PullRequestEvent
+	repoOwner, repoName string
+	pr                  *githubsdk.PullRequest
 }
 
-func ToVCSRepositoryPullRequest(event *githubsdk.PullRequestEvent) vcs.VCSRepositoryPullRequest {
-	return &ghPullRequest{event}
+func ToVCSRepositoryPullRequest(repoOwner, repoName string, pr *githubsdk.PullRequest) vcs.VCSRepositoryPullRequest {
+	return &ghPullRequest{repoOwner, repoName, pr}
 }
 
 func (g *ghPullRequest) GetRepoOwner() string {
-	return g.e.GetRepo().GetOwner().GetLogin()
+	return g.repoOwner
 }
 
 func (g *ghPullRequest) GetRepoName() string {
-	return g.e.GetRepo().GetName()
+	return g.repoName
+}
+
+func (g *ghPullRequest) GetVCSID() vcs.VCSObjectID {
+	return vcs.NewVCSObjectInt(g.pr.GetID())
 }
 
 func (g *ghPullRequest) GetPRNumber() int64 {
-	return g.e.GetPullRequest().GetID()
+	return g.pr.GetID()
 }
 
 func (g *ghPullRequest) GetBaseSHA() string {
-	return g.e.GetPullRequest().GetBase().GetSHA()
+	return g.pr.GetBase().GetSHA()
 }
 
 func (g *ghPullRequest) GetHeadSHA() string {
-	return g.e.GetPullRequest().GetHead().GetSHA()
+	return g.pr.GetHead().GetSHA()
 }
 
 func (g *ghPullRequest) GetBaseBranch() string {
-	return g.e.GetPullRequest().GetBase().GetRef()
+	return g.pr.GetBase().GetRef()
 }
 
 func (g *ghPullRequest) GetHeadBranch() string {
-	return g.e.GetPullRequest().GetHead().GetRef()
+	return g.pr.GetHead().GetRef()
 }
 
 func (g *ghPullRequest) GetTitle() string {
-	return g.e.GetPullRequest().GetTitle()
+	return g.pr.GetTitle()
 }
 
 func (g *ghPullRequest) GetState() string {
-	return g.e.GetPullRequest().GetState()
+	return g.pr.GetState()
 }

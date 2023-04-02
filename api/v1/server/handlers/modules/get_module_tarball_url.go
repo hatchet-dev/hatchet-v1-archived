@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
@@ -9,10 +8,8 @@ import (
 	"github.com/hatchet-dev/hatchet/api/v1/server/handlers"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
-	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
 	"github.com/hatchet-dev/hatchet/internal/models"
-
-	githubsdk "github.com/google/go-github/v49/github"
 )
 
 type ModuleTarballURLGetHandler struct {
@@ -40,40 +37,26 @@ func (m *ModuleTarballURLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	sha := req.GithubSHA
 
-	client, err := github.GetGithubAppClientFromModule(m.Config(), module)
+	vcsRepo, err := vcs.GetVCSRepositoryFromModule(m.Config().VCSProviders, module)
 
 	if err != nil {
-		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+		m.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+
 		return
 	}
 
 	if sha == "" {
-		branchResp, _, err := client.Repositories.GetBranch(
-			context.TODO(),
-			module.DeploymentConfig.GithubRepoOwner,
-			module.DeploymentConfig.GithubRepoName,
-			module.DeploymentConfig.GithubRepoBranch,
-			false,
-		)
+		branchResp, err := vcsRepo.GetBranch(module.DeploymentConfig.GitRepoBranch)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 			return
 		}
 
-		sha = branchResp.GetCommit().GetSHA()
+		sha = branchResp.GetLatestRef()
 	}
 
-	ghURL, _, err := client.Repositories.GetArchiveLink(
-		context.TODO(),
-		module.DeploymentConfig.GithubRepoOwner,
-		module.DeploymentConfig.GithubRepoName,
-		githubsdk.Zipball,
-		&githubsdk.RepositoryContentGetOptions{
-			Ref: sha,
-		},
-		false,
-	)
+	archiveLink, err := vcsRepo.GetArchiveLink(sha)
 
 	if err != nil {
 		m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -81,7 +64,7 @@ func (m *ModuleTarballURLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	res := &types.GetModuleTarballURLResponse{
-		URL: ghURL.String(),
+		URL: archiveLink.String(),
 	}
 
 	m.WriteResult(w, r, res)

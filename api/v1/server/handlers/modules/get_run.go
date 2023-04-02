@@ -31,7 +31,7 @@ func (m *ModuleRunGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	var res *types.ModuleRun
 
-	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
 		prComment, err := m.Repo().GithubPullRequest().ReadGithubPullRequestCommentByGithubID(run.ModuleID, run.ModuleRunConfig.GithubCommentID)
 
 		if err != nil {

@@ -11,7 +11,7 @@ type ModuleValuesVersionKind string
 
 const (
 	ModuleValuesVersionKindDatabase ModuleValuesVersionKind = "db"
-	ModuleValuesVersionKindGithub   ModuleValuesVersionKind = "github"
+	ModuleValuesVersionKindVCS      ModuleValuesVersionKind = "vcs"
 )
 
 type ModuleValuesVersion struct {
@@ -22,11 +22,13 @@ type ModuleValuesVersion struct {
 
 	Kind ModuleValuesVersionKind
 
-	// Github configuration params
-	GithubValuesPath        string
-	GithubRepoName          string
-	GithubRepoOwner         string
-	GithubRepoBranch        string
+	// Git-specific params
+	GitValuesPath string
+	GitRepoName   string
+	GitRepoOwner  string
+	GitRepoBranch string
+
+	// Github-specific params
 	GithubAppInstallationID string
 	GithubAppInstallation   GithubAppInstallation `gorm:"foreignKey:GithubAppInstallationID"`
 }
@@ -52,11 +54,11 @@ func (m *ModuleValuesVersion) ToAPIType(mv *ModuleValues) (*types.ModuleValues, 
 	} else {
 		gh := &types.ModuleValuesGithubConfig{}
 
-		gh.Path = m.GithubValuesPath
-		gh.GithubRepoOwner = m.GithubRepoOwner
-		gh.GithubRepoName = m.GithubRepoName
+		gh.Path = m.GitValuesPath
+		gh.GithubRepoOwner = m.GitRepoOwner
+		gh.GithubRepoName = m.GitRepoName
 		gh.GithubAppInstallationID = m.GithubAppInstallationID
-		gh.GithubRepoBranch = m.GithubRepoBranch
+		gh.GithubRepoBranch = m.GitRepoBranch
 
 		res.Github = gh
 	}

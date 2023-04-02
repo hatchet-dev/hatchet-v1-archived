@@ -77,7 +77,7 @@ func generateApplyRunDescription(
 	prefix := "Apply"
 
 	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
-		prefix = fmt.Sprintf("Apply for branch %s", module.DeploymentConfig.GithubRepoBranch)
+		prefix = fmt.Sprintf("Apply for branch %s", module.DeploymentConfig.GitRepoBranch)
 	}
 
 	if failedMonitorResult != nil {
@@ -108,7 +108,7 @@ func generateDestroyRunDescription(
 	prefix := "Destroy"
 
 	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
-		prefix = fmt.Sprintf("Destroy for branch %s", module.DeploymentConfig.GithubRepoBranch)
+		prefix = fmt.Sprintf("Destroy for branch %s", module.DeploymentConfig.GitRepoBranch)
 	}
 
 	if failedMonitorResult != nil {
