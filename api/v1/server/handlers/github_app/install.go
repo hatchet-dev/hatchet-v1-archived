@@ -24,5 +24,11 @@ func NewGithubAppOAuthInstallHandler(
 }
 
 func (g *GithubAppOAuthInstallHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, fmt.Sprintf("https://github.com/apps/%s/installations/new", g.Config().GithubApp.AppName), 302)
+	githubProvider, reqErr := GetGithubProvider(g.Config())
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("https://github.com/apps/%s/installations/new", githubProvider.GetGithubAppConfig().GetAppName()), 302)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/shared"
 	"github.com/hatchet-dev/hatchet/internal/integrations/filestorage"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage"
-	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
 	"github.com/spf13/viper"
@@ -65,12 +65,11 @@ type ConfigFileNotificationSendgrid struct {
 }
 
 type ConfigFileVCS struct {
-	Kind string `mapstructure:"kind" json:"kind,omitempty"`
-
 	Github ConfigFileGithub `mapstructure:"github" json:"github,omitempty"`
 }
 
 type ConfigFileGithub struct {
+	Enabled                bool   `mapstructure:"enabled" json:"enabled"`
 	GithubAppClientID      string `mapstructure:"appClientID" json:"appClientID,omitempty"`
 	GithubAppClientSecret  string `mapstructure:"appClientSecret" json:"appClientSecret,omitempty"`
 	GithubAppName          string `mapstructure:"appName" json:"appName,omitempty"`
@@ -184,7 +183,7 @@ type Config struct {
 
 	UserNotifier notifier.UserNotifier
 
-	GithubApp *github.GithubAppConf
+	VCSProviders map[vcs.VCSRepositoryKind]vcs.VCSProvider
 
 	DefaultFileStore filestorage.FileStorageManager
 
@@ -199,7 +198,7 @@ func (c *Config) ToAPIServerMetadataType() *types.APIServerMetadata {
 			RequireEmailVerification: c.AuthConfig.RequireEmailVerification,
 		},
 		Integrations: &types.APIServerMetadataIntegrations{
-			GithubApp: c.GithubApp != nil,
+			GithubApp: c.VCSProviders[vcs.VCSRepositoryKindGithub] != nil,
 			Email:     c.UserNotifier.GetID() != "noop",
 		},
 	}

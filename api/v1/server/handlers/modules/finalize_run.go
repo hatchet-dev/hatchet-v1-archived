@@ -115,7 +115,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	m.WriteResult(w, r, run.ToAPITypeOverview())
 
 	// write the github comment if all monitors have succeeded for the plan, or one monitor has failed
-	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+	if run.Kind == models.ModuleRunKindPlan && run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
 		client, err := github.GetGithubAppClientFromModule(m.Config(), module)
 
 		if err != nil {
@@ -297,7 +297,7 @@ func getMonitorLink(config *server.Config, teamID, monitorID string) string {
 }
 
 func getShortSHA(run *models.ModuleRun) string {
-	return run.ModuleRunConfig.GithubCommitSHA[0:7]
+	return run.ModuleRunConfig.GitCommitSHA[0:7]
 }
 
 func getCommitSHALink(module *models.Module, run *models.ModuleRun) string {
@@ -305,6 +305,6 @@ func getCommitSHALink(module *models.Module, run *models.ModuleRun) string {
 		"https://github.com/%s/%s/commit/%s",
 		module.DeploymentConfig.GithubRepoOwner,
 		module.DeploymentConfig.GithubRepoName,
-		run.ModuleRunConfig.GithubCommitSHA,
+		run.ModuleRunConfig.GitCommitSHA,
 	)
 }

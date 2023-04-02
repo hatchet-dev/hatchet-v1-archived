@@ -1,4 +1,4 @@
-package github_zip
+package zip
 
 import (
 	"archive/zip"

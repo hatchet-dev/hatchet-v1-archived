@@ -89,7 +89,7 @@ const (
 // swagger:model
 type ModuleRunConfig struct {
 	TriggerKind     ModuleRunTriggerKind `json:"trigger_kind"`
-	GithubCommitSHA string               `json:"github_commit_sha"`
+	GitCommitSHA    string               `json:"git_commit_sha"`
 	EnvVarVersionID string               `json:"env_var_version_id"`
 	ValuesVersionID string               `json:"values_version_id"`
 }

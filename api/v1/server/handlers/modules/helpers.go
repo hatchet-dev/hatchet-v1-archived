@@ -1,17 +1,16 @@
 package modules
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
-	githubsdk "github.com/google/go-github/v49/github"
 	"github.com/hatchet-dev/hatchet/api/serverutils/apierrors"
 	"github.com/hatchet-dev/hatchet/api/v1/types"
 	"github.com/hatchet-dev/hatchet/internal/config/server"
-	"github.com/hatchet-dev/hatchet/internal/integrations/git/github"
 	"github.com/hatchet-dev/hatchet/internal/integrations/valuesstorage/db"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs/github"
 	"github.com/hatchet-dev/hatchet/internal/models"
 	"github.com/hatchet-dev/hatchet/internal/monitors"
 	"github.com/hatchet-dev/hatchet/internal/queuemanager"
@@ -142,7 +141,24 @@ func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleR
 		return nil, reqErr
 	}
 
-	_, err := createGithubWebhookIfNotExists(config, gai, team.ID, req.GithubRepositoryOwner, req.GithubRepositoryName)
+	fact := config.VCSProviders[vcs.VCSProviderKindGithub]
+	githubFact, err := github.ToGithubVCSProviderFactory(fact)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	githubVCS, err := githubFact.GetVCSProviderFromGAI(gai)
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
+
+	err = githubVCS.SetupRepository(team.ID, github.NewGithubVCSRepo(req.GithubRepositoryOwner, req.GithubRepositoryName))
+
+	if err != nil {
+		return nil, apierrors.NewErrInternal(err)
+	}
 
 	// TODO(abelanger5): clean up github webhook on subsequent errors
 
@@ -189,62 +205,6 @@ func canAccessGithubAppInstallation(config *server.Config, reqID string, user *m
 	}
 
 	return gai, nil
-}
-
-func createGithubWebhookIfNotExists(config *server.Config, gai *models.GithubAppInstallation, teamID, repoOwner, repoName string) (*models.GithubWebhook, error) {
-	gw, err := config.DB.Repository.GithubWebhook().ReadGithubWebhookByTeamID(teamID, repoOwner, repoName)
-
-	if err != nil {
-		if errors.Is(err, repository.RepositoryErrorNotFound) {
-			return createGithubWebhook(config, gai, teamID, repoOwner, repoName)
-		}
-
-		return nil, err
-	}
-
-	return gw, err
-
-}
-
-func createGithubWebhook(config *server.Config, gai *models.GithubAppInstallation, teamID, repoOwner, repoName string) (*models.GithubWebhook, error) {
-	gw, err := models.NewGithubWebhook(teamID, repoOwner, repoName)
-
-	if err != nil {
-		return nil, err
-	}
-
-	gw, err = config.DB.Repository.GithubWebhook().CreateGithubWebhook(gw)
-
-	if err != nil {
-		return nil, err
-	}
-
-	webhookURL := fmt.Sprintf("%s/api/v1/teams/%s/github_incoming/%s", config.ServerRuntimeConfig.ServerURL, teamID, gw.ID)
-
-	// config.DB.Repository.GithubWebhook().Create(teamID, repoName)
-	client, err := github.GetGithubAppClientFromGAI(config, gai)
-
-	if err != nil {
-		return nil, err
-	}
-
-	_, _, err = client.Repositories.CreateHook(
-		context.Background(), repoOwner, repoName, &githubsdk.Hook{
-			Config: map[string]interface{}{
-				"url":          webhookURL,
-				"content_type": "json",
-				"secret":       string(gw.SigningSecret),
-			},
-			Events: []string{"pull_request", "push"},
-			Active: githubsdk.Bool(true),
-		},
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return gw, nil
 }
 
 func createModuleValuesRaw(config *server.Config, module *models.Module, vals map[string]interface{}, prevVersion uint) (*models.ModuleValuesVersion, error) {

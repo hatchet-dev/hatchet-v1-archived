@@ -38,13 +38,19 @@ type VCSRepository interface {
 	GetBranch(name string) (VCSBranch, error)
 
 	// CreateOrUpdatePR stores pull request information using this VCS provider
-	CreateOrUpdatePR(pr VCSRepositoryPullRequest) error
+	CreateOrUpdatePR(pr VCSRepositoryPullRequest) (VCSObjectID, error)
 
 	// CreateOrUpdateCheckRun creates a new "check" to run against a PR
-	CreateOrUpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module) error
+	// Note that run MAY be nil, implementations should check if the run is nil before reading from it
+	CreateOrUpdateCheckRun(pr VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun) (VCSObjectID, error)
 
 	// CreateOrUpdateComment creates or updates a comment on a pull or merge request
-	CreateOrUpdateComment(pr VCSRepositoryPullRequest, mod *models.Module, body string) error
+	// Note that run MAY be nil, implementations should check if the run is nil before reading from it
+	CreateOrUpdateComment(pr VCSRepositoryPullRequest, mod *models.Module, run *models.ModuleRun, body string) (VCSObjectID, error)
+
+	// PopulateModuleRun adds additional fields to the module run config. Should be called
+	// before creating the module run.
+	PopulateModuleRun(run *models.ModuleRun, checkRunID, commentID VCSObjectID)
 
 	// ReadFile returns a file by a SHA reference or path
 	ReadFile(ref, path string) (io.ReadCloser, error)
@@ -53,14 +59,56 @@ type VCSRepository interface {
 	CompareCommits(base, head string) (CommitsComparison, error)
 }
 
+// VCSObjectID is a generic method for retrieving IDs from the underlying VCS repository.
+// Depending on the provider, object IDs may be int64 or strings.
+//
+// Object ids are meant to be passed between methods in the same VCS repository, so they should
+// only be read by the same VCS repository that wrote them.
+type VCSObjectID interface {
+	GetIDString() *string
+	GetIDInt64() *int64
+}
+
+type vcsObjectString struct {
+	id string
+}
+
+func NewVCSObjectString(id string) VCSObjectID {
+	return vcsObjectString{id}
+}
+
+func (v vcsObjectString) GetIDString() *string {
+	return &v.id
+}
+
+func (v vcsObjectString) GetIDInt64() *int64 {
+	return nil
+}
+
+type vcsObjectInt struct {
+	id int64
+}
+
+func NewVCSObjectInt(id int64) VCSObjectID {
+	return vcsObjectInt{id}
+}
+
+func (v vcsObjectInt) GetIDString() *string {
+	return nil
+}
+
+func (v vcsObjectInt) GetIDInt64() *int64 {
+	return &v.id
+}
+
 type VCSProvider interface {
 	// GetVCSRepositoryFromModule returns the corresponding VCS repository for the module.
 	// Callers should likely use the package method GetVCSProviderFromModule.
 	GetVCSRepositoryFromModule(mod *models.Module) (VCSRepository, error)
 }
 
-// GetVCSProviderFromModule returns the corresponding VCS provider for the module
-func GetVCSProviderFromModule(allProviders map[VCSRepositoryKind]VCSProvider, mod *models.Module) (VCSRepository, error) {
+// GetVCSRepositoryFromModule returns the corresponding VCS repository for the module
+func GetVCSRepositoryFromModule(allProviders map[VCSRepositoryKind]VCSProvider, mod *models.Module) (VCSRepository, error) {
 	var repoKind VCSRepositoryKind
 
 	if mod.DeploymentMechanism == models.DeploymentMechanismGithub {

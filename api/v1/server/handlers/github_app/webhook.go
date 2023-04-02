@@ -28,7 +28,14 @@ func NewGithubAppWebhookHandler(
 }
 
 func (g *GithubAppWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	payload, err := github.ValidatePayload(r, []byte(g.Config().GithubApp.WebhookSecret))
+	ghApp, reqErr := GetGithubAppConfig(g.Config())
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+		return
+	}
+
+	payload, err := github.ValidatePayload(r, []byte(ghApp.GetWebhookSecret()))
 
 	if err != nil {
 		g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -77,6 +84,7 @@ func (g *GithubAppWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 				return
 			}
 		}
+
 		if *e.Action == "deleted" {
 			gai, err := g.Repo().GithubAppInstallation().ReadGithubAppInstallationByInstallationAndAccountID(*e.Installation.ID, *e.Installation.Account.ID)
 

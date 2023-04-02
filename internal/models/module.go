@@ -13,6 +13,7 @@ type DeploymentMechanism string
 
 const (
 	DeploymentMechanismGithub DeploymentMechanism = "github"
+	DeploymentMechanismGitlab DeploymentMechanism = "gitlab"
 	DeploymentMechanismAPI    DeploymentMechanism = "api"
 	DeploymentMechanismLocal  DeploymentMechanism = "local"
 )
@@ -20,8 +21,8 @@ const (
 type ModuleLockKind string
 
 const (
-	ModuleLockKindGithubBranch ModuleLockKind = "github_branch"
-	ModuleLockKindManual       ModuleLockKind = "manual"
+	ModuleLockKindVCSBranch ModuleLockKind = "vcs_branch"
+	ModuleLockKindManual    ModuleLockKind = "manual"
 )
 
 type Module struct {
@@ -195,7 +196,7 @@ func (m *ModuleRun) ToAPIType(pr *GithubPullRequest) *types.ModuleRun {
 	if mc := m.ModuleRunConfig; mc.ID != "" {
 		res.ModuleRunConfig = &types.ModuleRunConfig{
 			TriggerKind:     types.ModuleRunTriggerKind(mc.TriggerKind),
-			GithubCommitSHA: mc.GithubCommitSHA,
+			GitCommitSHA:    mc.GitCommitSHA,
 			EnvVarVersionID: mc.ModuleEnvVarsVersionID,
 			ValuesVersionID: mc.ModuleValuesVersionID,
 		}
@@ -306,7 +307,7 @@ func (m *ModuleRunToken) Decrypt(key *[32]byte) error {
 type ModuleRunTriggerKind string
 
 const (
-	ModuleRunTriggerKindGithub ModuleRunTriggerKind = "github"
+	ModuleRunTriggerKindVCS    ModuleRunTriggerKind = "vcs"
 	ModuleRunTriggerKindManual ModuleRunTriggerKind = "manual"
 )
 
@@ -317,12 +318,15 @@ type ModuleRunConfig struct {
 
 	TriggerKind ModuleRunTriggerKind
 
+	// For VCS-triggered runs, this is the corresponding commit SHA that triggered the run
+	GitCommitSHA string
+
 	// For locally-triggered runs, this is the hostname of the machine that performed this run
 	LocalHostname string
 
+	// Github-specific fields
 	GithubCheckID   int64
 	GithubCommentID int64
-	GithubCommitSHA string
 
 	ModuleValuesVersionID string
 	ModuleValuesVersion   ModuleValuesVersion `gorm:"foreignKey:ModuleValuesVersionID"`

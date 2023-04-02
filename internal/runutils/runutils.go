@@ -39,7 +39,7 @@ func generatePlanRunDescription(
 ) (string, error) {
 	prefix := "Plan"
 
-	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
 		pr, err := getPullRequestFromModuleRun(config, module, run)
 
 		if err != nil {
@@ -76,7 +76,7 @@ func generateApplyRunDescription(
 ) (string, error) {
 	prefix := "Apply"
 
-	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
 		prefix = fmt.Sprintf("Apply for branch %s", module.DeploymentConfig.GithubRepoBranch)
 	}
 
@@ -107,7 +107,7 @@ func generateDestroyRunDescription(
 ) (string, error) {
 	prefix := "Destroy"
 
-	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindGithub {
+	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
 		prefix = fmt.Sprintf("Destroy for branch %s", module.DeploymentConfig.GithubRepoBranch)
 	}
 
