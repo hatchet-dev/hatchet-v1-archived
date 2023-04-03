@@ -138,7 +138,7 @@ func (v vcsObjectInt) GetIDInt64() *int64 {
 type VCSProvider interface {
 	// GetVCSRepositoryFromModule returns the corresponding VCS repository for the module.
 	// Callers should likely use the package method GetVCSProviderFromModule.
-	GetVCSRepositoryFromModule(mod *models.Module) (VCSRepository, error)
+	GetVCSRepositoryFromModule(depl *models.ModuleDeploymentConfig) (VCSRepository, error)
 }
 
 // GetVCSRepositoryFromModule returns the corresponding VCS repository for the module
@@ -160,7 +160,7 @@ func GetVCSRepositoryFromModule(allProviders map[VCSRepositoryKind]VCSProvider, 
 		return nil, fmt.Errorf("VCS provider kind '%s' is not registered on this Hatchet instance", repoKind)
 	}
 
-	return provider.GetVCSRepositoryFromModule(mod)
+	return provider.GetVCSRepositoryFromModule(&mod.DeploymentConfig)
 }
 
 // VCSRepositoryPullRequest abstracts the underlying pull or merge request methods to only

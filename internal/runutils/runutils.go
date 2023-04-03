@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hatchet-dev/hatchet/internal/config/server"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
 	"github.com/hatchet-dev/hatchet/internal/models"
 )
 
@@ -13,10 +14,11 @@ func GenerateRunDescription(
 	run *models.ModuleRun,
 	status models.ModuleRunStatus,
 	failedMonitorResult *models.ModuleMonitorResult,
+	pr vcs.VCSRepositoryPullRequest,
 ) (string, error) {
 	switch run.Kind {
 	case models.ModuleRunKindPlan:
-		return generatePlanRunDescription(config, module, run, status, failedMonitorResult)
+		return generatePlanRunDescription(config, module, run, status, failedMonitorResult, pr)
 	case models.ModuleRunKindApply:
 		return generateApplyRunDescription(config, module, run, status, failedMonitorResult)
 	case models.ModuleRunKindDestroy:
@@ -36,17 +38,12 @@ func generatePlanRunDescription(
 	run *models.ModuleRun,
 	status models.ModuleRunStatus,
 	failedMonitorResult *models.ModuleMonitorResult,
+	pr vcs.VCSRepositoryPullRequest,
 ) (string, error) {
 	prefix := "Plan"
 
-	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS {
-		pr, err := getPullRequestFromModuleRun(config, module, run)
-
-		if err != nil {
-			return "", err
-		}
-
-		prefix = fmt.Sprintf("Plan for pull request %s/%s #%d", pr.GithubRepositoryOwner, pr.GithubRepositoryName, pr.GithubPullRequestNumber)
+	if run.ModuleRunConfig.TriggerKind == models.ModuleRunTriggerKindVCS && pr != nil {
+		prefix = fmt.Sprintf("Plan for pull request %s/%s #%d", pr.GetRepoOwner(), pr.GetRepoName(), pr.GetPRNumber())
 	}
 
 	if failedMonitorResult != nil {
@@ -176,14 +173,4 @@ func generateMonitorRunDescription(
 	}
 
 	return "", nil
-}
-
-func getPullRequestFromModuleRun(config *server.Config, module *models.Module, run *models.ModuleRun) (*models.GithubPullRequest, error) {
-	prComment, err := config.DB.Repository.GithubPullRequest().ReadGithubPullRequestCommentByGithubID(module.ID, run.ModuleRunConfig.GithubCommentID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return config.DB.Repository.GithubPullRequest().ReadGithubPullRequestByID(module.TeamID, prComment.GithubPullRequestID)
 }

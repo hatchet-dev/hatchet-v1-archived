@@ -104,6 +104,7 @@ func BindAllEnv(v *viper.Viper) {
 	v.BindEnv("notification.sendgrid.senderEmail", "SERVER_NOTIFICATION_SENDGRID_SENDER_EMAIL")
 
 	v.BindEnv("vcs.kind", "SERVER_VCS_KIND")
+	v.BindEnv("vcs.github.enabled", "SERVER_VCS_GITHUB_ENABLED")
 	v.BindEnv("vcs.github.appClientID", "SERVER_VCS_GITHUB_APP_CLIENT_ID")
 	v.BindEnv("vcs.github.appClientSecret", "SERVER_VCS_GITHUB_APP_CLIENT_SECRET")
 	v.BindEnv("vcs.github.appName", "SERVER_VCS_GITHUB_APP_NAME")

@@ -62,7 +62,7 @@ func (w *WebhookHandler) ProcessPullRequestMerged(
 		LogLocation: w.config.DefaultLogStore.GetID(),
 	}
 
-	desc, err := runutils.GenerateRunDescription(w.config, mod, run, run.Status, nil)
+	desc, err := runutils.GenerateRunDescription(w.config, mod, run, run.Status, nil, pr)
 
 	if err != nil {
 		return err
@@ -143,6 +143,8 @@ func (w *WebhookHandler) NewPlanFromPR(
 		vcsRepo,
 	)
 
+	fmt.Println("HERE 1", err)
+
 	if err != nil {
 		return err
 	} else if !shouldTrigger {
@@ -163,12 +165,16 @@ func (w *WebhookHandler) NewPlanFromPR(
 		Status: vcs.VCSCheckRunStatusInProgress,
 	})
 
+	fmt.Println("HERE 2", err)
+
 	if err != nil {
 		return fmt.Errorf("error creating new github check run for owner: %s repo %s prNumber: %d. Error: %w",
 			pr.GetRepoOwner(), pr.GetRepoName(), pr.GetPRNumber(), err)
 	}
 
 	vcsComment, err := vcsRepo.CreateOrUpdateComment(pr, mod, nil, commentBody)
+
+	fmt.Println("HERE 3", err)
 
 	if err != nil {
 		return fmt.Errorf("error creating new github comment for owner: %s repo %s prNumber: %d. Error: %w",
@@ -183,10 +189,7 @@ func (w *WebhookHandler) NewPlanFromPR(
 		Kind:        models.ModuleRunKindPlan,
 		LogLocation: w.config.DefaultLogStore.GetID(),
 		ModuleRunConfig: models.ModuleRunConfig{
-			TriggerKind: models.ModuleRunTriggerKindVCS,
-			// TODO(abelanger5): store check id and comment id as part of run
-			// GithubCheckID:          checkResp.GetID(),
-			// GithubCommentID:        commentResp.GetID(),
+			TriggerKind:            models.ModuleRunTriggerKindVCS,
 			GitCommitSHA:           pr.GetHeadSHA(),
 			ModuleValuesVersionID:  mod.CurrentModuleValuesVersionID,
 			ModuleEnvVarsVersionID: mod.CurrentModuleEnvVarsVersionID,
@@ -195,7 +198,9 @@ func (w *WebhookHandler) NewPlanFromPR(
 
 	vcsRepo.PopulateModuleRun(run, pr.GetVCSID(), vcsCheck, vcsComment)
 
-	desc, err := runutils.GenerateRunDescription(w.config, mod, run, run.Status, nil)
+	desc, err := runutils.GenerateRunDescription(w.config, mod, run, run.Status, nil, pr)
+
+	fmt.Println("HERE 4", err)
 
 	if err != nil {
 		return err
@@ -205,6 +210,8 @@ func (w *WebhookHandler) NewPlanFromPR(
 
 	run, err = w.repo.Module().CreateModuleRun(run)
 
+	fmt.Println("HERE 5", err)
+
 	if err != nil {
 		return err
 	}
@@ -212,11 +219,15 @@ func (w *WebhookHandler) NewPlanFromPR(
 	// get all monitors for this run
 	runMonitors, err := monitors.GetAllMonitorsForModuleRun(w.repo, mod.TeamID, run)
 
+	fmt.Println("HERE 6", err)
+
 	if err != nil {
 		return err
 	}
 
 	run, err = w.repo.Module().AppendModuleRunMonitors(run, runMonitors)
+
+	fmt.Println("HERE 7", err)
 
 	if err != nil {
 		return err
@@ -226,6 +237,8 @@ func (w *WebhookHandler) NewPlanFromPR(
 		LockID:   pr.GetHeadBranch(),
 		LockKind: models.ModuleLockKindVCSBranch,
 	})
+
+	fmt.Println("HERE 8", err)
 
 	if err != nil {
 		return err

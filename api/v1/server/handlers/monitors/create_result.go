@@ -78,7 +78,7 @@ func (m *MonitorResultCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	if run.Kind == models.ModuleRunKindMonitor {
 		run.Status = models.ModuleRunStatusCompleted
 
-		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status, nil)
+		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status, nil, nil)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

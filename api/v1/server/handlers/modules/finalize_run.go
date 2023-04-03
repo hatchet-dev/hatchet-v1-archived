@@ -67,7 +67,7 @@ func (m *ModuleRunFinalizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 
 	if req.Description == "" {
-		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status, failedMonitorResult)
+		desc, err := runutils.GenerateRunDescription(m.Config(), module, run, run.Status, failedMonitorResult, nil)
 
 		if err != nil {
 			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))

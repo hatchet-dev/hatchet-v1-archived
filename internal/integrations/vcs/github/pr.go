@@ -27,7 +27,7 @@ func (g *ghPullRequest) GetVCSID() vcs.VCSObjectID {
 }
 
 func (g *ghPullRequest) GetPRNumber() int64 {
-	return g.pr.GetID()
+	return int64(g.pr.GetNumber())
 }
 
 func (g *ghPullRequest) GetBaseSHA() string {

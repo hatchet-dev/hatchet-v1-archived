@@ -35,7 +35,7 @@ func createManualRun(config *server.Config, module *models.Module, kind models.M
 		},
 	}
 
-	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil)
+	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil, nil)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
@@ -96,7 +96,7 @@ func createLocalRun(config *server.Config, module *models.Module, kind models.Mo
 		},
 	}
 
-	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil)
+	desc, err := runutils.GenerateRunDescription(config, module, run, models.ModuleRunStatusInProgress, nil, nil)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)
@@ -135,7 +135,7 @@ func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleR
 		GithubAppInstallationID: req.GithubAppInstallationID,
 	}
 
-	gai, reqErr := canAccessGithubAppInstallation(config, req.GithubAppInstallationID, user)
+	_, reqErr := canAccessGithubAppInstallation(config, req.GithubAppInstallationID, user)
 
 	if reqErr != nil {
 		return nil, reqErr
@@ -148,7 +148,7 @@ func setupGithubDeploymentConfig(config *server.Config, req *types.CreateModuleR
 		return nil, apierrors.NewErrInternal(err)
 	}
 
-	githubVCS, err := provider.GetVCSRepositoryFromGAI(gai)
+	githubVCS, err := provider.GetVCSRepositoryFromModule(res)
 
 	if err != nil {
 		return nil, apierrors.NewErrInternal(err)

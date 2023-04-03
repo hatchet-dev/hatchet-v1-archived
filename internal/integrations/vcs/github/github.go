@@ -14,14 +14,16 @@ import (
 )
 
 type GithubVCSProvider struct {
-	repo    repository.Repository
-	appConf *GithubAppConf
+	repo      repository.Repository
+	appConf   *GithubAppConf
+	serverURL string
 }
 
-func NewGithubVCSProvider(appConf *GithubAppConf, repo repository.Repository) GithubVCSProvider {
+func NewGithubVCSProvider(appConf *GithubAppConf, repo repository.Repository, serverURL string) GithubVCSProvider {
 	return GithubVCSProvider{
-		appConf: appConf,
-		repo:    repo,
+		appConf:   appConf,
+		repo:      repo,
+		serverURL: serverURL,
 	}
 }
 
@@ -39,21 +41,17 @@ func (g GithubVCSProvider) GetGithubAppConfig() *GithubAppConf {
 	return g.appConf
 }
 
-func (g GithubVCSProvider) GetVCSRepositoryFromModule(mod *models.Module) (vcs.VCSRepository, error) {
-	if mod.DeploymentConfig.GithubAppInstallationID == "" {
+func (g GithubVCSProvider) GetVCSRepositoryFromModule(depl *models.ModuleDeploymentConfig) (vcs.VCSRepository, error) {
+	if depl.GithubAppInstallationID == "" {
 		return nil, fmt.Errorf("module does not have github app installation id param set")
 	}
 
-	gai, err := g.repo.GithubAppInstallation().ReadGithubAppInstallationByID(mod.DeploymentConfig.GithubAppInstallationID)
+	gai, err := g.repo.GithubAppInstallation().ReadGithubAppInstallationByID(depl.GithubAppInstallationID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return g.GetVCSRepositoryFromGAI(gai)
-}
-
-func (g GithubVCSProvider) GetVCSRepositoryFromGAI(gai *models.GithubAppInstallation) (vcs.VCSRepository, error) {
 	client, err := g.appConf.GetGithubClient(gai.InstallationID)
 
 	if err != nil {
@@ -61,9 +59,16 @@ func (g GithubVCSProvider) GetVCSRepositoryFromGAI(gai *models.GithubAppInstalla
 	}
 
 	return &GithubVCSRepository{
-		client: client,
+		repoOwner: depl.GitRepoOwner,
+		repoName:  depl.GitRepoName,
+		serverURL: g.serverURL,
+		client:    client,
+		repo:      g.repo,
 	}, nil
 }
+
+// func (g GithubVCSProvider) GetVCSRepositoryFromGAI(gai *models.GithubAppInstallation) (vcs.VCSRepository, error) {
+// }
 
 type GithubVCSRepository struct {
 	repoOwner, repoName string
@@ -89,6 +94,9 @@ func (g *GithubVCSRepository) GetRepoName() string {
 func (g *GithubVCSRepository) SetupRepository(teamID string) error {
 	repoOwner := g.GetRepoOwner()
 	repoName := g.GetRepoName()
+
+	fmt.Println("IS NIL?", g.repo)
+	fmt.Println("IS NIL?", g.repo.GithubWebhook())
 
 	_, err := g.repo.GithubWebhook().ReadGithubWebhookByTeamID(teamID, repoOwner, repoName)
 

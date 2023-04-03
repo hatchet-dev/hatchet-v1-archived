@@ -66,6 +66,8 @@ func (g *GithubIncomingWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.
 
 	gw, err := g.Repo().GithubWebhook().ReadGithubWebhookByID(team.ID, gwID)
 
+	fmt.Println("HERE 0")
+
 	if err != nil {
 		if errors.Is(err, repository.RepositoryErrorNotFound) {
 			g.HandleAPIError(w, r, apierrors.NewErrForbidden(
@@ -74,6 +76,8 @@ func (g *GithubIncomingWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.
 
 			return
 		}
+
+		fmt.Println("THIS IS THE ERROR")
 
 		g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
 		return

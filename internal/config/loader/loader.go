@@ -515,7 +515,7 @@ func GetServerConfigFromConfigFile(version string, sc *server.ConfigFile, dbConf
 			return nil, err
 		}
 
-		githubProvider := github.NewGithubVCSProvider(githubAppConf, dbConfig.Repository)
+		githubProvider := github.NewGithubVCSProvider(githubAppConf, dbConfig.Repository, serverRuntimeConfig.ServerURL)
 
 		vcsProviders[vcs.VCSRepositoryKindGithub] = githubProvider
 	}
