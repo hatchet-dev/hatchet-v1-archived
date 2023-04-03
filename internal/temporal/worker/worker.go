@@ -2,7 +2,6 @@ package worker
 
 import (
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -105,16 +104,14 @@ func StartRunnerWorkerCentralized(rwc *workerconfig.RunnerConfig, dc *database.C
 						_rwc.TemporalClient, err = temporal.NewTemporalClient(newOpts)
 
 						if err != nil {
-							fmt.Printf("Fatal: could not create new temporal client: %v\n", err)
-							os.Exit(1)
+							return fmt.Errorf("Fatal: could not create new temporal client: %v\n", err)
 						}
 
 						// create a new runner worker
 						err = startRunnerWorker(&_rwc, false, interruptChan)
 
 						if err != nil {
-							fmt.Printf("Fatal: could not start runner worker: %v\n", err)
-							os.Exit(1)
+							return fmt.Errorf("Fatal: could not start runner worker: %v\n", err)
 						}
 
 						fmt.Printf("successfully added new runner worker for team %s\n", team.ID)
