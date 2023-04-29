@@ -87,6 +87,7 @@ const SetModuleValues: React.FC<Props> = ({
       <TextInput
         placeholder="./env1.tfvars"
         on_change={(p) => setFilePath(p)}
+        initial_value={current_github_params.path}
       />,
     ];
   };

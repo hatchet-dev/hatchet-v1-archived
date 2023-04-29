@@ -30,6 +30,9 @@ type ModuleRepository interface {
 	// UpdateModule updates any modified values for a module
 	UpdateModule(module *models.Module) (*models.Module, RepositoryError)
 
+	// UpdateModuleDeploymentConfig updates deployment config for a module
+	UpdateModuleDeploymentConfig(mod *models.Module, depl *models.ModuleDeploymentConfig) (*models.ModuleDeploymentConfig, RepositoryError)
+
 	// DeleteModule soft-deletes a module
 	DeleteModule(module *models.Module) (*models.Module, RepositoryError)
 

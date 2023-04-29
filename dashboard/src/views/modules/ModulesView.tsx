@@ -96,8 +96,8 @@ const ModulesView: React.FunctionComponent = () => {
       id: module.id,
       name: module.name,
       deployment_mechanism: module.deployment_mechanism,
-      repo_name: `${module.deployment.github_repo_owner}/${module.deployment.github_repo_name}`,
-      repo_branch: module.deployment.github_repo_branch,
+      repo_name: `${module.deployment.git_repo_owner}/${module.deployment.git_repo_name}`,
+      repo_branch: module.deployment.git_repo_branch,
       last_deployed: relativeDate(module.updated_at),
       path: module.deployment.path,
     };

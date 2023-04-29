@@ -95,9 +95,6 @@ func (g *GithubVCSRepository) SetupRepository(teamID string) error {
 	repoOwner := g.GetRepoOwner()
 	repoName := g.GetRepoName()
 
-	fmt.Println("IS NIL?", g.repo)
-	fmt.Println("IS NIL?", g.repo.GithubWebhook())
-
 	_, err := g.repo.GithubWebhook().ReadGithubWebhookByTeamID(teamID, repoOwner, repoName)
 
 	if err != nil && !errors.Is(err, repository.RepositoryErrorNotFound) {
@@ -361,6 +358,6 @@ func (g *GithubVCSRepository) CompareCommits(base, head string) (vcs.VCSCommitsC
 // before creating the module run.
 func (g *GithubVCSRepository) PopulateModuleRun(run *models.ModuleRun, prID, checkRunID, commentID vcs.VCSObjectID) {
 	run.ModuleRunConfig.GithubCheckID = *checkRunID.GetIDInt64()
-	run.ModuleRunConfig.GithubCommentID = *checkRunID.GetIDInt64()
+	run.ModuleRunConfig.GithubCommentID = *commentID.GetIDInt64()
 	run.ModuleRunConfig.GithubPullRequestID = *prID.GetIDInt64()
 }

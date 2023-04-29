@@ -50,6 +50,7 @@ func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 		currEnv = make([]string, 0)
 	}
 
+	currEnv = append(currEnv, fmt.Sprintf("TEMPORAL_CLIENT_ENABLED=false"))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_SERVER_ADDRESS=%s", opts.BroadcastGRPCAddress))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_TOKEN=%s", tok))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_TEAM_ID=%s", opts.Team.ID))

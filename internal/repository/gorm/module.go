@@ -48,6 +48,23 @@ func (repo *ModuleRepository) UpdateModule(mod *models.Module) (*models.Module, 
 	return mod, nil
 }
 
+// UpdateModuleDeploymentConfig updates a module's deployment config in the database
+func (repo *ModuleRepository) UpdateModuleDeploymentConfig(mod *models.Module, depl *models.ModuleDeploymentConfig) (*models.ModuleDeploymentConfig, repository.RepositoryError) {
+	if depl.ID == "" {
+		depl.ID = mod.DeploymentConfig.ID
+	}
+
+	if depl.ModuleID == "" {
+		depl.ModuleID = mod.ID
+	}
+
+	if err := repo.db.Save(depl).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return depl, nil
+}
+
 // DeleteModule deletes a single mod by its unique id
 func (repo *ModuleRepository) DeleteModule(mod *models.Module) (*models.Module, repository.RepositoryError) {
 	del := repo.db.Delete(&mod)
