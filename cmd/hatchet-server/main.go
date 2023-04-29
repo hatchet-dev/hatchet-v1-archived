@@ -176,7 +176,18 @@ func startRunnerWorkerOrDie(configLoader *loader.ConfigLoader, interruptCh <-cha
 		os.Exit(1)
 	}
 
-	err = worker.StartRunnerWorker(rwc, false, interruptCh)
+	if rwc.ProvisionerMechanism == "centralized" {
+		dc, err := configLoader.LoadDatabaseConfig()
+
+		if err != nil {
+			fmt.Printf("Fatal: could not load database config: %v\n", err)
+			os.Exit(1)
+		}
+
+		err = worker.StartRunnerWorkerCentralized(rwc, dc, interruptCh, false)
+	} else {
+		err = worker.StartRunnerWorkerDecentralized(rwc, interruptCh, false)
+	}
 
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Fatal: could not start worker: %v\n", err)
