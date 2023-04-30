@@ -19,10 +19,7 @@ DATABASE_SQLITE_PATH=./hatchet.db
 DATABASE_ENCRYPTION_KEY=$(cat /dev/urandom | base64 | head -c 32)
 
 SERVER_RUNTIME_URL=http://localhost:8081
-SERVER_RUNTIME_RUN_BACKGROUND_WORKER=true
-SERVER_RUNTIME_RUN_RUNNER_WORKER=true
-SERVER_RUNTIME_RUN_TEMPORAL_WORKER=true
-SERVER_RUNTIME_RUN_STATIC_FILE_SERVER=true
+TEMPORAL_CLIENT_ENABLED=false
 
 SERVER_AUTH_COOKIE_SECRETS=\"$(cat /dev/urandom | base64 | head -c 16) $(cat /dev/urandom | base64 | head -c 16)\"
 SERVER_AUTH_COOKIE_DOMAIN=localhost:8081
@@ -150,3 +147,79 @@ If you make changes to the API, you will need to rebuild the API clients. This c
 make build-api-client # builds typescript client
 make build-api-client-golang # builds golang client
 ```
+
+## Running Temporal
+
+Temporal is used for running `terraform plan`/`terraform apply`, background tasks, and monitors. Hatchet customizes Temporal to build in several auth features that make Temporal more secure. To set up Temporal:
+
+1. Make sure the temporal database is set up using `touch temporal.db`.
+2. Generate an internal signing key for Temporal tokens, for example by running `cat /dev/urandom | base64 | head -c 32`.
+3. Update your env with the following variables:
+
+```
+TEMPORAL_INTERNAL_SIGNING_KEY=<signing-key>
+TEMPORAL_SQLITE_PATH=./temporal.db
+SERVER_RUNTIME_RUN_BACKGROUND_WORKER=true
+SERVER_RUNTIME_RUN_RUNNER_WORKER=true
+SERVER_RUNTIME_RUN_TEMPORAL_WORKER=true
+```
+
+4. Generate an internal bearer token used for Temporal clients:
+
+```sh
+{
+    set -a;
+    .env;
+    set +a;
+    go run ./cmd/hatchet-admin temporal create-internal-token --signing-key <signing-key>;
+}
+```
+
+5. Save this internal bearer token to your `.env` file:
+
+```
+TEMPORAL_CLIENT_BEARER_TOKEN=<your-token>
+```
+
+6. Run the following command to generate certificates (requires `openssl`):
+
+```
+cd ./hack/dev/certs && sh ./temporal-certs.sh && cd ../../..
+```
+
+7. Add the following to your `.env`:
+
+```
+TEMPORAL_CLIENT_TLS_ROOT_CA_FILE=./hack/dev/certs/certs/ca.cert
+TEMPORAL_CLIENT_TLS_CERT_FILE=./hack/dev/certs/certs/client-worker.pem
+TEMPORAL_CLIENT_TLS_KEY_FILE=./hack/dev/certs/certs/client-worker.key
+TEMPORAL_CLIENT_TLS_SERVER_NAME=cluster
+
+TEMPORAL_FRONTEND_TLS_SERVER_NAME=cluster
+TEMPORAL_FRONTEND_TLS_CERT_FILE=./hack/dev/certs/certs/cluster.pem
+TEMPORAL_FRONTEND_TLS_KEY_FILE=./hack/dev/certs/certs/cluster.key
+TEMPORAL_FRONTEND_TLS_ROOT_CA_FILE=./hack/dev/certs/certs/ca.cert
+
+TEMPORAL_WORKER_TLS_SERVER_NAME=cluster
+TEMPORAL_WORKER_TLS_CERT_FILE=./hack/dev/certs/certs/cluster.pem
+TEMPORAL_WORKER_TLS_KEY_FILE=./hack/dev/certs/certs/cluster.key
+TEMPORAL_WORKER_TLS_ROOT_CA_FILE=./hack/dev/certs/certs/ca.cert
+
+TEMPORAL_INTERNODE_TLS_SERVER_NAME=cluster
+TEMPORAL_INTERNODE_TLS_CERT_FILE=./hack/dev/certs/certs/cluster.pem
+TEMPORAL_INTERNODE_TLS_KEY_FILE=./hack/dev/certs/certs/cluster.key
+TEMPORAL_INTERNODE_TLS_ROOT_CA_FILE=./hack/dev/certs/certs/ca.cert
+
+TEMPORAL_UI_TLS_ROOT_CA_FILE=./hack/dev/certs/certs/ca.cert
+TEMPORAL_UI_TLS_CERT_FILE=./hack/dev/certs/certs/client-internal-admin.pem
+TEMPORAL_UI_TLS_KEY_FILE=./hack/dev/certs/certs/client-internal-admin.key
+TEMPORAL_UI_TLS_SERVER_NAME=cluster
+```
+
+Next time you run `make start-dev`, you should see logs from the temporal process.
+
+## Issues
+
+### `air` issue - `failed to watching <file>, error: bad file descriptor`
+
+If you're on OSX, run `ulimit -S -n 2048`.
