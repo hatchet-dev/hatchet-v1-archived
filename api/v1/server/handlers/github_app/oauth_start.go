@@ -26,6 +26,13 @@ func NewGithubAppOAuthStartHandler(
 }
 
 func (g *GithubAppOAuthStartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ghApp, reqErr := GetGithubAppConfig(g.Config())
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+		return
+	}
+
 	state, err := authn.SaveOAuthState(w, r, g.Config())
 
 	if err != nil {
@@ -33,5 +40,5 @@ func (g *GithubAppOAuthStartHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	http.Redirect(w, r, g.Config().GithubApp.AuthCodeURL(state, oauth2.AccessTypeOffline), 302)
+	http.Redirect(w, r, ghApp.AuthCodeURL(state, oauth2.AccessTypeOffline), 302)
 }

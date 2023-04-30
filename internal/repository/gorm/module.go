@@ -48,6 +48,23 @@ func (repo *ModuleRepository) UpdateModule(mod *models.Module) (*models.Module, 
 	return mod, nil
 }
 
+// UpdateModuleDeploymentConfig updates a module's deployment config in the database
+func (repo *ModuleRepository) UpdateModuleDeploymentConfig(mod *models.Module, depl *models.ModuleDeploymentConfig) (*models.ModuleDeploymentConfig, repository.RepositoryError) {
+	if depl.ID == "" {
+		depl.ID = mod.DeploymentConfig.ID
+	}
+
+	if depl.ModuleID == "" {
+		depl.ModuleID = mod.ID
+	}
+
+	if err := repo.db.Save(depl).Error; err != nil {
+		return nil, toRepoError(repo.db, err)
+	}
+
+	return depl, nil
+}
+
 // DeleteModule deletes a single mod by its unique id
 func (repo *ModuleRepository) DeleteModule(mod *models.Module) (*models.Module, repository.RepositoryError) {
 	del := repo.db.Delete(&mod)
@@ -93,10 +110,10 @@ func (repo *ModuleRepository) ListModulesByIDs(teamID string, ids []string, opts
 	return mods, paginatedResult, nil
 }
 
-func (repo *ModuleRepository) ListGithubRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
+func (repo *ModuleRepository) ListVCSRepositoryModules(teamID, repoOwner, repoName string) ([]*models.Module, repository.RepositoryError) {
 	var mods []*models.Module
 
-	db := repo.db.Joins("DeploymentConfig").Where("team_id = ? AND DeploymentConfig.github_repo_owner = ? AND DeploymentConfig.github_repo_name = ?", teamID, repoOwner, repoName)
+	db := repo.db.Joins("DeploymentConfig").Where("team_id = ? AND DeploymentConfig.git_repo_owner = ? AND DeploymentConfig.git_repo_name = ?", teamID, repoOwner, repoName)
 
 	if err := db.Find(&mods).Error; err != nil {
 		return nil, err
@@ -133,10 +150,10 @@ func (repo *ModuleRepository) ReadModuleRunWithStateLock(moduleID string) (*mode
 	return mod, nil
 }
 
-func (repo *ModuleRepository) ListModuleRunsByGithubSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, repository.RepositoryError) {
+func (repo *ModuleRepository) ListModuleRunsByVCSSHA(moduleID, githubSHA string, kind *models.ModuleRunKind) ([]*models.ModuleRun, repository.RepositoryError) {
 	mods := make([]*models.ModuleRun, 0)
 
-	db := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.github_commit_sha = ?", moduleID, githubSHA)
+	db := repo.db.Joins("ModuleRunConfig").Where("module_id = ? AND ModuleRunConfig.git_commit_sha = ?", moduleID, githubSHA)
 
 	if kind != nil {
 		db = db.Where("kind = ?", kind)

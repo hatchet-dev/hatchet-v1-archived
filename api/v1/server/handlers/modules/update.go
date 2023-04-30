@@ -50,6 +50,13 @@ func (m *ModuleUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		deplConfig, err := m.Repo().Module().UpdateModuleDeploymentConfig(module, deplConfig)
+
+		if err != nil {
+			m.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+			return
+		}
+
 		module.DeploymentConfig = *deplConfig
 	}
 

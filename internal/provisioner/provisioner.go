@@ -50,6 +50,7 @@ func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 		currEnv = make([]string, 0)
 	}
 
+	currEnv = append(currEnv, fmt.Sprintf("TEMPORAL_CLIENT_ENABLED=false"))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_SERVER_ADDRESS=%s", opts.BroadcastGRPCAddress))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GRPC_TOKEN=%s", tok))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_TEAM_ID=%s", opts.Team.ID))
@@ -57,9 +58,9 @@ func GetHatchetRunnerEnv(opts *GetEnvOpts, currEnv []string) ([]string, error) {
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_MODULE_RUN_ID=%s", opts.ModuleRun.ID))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_TOKEN=%s", tok))
 	currEnv = append(currEnv, fmt.Sprintf("RUNNER_API_SERVER_ADDRESS=%s", opts.ServerURL))
-	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_SHA=%s", opts.ModuleRun.ModuleRunConfig.GithubCommitSHA))
-	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GithubRepoName))
-	currEnv = append(currEnv, fmt.Sprintf("RUNNER_GITHUB_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_VCS_SHA=%s", opts.ModuleRun.ModuleRunConfig.GitCommitSHA))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_VCS_REPOSITORY_NAME=%s", opts.Module.DeploymentConfig.GitRepoName))
+	currEnv = append(currEnv, fmt.Sprintf("RUNNER_VCS_MODULE_PATH=%s", opts.Module.DeploymentConfig.ModulePath))
 
 	for key, val := range opts.EnvVars {
 		currEnv = append(currEnv, fmt.Sprintf("%s=%s", key, val))

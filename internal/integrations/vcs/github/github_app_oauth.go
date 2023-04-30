@@ -3,10 +3,14 @@ package github
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 
+	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
 	"golang.org/x/oauth2"
+
+	githubsdk "github.com/google/go-github/v49/github"
 )
 
 const (
@@ -17,10 +21,10 @@ const (
 type GithubAppConf struct {
 	oauth2.Config
 
-	AppName       string
-	WebhookSecret string
-	Secret        []byte
-	AppID         int64
+	appName       string
+	webhookSecret string
+	secret        []byte
+	appID         int64
 }
 
 func NewGithubAppConf(cfg *oauth.Config, appName, appSecretPath, appWebhookSecret, appID string) (*GithubAppConf, error) {
@@ -37,10 +41,10 @@ func NewGithubAppConf(cfg *oauth.Config, appName, appSecretPath, appWebhookSecre
 	}
 
 	return &GithubAppConf{
-		AppName:       appName,
-		WebhookSecret: appWebhookSecret,
-		Secret:        appSecret,
-		AppID:         intAppID,
+		appName:       appName,
+		webhookSecret: appWebhookSecret,
+		secret:        appSecret,
+		appID:         intAppID,
 		Config: oauth2.Config{
 			ClientID:     cfg.ClientID,
 			ClientSecret: cfg.ClientSecret,
@@ -52,4 +56,27 @@ func NewGithubAppConf(cfg *oauth.Config, appName, appSecretPath, appWebhookSecre
 			Scopes:      cfg.Scopes,
 		},
 	}, nil
+}
+
+func (g *GithubAppConf) GetGithubClient(installationID int64) (*githubsdk.Client, error) {
+	itr, err := ghinstallation.New(
+		http.DefaultTransport,
+		g.appID,
+		installationID,
+		g.secret,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return githubsdk.NewClient(&http.Client{Transport: itr}), nil
+}
+
+func (g *GithubAppConf) GetWebhookSecret() string {
+	return g.webhookSecret
+}
+
+func (g *GithubAppConf) GetAppName() string {
+	return g.appName
 }

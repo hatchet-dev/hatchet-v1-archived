@@ -28,7 +28,14 @@ func NewGithubAppWebhookHandler(
 }
 
 func (g *GithubAppWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	payload, err := github.ValidatePayload(r, []byte(g.Config().GithubApp.WebhookSecret))
+	ghApp, reqErr := GetGithubAppConfig(g.Config())
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+		return
+	}
+
+	payload, err := github.ValidatePayload(r, []byte(ghApp.GetWebhookSecret()))
 
 	if err != nil {
 		g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
@@ -43,54 +50,72 @@ func (g *GithubAppWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 
 	switch e := event.(type) {
+	case *github.InstallationRepositoriesEvent:
+		if *e.Action == "added" {
+			reqErr = g.handleInstallationEvent(*e.Sender.ID, e.Installation)
+		}
 	case *github.InstallationEvent:
 		if *e.Action == "created" || *e.Action == "added" {
-			// make sure the sender exists in the database
-			gao, err := g.Repo().GithubAppOAuth().ReadGithubAppOAuthByGithubUserID(*e.Sender.ID)
-
-			if err != nil {
-				g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-				return
-			}
-
-			_, err = g.Repo().GithubAppInstallation().ReadGithubAppInstallationByInstallationAndAccountID(*e.Installation.ID, *e.Installation.Account.ID)
-
-			if err != nil && errors.Is(err, repository.RepositoryErrorNotFound) {
-				// insert account/installation pair into database
-				_, err := g.Repo().GithubAppInstallation().CreateGithubAppInstallation(&models.GithubAppInstallation{
-					GithubAppOAuthID:        gao.ID,
-					AccountName:             *e.Installation.Account.Login,
-					AccountAvatarURL:        *e.Installation.Account.AvatarURL,
-					AccountID:               *e.Installation.Account.ID,
-					InstallationID:          *e.Installation.ID,
-					InstallationSettingsURL: *e.Installation.HTMLURL,
-				})
-
-				if err != nil {
-					g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-					return
-				}
-
-				return
-			} else if err != nil {
-				g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-				return
-			}
+			reqErr = g.handleInstallationEvent(*e.Sender.ID, e.Installation)
 		}
+
 		if *e.Action == "deleted" {
-			gai, err := g.Repo().GithubAppInstallation().ReadGithubAppInstallationByInstallationAndAccountID(*e.Installation.ID, *e.Installation.Account.ID)
-
-			if err != nil {
-				g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-				return
-			}
-
-			gai, err = g.Repo().GithubAppInstallation().DeleteGithubAppInstallation(gai)
-
-			if err != nil {
-				g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
-				return
-			}
+			reqErr = g.handleDeletionEvent(e.Installation)
 		}
 	}
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+		return
+	}
+}
+
+func (g *GithubAppWebhookHandler) handleInstallationEvent(senderID int64, i *github.Installation) apierrors.RequestError {
+	// make sure the sender exists in the database
+	gao, err := g.Repo().GithubAppOAuth().ReadGithubAppOAuthByGithubUserID(senderID)
+
+	if err != nil {
+		return apierrors.NewErrInternal(err)
+	}
+
+	_, err = g.Repo().GithubAppInstallation().ReadGithubAppInstallationByInstallationAndAccountID(*i.ID, *i.Account.ID)
+
+	if err != nil && errors.Is(err, repository.RepositoryErrorNotFound) {
+
+		// insert account/installation pair into database
+		_, err := g.Repo().GithubAppInstallation().CreateGithubAppInstallation(&models.GithubAppInstallation{
+			GithubAppOAuthID:        gao.ID,
+			AccountName:             *i.Account.Login,
+			AccountAvatarURL:        *i.Account.AvatarURL,
+			AccountID:               *i.Account.ID,
+			InstallationID:          *i.ID,
+			InstallationSettingsURL: *i.HTMLURL,
+		})
+
+		if err != nil {
+			return apierrors.NewErrInternal(err)
+		}
+
+		return nil
+	} else if err != nil {
+		return apierrors.NewErrInternal(err)
+	}
+
+	return nil
+}
+
+func (g *GithubAppWebhookHandler) handleDeletionEvent(i *github.Installation) apierrors.RequestError {
+	gai, err := g.Repo().GithubAppInstallation().ReadGithubAppInstallationByInstallationAndAccountID(*i.ID, *i.Account.ID)
+
+	if err != nil {
+		return apierrors.NewErrInternal(err)
+	}
+
+	gai, err = g.Repo().GithubAppInstallation().DeleteGithubAppInstallation(gai)
+
+	if err != nil {
+		return apierrors.NewErrInternal(err)
+	}
+
+	return nil
 }

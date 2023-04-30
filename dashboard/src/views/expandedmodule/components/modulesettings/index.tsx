@@ -115,9 +115,9 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
 
   const currentGithubParams = {
     github_app_installation_id: module.deployment.github_app_installation_id,
-    github_repository_owner: module.deployment.github_repo_owner,
-    github_repository_name: module.deployment.github_repo_name,
-    github_repository_branch: module.deployment.github_repo_branch,
+    github_repository_owner: module.deployment.git_repo_owner,
+    github_repository_name: module.deployment.git_repo_name,
+    github_repository_branch: module.deployment.git_repo_branch,
     path: module.deployment.path,
   };
 
@@ -126,11 +126,11 @@ const ModuleSettings: React.FC<Props> = ({ team_id, module }) => {
       valuesGH?.github_app_installation_id ||
       module.deployment.github_app_installation_id,
     github_repository_branch:
-      valuesGH?.github_repo_branch || module.deployment.github_repo_branch,
+      valuesGH?.github_repo_branch || module.deployment.git_repo_branch,
     github_repository_owner:
-      valuesGH?.github_repo_owner || module.deployment.github_repo_owner,
+      valuesGH?.github_repo_owner || module.deployment.git_repo_owner,
     github_repository_name:
-      valuesGH?.github_repo_name || module.deployment.github_repo_name,
+      valuesGH?.github_repo_name || module.deployment.git_repo_name,
     path: valuesGH?.path,
   };
 

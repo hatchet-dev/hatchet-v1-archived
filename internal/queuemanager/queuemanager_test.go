@@ -130,28 +130,28 @@ func TestWithLockIDs(t *testing.T) {
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun1, &queuemanager.LockOpts{
 			LockID:   "lock-id-1",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun2, err := conf.Repository.Module().CreateModuleRun(&moduleRun2)
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun2, &queuemanager.LockOpts{
 			LockID:   "lock-id-2",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun3, err := conf.Repository.Module().CreateModuleRun(&moduleRun3)
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun3, &queuemanager.LockOpts{
 			LockID:   "lock-id-2",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun4, err := conf.Repository.Module().CreateModuleRun(&moduleRun4)
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun4, &queuemanager.LockOpts{
 			LockID:   "lock-id-1",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun5, err := conf.Repository.Module().CreateModuleRun(&moduleRun5)
@@ -221,21 +221,21 @@ func TestWithMultiKind(t *testing.T) {
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun1, &queuemanager.LockOpts{
 			LockID:   "lock-id-1",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun2, err := conf.Repository.Module().CreateModuleRun(&moduleRun2)
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun2, &queuemanager.LockOpts{
 			LockID:   "lock-id-1",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		_moduleRun3, err := conf.Repository.Module().CreateModuleRun(&moduleRun3)
 
 		err = queueManager.Enqueue(testutils.ModuleModels[0], _moduleRun3, &queuemanager.LockOpts{
 			LockID:   "lock-id-1",
-			LockKind: models.ModuleLockKindGithubBranch,
+			LockKind: models.ModuleLockKindVCSBranch,
 		})
 
 		assert.Nil(t, err)

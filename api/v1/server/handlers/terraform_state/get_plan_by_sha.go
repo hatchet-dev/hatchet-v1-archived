@@ -32,7 +32,7 @@ func (t *TerraformPlanGetBySHAHandler) ServeHTTP(w http.ResponseWriter, r *http.
 	module, _ := r.Context().Value(types.ModuleScope).(*models.Module)
 	run, _ := r.Context().Value(types.ModuleRunScope).(*models.ModuleRun)
 
-	if run.ModuleRunConfig.GithubCommitSHA == "" {
+	if run.ModuleRunConfig.GitCommitSHA == "" {
 		t.HandleAPIError(w, r, apierrors.NewErrPassThroughToClient(types.APIError{
 			Code:        types.ErrCodeBadRequest,
 			Description: "cannot request plan for run that doesn't have a commit SHA",
@@ -43,7 +43,7 @@ func (t *TerraformPlanGetBySHAHandler) ServeHTTP(w http.ResponseWriter, r *http.
 
 	// find the corresponding run for that SHA
 	planKind := models.ModuleRunKindPlan
-	planRuns, err := t.Repo().Module().ListModuleRunsByGithubSHA(module.ID, run.ModuleRunConfig.GithubCommitSHA, &planKind)
+	planRuns, err := t.Repo().Module().ListModuleRunsByVCSSHA(module.ID, run.ModuleRunConfig.GitCommitSHA, &planKind)
 
 	if err != nil {
 		t.HandleAPIError(w, r, apierrors.NewErrInternal(err))

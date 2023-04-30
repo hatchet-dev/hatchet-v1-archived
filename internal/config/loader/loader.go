@@ -31,7 +31,8 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage/file"
 	"github.com/hatchet-dev/hatchet/internal/integrations/logstorage/redis"
 	"github.com/hatchet-dev/hatchet/internal/integrations/oauth"
-	"github.com/hatchet-dev/hatchet/internal/integrations/oauth/github"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs"
+	"github.com/hatchet-dev/hatchet/internal/integrations/vcs/github"
 	"github.com/hatchet-dev/hatchet/internal/logger"
 	"github.com/hatchet-dev/hatchet/internal/notifier"
 	"github.com/hatchet-dev/hatchet/internal/notifier/noop"
@@ -498,12 +499,12 @@ func GetServerConfigFromConfigFile(version string, sc *server.ConfigFile, dbConf
 		notifier = noop.NewNoOpUserNotifier(&sharedConfig.Logger)
 	}
 
-	var githubAppConf *github.GithubAppConf
+	vcsProviders := make(map[vcs.VCSRepositoryKind]vcs.VCSProvider)
 
-	if sc.VCS.Kind == "github" {
+	if sc.VCS.Github.Enabled {
 		var err error
 
-		githubAppConf, err = github.NewGithubAppConf(&oauth.Config{
+		githubAppConf, err := github.NewGithubAppConf(&oauth.Config{
 			ClientID:     sc.VCS.Github.GithubAppClientID,
 			ClientSecret: sc.VCS.Github.GithubAppClientSecret,
 			Scopes:       []string{"read:user"},
@@ -513,6 +514,10 @@ func GetServerConfigFromConfigFile(version string, sc *server.ConfigFile, dbConf
 		if err != nil {
 			return nil, err
 		}
+
+		githubProvider := github.NewGithubVCSProvider(githubAppConf, dbConfig.Repository, serverRuntimeConfig.ServerURL)
+
+		vcsProviders[vcs.VCSRepositoryKindGithub] = githubProvider
 	}
 
 	var storageManager filestorage.FileStorageManager
@@ -586,7 +591,7 @@ func GetServerConfigFromConfigFile(version string, sc *server.ConfigFile, dbConf
 		UserSessionStore:      userSessionStore,
 		TokenOpts:             tokenOpts,
 		UserNotifier:          notifier,
-		GithubApp:             githubAppConf,
+		VCSProviders:          vcsProviders,
 		DefaultFileStore:      storageManager,
 		DefaultLogStore:       logManager,
 		ModuleRunQueueManager: queueManager,

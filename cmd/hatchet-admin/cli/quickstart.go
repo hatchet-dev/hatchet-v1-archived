@@ -20,7 +20,7 @@ import (
 	"github.com/hatchet-dev/hatchet/internal/config/temporal"
 	"github.com/hatchet-dev/hatchet/internal/config/worker"
 	"github.com/hatchet-dev/hatchet/internal/encryption"
-	github_zip "github.com/hatchet-dev/hatchet/internal/integrations/git/github/zip"
+	vcs_zip "github.com/hatchet-dev/hatchet/internal/integrations/vcs/zip"
 	"github.com/hatchet-dev/hatchet/internal/temporal/server/authorizer/token"
 	"sigs.k8s.io/yaml"
 
@@ -448,13 +448,13 @@ func downloadStaticFiles(generated *generatedConfigFiles) error {
 			return fmt.Errorf("could not create generated config directory: %w", err)
 		}
 
-		downloadURL, err := github_zip.GetHatchetStaticAssetsDownloadURL(Version)
+		downloadURL, err := vcs_zip.GetHatchetStaticAssetsDownloadURL(Version)
 
 		if err != nil {
 			return err
 		}
 
-		zipDownloader := github_zip.ZIPDownloader{
+		zipDownloader := vcs_zip.ZIPDownloader{
 			SourceURL:           downloadURL,
 			ZipFolderDest:       ".",
 			ZipName:             "./static.zip",

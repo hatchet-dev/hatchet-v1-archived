@@ -13,6 +13,7 @@ type DeploymentMechanism string
 
 const (
 	DeploymentMechanismGithub DeploymentMechanism = "github"
+	DeploymentMechanismGitlab DeploymentMechanism = "gitlab"
 	DeploymentMechanismAPI    DeploymentMechanism = "api"
 	DeploymentMechanismLocal  DeploymentMechanism = "local"
 )
@@ -20,8 +21,8 @@ const (
 type ModuleLockKind string
 
 const (
-	ModuleLockKindGithubBranch ModuleLockKind = "github_branch"
-	ModuleLockKindManual       ModuleLockKind = "manual"
+	ModuleLockKindVCSBranch ModuleLockKind = "vcs_branch"
+	ModuleLockKindManual    ModuleLockKind = "manual"
 )
 
 type Module struct {
@@ -84,11 +85,12 @@ type ModuleDeploymentConfig struct {
 	// Local-related deployment config
 	UserID string
 
-	// Github-related deployment config
-	GithubRepoName   string
-	GithubRepoOwner  string
-	GithubRepoBranch string
+	// Git-related deployment config
+	GitRepoName   string
+	GitRepoOwner  string
+	GitRepoBranch string
 
+	// Github-related deployment config
 	GithubAppInstallationID string
 	GithubAppInstallation   GithubAppInstallation `gorm:"foreignKey:GithubAppInstallationID"`
 }
@@ -96,9 +98,9 @@ type ModuleDeploymentConfig struct {
 func (m *ModuleDeploymentConfig) ToAPIType() *types.ModuleDeploymentConfig {
 	return &types.ModuleDeploymentConfig{
 		Path:                    m.ModulePath,
-		GithubRepoName:          m.GithubRepoName,
-		GithubRepoOwner:         m.GithubRepoOwner,
-		GithubRepoBranch:        m.GithubRepoBranch,
+		GitRepoName:             m.GitRepoName,
+		GitRepoOwner:            m.GitRepoOwner,
+		GitRepoBranch:           m.GitRepoBranch,
 		GithubAppInstallationID: m.GithubAppInstallationID,
 	}
 }
@@ -195,7 +197,7 @@ func (m *ModuleRun) ToAPIType(pr *GithubPullRequest) *types.ModuleRun {
 	if mc := m.ModuleRunConfig; mc.ID != "" {
 		res.ModuleRunConfig = &types.ModuleRunConfig{
 			TriggerKind:     types.ModuleRunTriggerKind(mc.TriggerKind),
-			GithubCommitSHA: mc.GithubCommitSHA,
+			GitCommitSHA:    mc.GitCommitSHA,
 			EnvVarVersionID: mc.ModuleEnvVarsVersionID,
 			ValuesVersionID: mc.ModuleValuesVersionID,
 		}
@@ -306,7 +308,7 @@ func (m *ModuleRunToken) Decrypt(key *[32]byte) error {
 type ModuleRunTriggerKind string
 
 const (
-	ModuleRunTriggerKindGithub ModuleRunTriggerKind = "github"
+	ModuleRunTriggerKindVCS    ModuleRunTriggerKind = "vcs"
 	ModuleRunTriggerKindManual ModuleRunTriggerKind = "manual"
 )
 
@@ -317,12 +319,16 @@ type ModuleRunConfig struct {
 
 	TriggerKind ModuleRunTriggerKind
 
+	// For VCS-triggered runs, this is the corresponding commit SHA that triggered the run
+	GitCommitSHA string
+
 	// For locally-triggered runs, this is the hostname of the machine that performed this run
 	LocalHostname string
 
-	GithubCheckID   int64
-	GithubCommentID int64
-	GithubCommitSHA string
+	// Github-specific fields
+	GithubCheckID       int64
+	GithubCommentID     int64
+	GithubPullRequestID int64
 
 	ModuleValuesVersionID string
 	ModuleValuesVersion   ModuleValuesVersion `gorm:"foreignKey:ModuleValuesVersionID"`

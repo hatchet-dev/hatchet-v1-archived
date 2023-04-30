@@ -28,10 +28,10 @@ func NewListGithubRepoBranchesHandler(
 }
 
 func (g *ListGithubRepoBranchesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	client, err := GetGithubAppClientFromRequest(g.Config(), r)
+	client, reqErr := GetGithubAppClientFromRequest(g.Config(), r)
 
-	if err != nil {
-		g.HandleAPIError(w, r, apierrors.NewErrInternal(err))
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
 		return
 	}
 

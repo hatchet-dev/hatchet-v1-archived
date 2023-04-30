@@ -33,6 +33,13 @@ func NewGithubAppOAuthCallbackHandler(
 }
 
 func (g *GithubAppOAuthCallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ghApp, reqErr := GetGithubAppConfig(g.Config())
+
+	if reqErr != nil {
+		g.HandleAPIError(w, r, reqErr)
+		return
+	}
+
 	user, _ := r.Context().Value(types.UserScope).(*models.User)
 
 	validate, isOAuthTriggered, err := authn.ValidateOAuthState(w, r, g.Config())
@@ -47,7 +54,7 @@ func (g *GithubAppOAuthCallbackHandler) ServeHTTP(w http.ResponseWriter, r *http
 		return
 	}
 
-	token, err := g.Config().GithubApp.Exchange(oauth2.NoContext, r.URL.Query().Get("code"))
+	token, err := ghApp.Exchange(oauth2.NoContext, r.URL.Query().Get("code"))
 
 	if err != nil || !token.Valid() {
 		http.Redirect(w, r, "/", 302)
@@ -56,14 +63,14 @@ func (g *GithubAppOAuthCallbackHandler) ServeHTTP(w http.ResponseWriter, r *http
 	}
 
 	sharedFields := &models.SharedOAuthFields{
-		ClientID:     []byte(g.Config().GithubApp.ClientID),
+		ClientID:     []byte(ghApp.ClientID),
 		AccessToken:  []byte(token.AccessToken),
 		RefreshToken: []byte(token.RefreshToken),
 		Expiry:       token.Expiry,
 		UserID:       user.ID,
 	}
 
-	ghClient := github.NewClient(g.Config().GithubApp.Client(oauth2.NoContext, token))
+	ghClient := github.NewClient(ghApp.Client(oauth2.NoContext, token))
 
 	githubUser, _, err := ghClient.Users.Get(context.Background(), "")
 
@@ -103,7 +110,7 @@ func (g *GithubAppOAuthCallbackHandler) ServeHTTP(w http.ResponseWriter, r *http
 	}
 
 	if isOAuthTriggered {
-		http.Redirect(w, r, fmt.Sprintf("https://github.com/apps/%s/installations/new", g.Config().GithubApp.AppName), 302)
+		http.Redirect(w, r, fmt.Sprintf("https://github.com/apps/%s/installations/new", ghApp.GetAppName()), 302)
 	} else {
 		http.Redirect(w, r, "/", 302)
 	}

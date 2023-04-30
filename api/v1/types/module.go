@@ -89,7 +89,7 @@ const (
 // swagger:model
 type ModuleRunConfig struct {
 	TriggerKind     ModuleRunTriggerKind `json:"trigger_kind"`
-	GithubCommitSHA string               `json:"github_commit_sha"`
+	GitCommitSHA    string               `json:"git_commit_sha"`
 	EnvVarVersionID string               `json:"env_var_version_id"`
 	ValuesVersionID string               `json:"values_version_id"`
 }
@@ -109,9 +109,9 @@ type GithubPullRequest struct {
 // swagger:model
 type ModuleDeploymentConfig struct {
 	Path                    string `json:"path"`
-	GithubRepoName          string `json:"github_repo_name"`
-	GithubRepoOwner         string `json:"github_repo_owner"`
-	GithubRepoBranch        string `json:"github_repo_branch"`
+	GitRepoName             string `json:"git_repo_name"`
+	GitRepoOwner            string `json:"git_repo_owner"`
+	GitRepoBranch           string `json:"git_repo_branch"`
 	GithubAppInstallationID string `json:"github_app_installation_id"`
 }
 

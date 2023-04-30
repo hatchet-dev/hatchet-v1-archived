@@ -21,11 +21,11 @@ type TriggerInput struct {
 // Trigger returns true if a new module run should be triggered, false if not.
 func Trigger(mod *models.Module, kind models.ModuleRunKind, in *TriggerInput) (bool, string) {
 	if in.BaseBranch != "" {
-		if mod.DeploymentConfig.GithubRepoBranch != "" {
-			if in.BaseBranch != mod.DeploymentConfig.GithubRepoBranch {
+		if mod.DeploymentConfig.GitRepoBranch != "" {
+			if in.BaseBranch != mod.DeploymentConfig.GitRepoBranch {
 				return false, fmt.Sprintf(
 					"module deployment branch %s does not match base branch %s",
-					mod.DeploymentConfig.GithubRepoBranch,
+					mod.DeploymentConfig.GitRepoBranch,
 					in.BaseBranch,
 				)
 			}

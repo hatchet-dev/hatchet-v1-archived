@@ -83,11 +83,11 @@ const ExpandedModuleView: React.FunctionComponent = () => {
 
   const renderGithubRepoRef = () => {
     let depl = data?.data.deployment;
-    if (depl.github_repo_name != "") {
+    if (depl.git_repo_name != "") {
       return (
         <GithubRef
-          text={`${depl.github_repo_owner}/${depl.github_repo_name}`}
-          link={`https://github.com/${depl.github_repo_owner}/${depl.github_repo_name}`}
+          text={`${depl.git_repo_owner}/${depl.git_repo_name}`}
+          link={`https://github.com/${depl.git_repo_owner}/${depl.git_repo_name}`}
         />
       );
     }
