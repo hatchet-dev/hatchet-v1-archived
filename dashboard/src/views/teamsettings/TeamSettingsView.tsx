@@ -5,7 +5,7 @@ import {
   FlexColScroll,
   FlexColCenter,
   FlexCol,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { css } from "styled-components";
 import theme from "shared/theme";

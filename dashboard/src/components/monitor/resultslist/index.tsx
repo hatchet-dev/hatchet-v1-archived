@@ -6,7 +6,7 @@ import {
   Placeholder,
   Spinner,
   Table,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import Status from "components/status";
 import React, { useState } from "react";

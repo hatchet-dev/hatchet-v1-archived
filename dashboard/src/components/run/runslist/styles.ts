@@ -3,7 +3,7 @@ import {
   FlexCol,
   FlexRow,
   textFontStack,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const RunListWrapper = styled(FlexCol)`

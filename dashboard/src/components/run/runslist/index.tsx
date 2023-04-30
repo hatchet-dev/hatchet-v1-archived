@@ -1,4 +1,4 @@
-import { MaterialIcon, Spinner } from "@hatchet-dev/hatchet-components";
+import { MaterialIcon, Spinner } from "hatchet-components";
 import React, { useState } from "react";
 import { ModuleRun } from "shared/api/generated/data-contracts";
 import { relativeDate } from "shared/utils";

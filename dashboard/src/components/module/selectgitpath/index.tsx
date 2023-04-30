@@ -5,7 +5,7 @@ import {
   TextInput,
   Placeholder,
   Spinner,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useEffect, useState } from "react";
 import gitRepository from "assets/git_repository.png";
 import github from "assets/github.png";

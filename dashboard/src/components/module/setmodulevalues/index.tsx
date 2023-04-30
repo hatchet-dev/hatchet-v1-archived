@@ -4,7 +4,7 @@ import {
   TextInput,
   Selector,
   Selection,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState, useEffect } from "react";
 import { CreateModuleRequestGithub } from "shared/api/generated/data-contracts";
 import { useAtom } from "jotai";

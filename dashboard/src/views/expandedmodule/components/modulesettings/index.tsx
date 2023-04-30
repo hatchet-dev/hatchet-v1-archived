@@ -6,7 +6,7 @@ import {
   Placeholder,
   Spinner,
   SectionArea,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import EnvVars, { getInternalEnvVars, newEnvVarAtom } from "components/envvars";
 import ExpandableSettings from "components/expandablesettings";

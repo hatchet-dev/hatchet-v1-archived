@@ -5,7 +5,7 @@ import {
   StandardButton,
   SectionArea,
   Table,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import ResultsList from "components/monitor/resultslist";
 import React from "react";
 

@@ -11,7 +11,7 @@ import {
   ErrorBar,
   SectionAreaWithLogo,
   Spinner,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";

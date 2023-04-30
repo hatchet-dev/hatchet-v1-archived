@@ -5,7 +5,7 @@ import {
   FlexRow,
   FlexCol,
   MaterialIcon,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import {
   ExpandableSettingsContainer,
   ExpandableSettingsHeader,

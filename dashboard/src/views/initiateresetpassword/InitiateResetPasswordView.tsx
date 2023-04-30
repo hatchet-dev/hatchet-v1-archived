@@ -13,7 +13,7 @@ import {
   SectionAreaWithLogo,
   Placeholder,
   Spinner,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";

@@ -2,7 +2,7 @@ import {
   FlexRowLeft,
   altTextFontStack,
   SmallSpan,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled, { css } from "styled-components";
 
 export const StatusContainerStyles = css`

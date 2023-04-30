@@ -4,7 +4,7 @@ import {
   HorizontalSpacer,
   StandardButton,
   SectionArea,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";

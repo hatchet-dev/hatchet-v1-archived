@@ -1,4 +1,4 @@
-import { FlexCol, FlexColScroll } from "@hatchet-dev/hatchet-components";
+import { FlexCol, FlexColScroll } from "hatchet-components";
 import styled from "styled-components";
 
 export const ExpandedNotificationContainer = styled(FlexCol)`

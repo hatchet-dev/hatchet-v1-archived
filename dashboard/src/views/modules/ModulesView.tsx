@@ -9,7 +9,7 @@ import {
   Table,
   Spinner,
   Placeholder,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import GithubAvatarAndName from "components/githubavatarandname";
 import { useAtom } from "jotai";

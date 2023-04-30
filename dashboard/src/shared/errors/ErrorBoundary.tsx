@@ -4,7 +4,7 @@ import {
   FlexColCenter,
   Placeholder,
   SmallSpan,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 type Props = {

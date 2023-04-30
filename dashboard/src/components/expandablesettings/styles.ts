@@ -6,7 +6,7 @@ import {
   P,
   tableHeaderFontStack,
   FlexCol,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const ExpandableSettingsContainer = styled(FlexCol)`

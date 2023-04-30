@@ -7,7 +7,7 @@ import {
   Filter,
   Paginator,
   Table,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 import { useHistory } from "react-router-dom";
 

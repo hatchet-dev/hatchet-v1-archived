@@ -1,4 +1,4 @@
-import { FlexRowLeft, FlexRow } from "@hatchet-dev/hatchet-components";
+import { FlexRowLeft, FlexRow } from "hatchet-components";
 import styled from "styled-components";
 
 export const EnvVarRow = styled(FlexRowLeft)`

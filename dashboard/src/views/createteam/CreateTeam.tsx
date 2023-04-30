@@ -14,7 +14,7 @@ import {
   ErrorBar,
   SectionArea,
   TextInput,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";

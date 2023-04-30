@@ -2,7 +2,7 @@ import {
   altTextFontStack,
   FlexColScroll,
   FlexRow,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const TeamContainer = styled(FlexRow)`

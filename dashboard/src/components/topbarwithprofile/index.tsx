@@ -2,7 +2,7 @@ import React from "react";
 import api from "shared/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useHistory } from "react-router-dom";
-import { TopBar, Selector, Selection } from "@hatchet-dev/hatchet-components";
+import { TopBar, Selector, Selection } from "hatchet-components";
 
 const options = [
   {

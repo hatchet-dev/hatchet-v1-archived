@@ -5,7 +5,7 @@ import {
   FlexColScroll,
   Placeholder,
   Spinner,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import CodeBlock from "components/codeblock";
 import EnvVars, { getInternalEnvVars, newEnvVarAtom } from "components/envvars";

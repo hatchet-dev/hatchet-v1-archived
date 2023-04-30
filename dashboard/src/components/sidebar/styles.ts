@@ -8,7 +8,7 @@ import {
   tableHeaderFontStack,
   headerFontStack,
   SmallSpan,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const SidebarWrapper = styled.section<{ padding?: string }>`

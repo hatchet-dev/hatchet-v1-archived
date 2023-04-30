@@ -5,7 +5,7 @@ import {
   ErrorBar,
   Selector,
   TextInput,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useEffect, useState } from "react";
 import { CreateOrgMemberInviteRequest } from "shared/api/generated/data-contracts";
 import { InviteAddButton, InviteContainer } from "./styles";

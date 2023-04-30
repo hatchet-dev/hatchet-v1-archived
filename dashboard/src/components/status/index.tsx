@@ -1,4 +1,4 @@
-import { MaterialIcon } from "@hatchet-dev/hatchet-components";
+import { MaterialIcon } from "hatchet-components";
 import React, { Component, useRef } from "react";
 import { StatusContainer, StatusText } from "./styles";
 

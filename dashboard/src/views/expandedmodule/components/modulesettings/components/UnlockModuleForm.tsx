@@ -7,7 +7,7 @@ import {
   ErrorBar,
   Confirmation,
   Placeholder,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 

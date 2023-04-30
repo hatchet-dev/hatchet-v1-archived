@@ -7,11 +7,10 @@ import {
   MaterialIcon,
   Placeholder,
   Spinner,
-  CodeLine,
   FlexCol,
   FlexRowRight,
   FlexRowLeft,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import api from "shared/api";

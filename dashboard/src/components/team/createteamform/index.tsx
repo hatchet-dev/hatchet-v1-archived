@@ -4,7 +4,7 @@ import {
   MaterialIcon,
   ErrorBar,
   TextInput,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useEffect, useState } from "react";
 import { CreateTeamRequest } from "shared/api/generated/data-contracts";
 import { CreateTeamContainer, TeamAddButton } from "./styles";

@@ -2,7 +2,7 @@ import {
   AppWrapper,
   ViewWrapper,
   TopBar,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import theme, { GlobalStyle } from "shared/theme";

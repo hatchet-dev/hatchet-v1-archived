@@ -4,7 +4,7 @@ import {
   H1,
   HorizontalSpacer,
   AppWrapper,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 import { useLocation } from "react-router-dom";
 import NameOrganization from "./components/NameOrganization";

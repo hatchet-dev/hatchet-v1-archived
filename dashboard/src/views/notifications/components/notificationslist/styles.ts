@@ -2,7 +2,7 @@ import {
   FlexCol,
   FlexColScroll,
   SmallSpan,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const NotificationListContainer = styled(FlexColScroll)`

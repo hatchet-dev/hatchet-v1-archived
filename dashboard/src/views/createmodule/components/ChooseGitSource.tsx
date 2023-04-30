@@ -8,7 +8,7 @@ import {
   StandardButton,
   Breadcrumbs,
   H1,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useMemo, useState } from "react";
 import { css } from "styled-components";
 import theme from "shared/theme";
