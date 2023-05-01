@@ -83,24 +83,26 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	t.WriteResult(w, r, team.ToAPIType())
 
-	// create a temporal namespace for the team
-	tc, err := t.Config().TemporalClient.GetClient(temporal.DefaultQueueName)
+	// create a temporal namespace for the team if temporal enabled
+	if t.Config().TemporalClient != nil {
+		tc, err := t.Config().TemporalClient.GetClient(temporal.DefaultQueueName)
 
-	if err != nil {
-		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
-		return
-	}
+		if err != nil {
+			t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+			return
+		}
 
-	retention := 24 * 30 * time.Hour
+		retention := 24 * 30 * time.Hour
 
-	_, err = tc.WorkflowService().RegisterNamespace(context.Background(), &workflowservice.RegisterNamespaceRequest{
-		Namespace:                        team.ID,
-		WorkflowExecutionRetentionPeriod: &retention,
-	})
+		_, err = tc.WorkflowService().RegisterNamespace(context.Background(), &workflowservice.RegisterNamespaceRequest{
+			Namespace:                        team.ID,
+			WorkflowExecutionRetentionPeriod: &retention,
+		})
 
-	if err != nil {
-		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
-		return
+		if err != nil {
+			t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+			return
+		}
 	}
 
 	// create service account team member by creating a new user and team member and appending them to
@@ -196,10 +198,12 @@ func (t *TeamCreateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dispatcher.DispatchCronMonitor(t.Config().TemporalClient, team.ID, monitor.ID, "0 */6 * * *")
+	if t.Config().TemporalClient != nil {
+		err = dispatcher.DispatchCronMonitor(t.Config().TemporalClient, team.ID, monitor.ID, "0 */6 * * *")
 
-	if err != nil {
-		t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
-		return
+		if err != nil {
+			t.HandleAPIErrorNoWrite(w, r, apierrors.NewErrInternal(err))
+			return
+		}
 	}
 }
