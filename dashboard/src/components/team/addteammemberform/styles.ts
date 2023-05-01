@@ -1,4 +1,4 @@
-import { FlexRow, tableHeaderFontStack } from "@hatchet-dev/hatchet-components";
+import { FlexRow, tableHeaderFontStack } from "hatchet-components";
 import styled from "styled-components";
 
 export const InviteContainer = styled(FlexRow)`

@@ -84,7 +84,7 @@ func BindAllEnv(v *viper.Viper) {
 	v.BindEnv("runtime.broadcastGRPCAddress", "SERVER_RUNTIME_BROADCAST_GRPC_ADDRESS")
 	v.BindEnv("runtime.runBackgroundWorker", "SERVER_RUNTIME_RUN_BACKGROUND_WORKER")
 	v.BindEnv("runtime.runRunnerWorker", "SERVER_RUNTIME_RUN_RUNNER_WORKER")
-	v.BindEnv("runtime.runTemporalServer", "SERVER_RUNTIME_RUN_TEMPORAL_WORKER")
+	v.BindEnv("runtime.runTemporalServer", "SERVER_RUNTIME_RUN_TEMPORAL_SERVER")
 	v.BindEnv("runtime.runStaticFileServer", "SERVER_RUNTIME_RUN_STATIC_FILE_SERVER")
 	v.BindEnv("runtime.staticFilePath", "SERVER_RUNTIME_STATIC_FILE_PATH")
 

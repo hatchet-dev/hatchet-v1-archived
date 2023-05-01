@@ -6,7 +6,7 @@ import {
   Selector,
   TextInput,
   SmallSpan,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useEffect, useState } from "react";
 import {
   AddTeamMemberRequest,

@@ -11,7 +11,7 @@ import {
   FlexRow,
   H4,
   P,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import ConfigurationSection from "components/run/expandedrun/components/ConfigurationSection";
 import Status from "components/status";

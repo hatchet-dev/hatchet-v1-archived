@@ -3,7 +3,7 @@ import {
   FlexColScroll,
   FlexRow,
   MaterialIcon,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import styled from "styled-components";
 
 export const TeamHeader = styled(FlexRow)`

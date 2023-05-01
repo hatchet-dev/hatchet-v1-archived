@@ -6,7 +6,7 @@ import {
   StandardButton,
   ErrorBar,
   Confirmation,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 

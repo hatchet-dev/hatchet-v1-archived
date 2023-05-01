@@ -1,4 +1,4 @@
-import { FlexCol, FlexRow, FlexRowLeft } from "@hatchet-dev/hatchet-components";
+import { FlexCol, FlexRow, FlexRowLeft } from "hatchet-components";
 import styled from "styled-components";
 
 export const VersionListWrapper = styled(FlexCol)`

@@ -4,7 +4,7 @@ import {
   HorizontalSpacer,
   P,
   GridCard,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 
 const EnvironmentsView: React.FunctionComponent = () => {

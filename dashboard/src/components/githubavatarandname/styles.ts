@@ -1,4 +1,4 @@
-import { SmallSpan, FlexRowLeft } from "@hatchet-dev/hatchet-components";
+import { SmallSpan, FlexRowLeft } from "hatchet-components";
 import styled from "styled-components";
 
 export const GithubAvatar = styled.img<{ avatar_size: "default" | "small" }>`

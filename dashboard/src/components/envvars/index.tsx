@@ -5,7 +5,7 @@ import {
   MaterialIcon,
   StandardButton,
   HorizontalSpacer,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { atom, useAtom, createStore, useStore, PrimitiveAtom } from "jotai";
 import React, { useState, useEffect } from "react";
 import { makeid } from "shared/utils";

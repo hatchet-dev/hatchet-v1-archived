@@ -8,7 +8,7 @@ import {
   Placeholder,
   Spinner,
   StandardButton,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import React, { useState } from "react";

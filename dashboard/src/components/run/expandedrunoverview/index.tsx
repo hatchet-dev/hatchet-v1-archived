@@ -7,11 +7,10 @@ import {
   MaterialIcon,
   Placeholder,
   Spinner,
-  CodeLine,
   FlexCol,
   FlexRowRight,
   FlexRowLeft,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import api from "shared/api";
@@ -23,6 +22,7 @@ import GithubRef from "components/githubref";
 import { StatusText } from "components/status/styles";
 import { RunSectionCard } from "../expandedrun/styles";
 import { TriggerPRContainer } from "./styles";
+import CodeBlock from "components/codeblock";
 
 type Props = {
   team_id: string;
@@ -68,16 +68,16 @@ const ExpandedRunOverview: React.FC<Props> = ({
 
   const getPRCommitLink = () => {
     const pr = module_run?.github_pull_request;
-    const sha = module_run?.config.github_commit_sha;
+    const sha = module_run?.config.git_commit_sha;
 
     return `https://github.com/${pr.github_repository_owner}/${pr.github_repository_name}/pull/${pr.github_pull_request_number}/commits/${sha}`;
   };
 
   const getCommitLink = () => {
     const gh = module.deployment;
-    const sha = module_run?.config.github_commit_sha;
+    const sha = module_run?.config.git_commit_sha;
 
-    return `https://github.com/${gh.github_repo_owner}/${gh.github_repo_name}/commit/${sha}`;
+    return `https://github.com/${gh.git_repo_owner}/${gh.git_repo_name}/commit/${sha}`;
   };
 
   if (planSummaryEnabled && planSummaryQuery.isLoading) {
@@ -148,13 +148,17 @@ const ExpandedRunOverview: React.FC<Props> = ({
           </StatusText>
         </TriggerPRContainer>
         <SmallSpan>into</SmallSpan>
-        <CodeLine padding="6px">
-          {module_run?.github_pull_request.github_pull_request_base_branch}
-        </CodeLine>
+        <CodeBlock
+          value={
+            module_run?.github_pull_request.github_pull_request_base_branch
+          }
+        />
         <SmallSpan>from</SmallSpan>
-        <CodeLine padding="6px">
-          {module_run?.github_pull_request.github_pull_request_head_branch}
-        </CodeLine>
+        <CodeBlock
+          value={
+            module_run?.github_pull_request.github_pull_request_head_branch
+          }
+        />
       </FlexRowLeft>
     );
   };
@@ -218,7 +222,7 @@ const ExpandedRunOverview: React.FC<Props> = ({
         <FlexRowRight gap="8px">
           {triggerKind == "github" && (
             <GithubRef
-              text={module_run?.config.github_commit_sha.substr(0, 7)}
+              text={module_run?.config.git_commit_sha.substr(0, 7)}
               link={kind == "plan" ? getPRCommitLink() : getCommitLink()}
             />
           )}

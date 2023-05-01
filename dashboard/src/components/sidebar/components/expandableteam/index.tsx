@@ -9,7 +9,7 @@ import {
   FlexRow,
   SmallSpan,
   HorizontalSpacer,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { useAtom } from "jotai";

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
-import { SectionArea } from "@hatchet-dev/hatchet-components";
+import { SectionArea } from "hatchet-components";
 import OrgList from "components/organization/orglist";
 
 const UserOrgs: React.FunctionComponent = () => {

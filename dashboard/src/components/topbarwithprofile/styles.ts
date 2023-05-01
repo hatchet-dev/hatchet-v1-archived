@@ -1,4 +1,4 @@
-import { FlexCol, Span } from "@hatchet-dev/hatchet-components";
+import { FlexCol, Span } from "hatchet-components";
 import styled from "styled-components";
 
 export const TopBarWrapper = styled.nav<{ is_authenticated?: boolean }>`

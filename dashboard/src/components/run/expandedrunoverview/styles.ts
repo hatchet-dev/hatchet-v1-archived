@@ -3,7 +3,7 @@ import {
   FlexRowLeft,
   SectionCard,
   FlexRowRight,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { StatusContainer } from "components/status/styles";
 import styled from "styled-components";
 

@@ -1,4 +1,4 @@
-import { FlexRowLeft } from "@hatchet-dev/hatchet-components";
+import { FlexRowLeft } from "hatchet-components";
 import styled from "styled-components";
 
 export const CheckboxContainer = styled(FlexRowLeft)`

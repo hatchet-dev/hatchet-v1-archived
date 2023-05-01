@@ -1,4 +1,4 @@
-import { SectionCard } from "@hatchet-dev/hatchet-components";
+import { SectionCard } from "hatchet-components";
 import styled from "styled-components";
 
 export const ExpandedResultContainer = styled.div`

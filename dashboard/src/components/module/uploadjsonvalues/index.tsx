@@ -3,7 +3,7 @@ import {
   P,
   FlexColScroll,
   ErrorBar,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState, useEffect } from "react";
 import CodeBlock from "components/codeblock";
 

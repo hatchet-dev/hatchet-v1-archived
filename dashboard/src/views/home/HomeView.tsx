@@ -8,7 +8,7 @@ import {
   Placeholder,
   Spinner,
   FlexRowLeft,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useQuery } from "@tanstack/react-query";
 import RunsList from "components/run/runslist";
 import TeamList from "components/team/teamlist";

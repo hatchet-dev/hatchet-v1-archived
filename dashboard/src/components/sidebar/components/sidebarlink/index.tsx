@@ -1,4 +1,4 @@
-import { sidebarHeaderFontStack } from "@hatchet-dev/hatchet-components";
+import { sidebarHeaderFontStack } from "hatchet-components";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 

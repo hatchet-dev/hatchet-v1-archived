@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "shared/api";
 import { useAtom } from "jotai";
 import { currOrgAtom, currTeamAtom } from "shared/atoms/atoms";
-import { Spinner } from "@hatchet-dev/hatchet-components";
+import { Spinner } from "hatchet-components";
 
 type Props = {
   organization?: boolean;

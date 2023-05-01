@@ -5,7 +5,7 @@ import {
   HorizontalSpacer,
   SmallSpan,
   TextInput,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import api from "shared/api";

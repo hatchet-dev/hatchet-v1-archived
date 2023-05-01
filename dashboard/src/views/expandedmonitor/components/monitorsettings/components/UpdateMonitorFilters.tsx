@@ -8,7 +8,7 @@ import {
   Selector,
   Selection,
   P,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Checkbox from "components/checkbox";
 import React, { useState } from "react";

@@ -13,7 +13,7 @@ import {
   Spinner,
   FlexRowLeft,
   FlexRow,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import CodeBlock from "components/codeblock";
 import GithubRef from "components/githubref";

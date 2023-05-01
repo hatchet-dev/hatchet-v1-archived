@@ -6,7 +6,7 @@ import {
   P,
   SmallSpan,
   FlexColScroll,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 
 import UserMetaForm from "./components/UserMetaForm";

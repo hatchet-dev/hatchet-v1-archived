@@ -3,7 +3,7 @@ import {
   HorizontalSpacer,
   MaterialIcon,
   StandardButton,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React from "react";
 import {
   OrganizationMemberSanitized,

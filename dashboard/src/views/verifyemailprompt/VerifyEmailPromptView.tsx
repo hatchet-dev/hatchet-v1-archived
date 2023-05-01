@@ -10,7 +10,7 @@ import {
   AppWrapper,
   ErrorBar,
   SectionAreaWithLogo,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import api from "shared/api";

@@ -3,7 +3,7 @@ import {
   MaterialIcon,
   SmallSpan,
   P,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { Component, useRef, useState } from "react";
 import { CheckboxContainer } from "./styles";
 

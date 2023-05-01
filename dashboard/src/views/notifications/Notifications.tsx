@@ -11,7 +11,7 @@ import {
   StandardButton,
   Spinner,
   Placeholder,
-} from "@hatchet-dev/hatchet-components";
+} from "hatchet-components";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "shared/api";
