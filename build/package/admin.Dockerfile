@@ -10,7 +10,6 @@ RUN apk update && apk add --no-cache gcc musl-dev git protoc
 COPY go.mod go.sum ./
 COPY /api ./api
 COPY /cmd ./cmd
-COPY /ee ./ee
 COPY /internal ./internal
 COPY /hack ./hack
 
