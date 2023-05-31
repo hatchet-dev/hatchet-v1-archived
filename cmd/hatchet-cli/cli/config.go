@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,7 +36,7 @@ var getConfigCmd = &cobra.Command{
 var setAddressCmd = &cobra.Command{
 	Use:   "set-address",
 	Short: "set the address of the Hatchet instance",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := setAddress(args[0])
 
@@ -49,7 +50,7 @@ var setAddressCmd = &cobra.Command{
 var setOrganizationCmd = &cobra.Command{
 	Use:   "set-organization",
 	Short: "set the default organization of the Hatchet instance",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := setOrganization(args[0])
 
@@ -63,7 +64,7 @@ var setOrganizationCmd = &cobra.Command{
 var setTeamCmd = &cobra.Command{
 	Use:   "set-team",
 	Short: "set the default team of the Hatchet instance",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := setTeam(args[0])
 
@@ -77,7 +78,7 @@ var setTeamCmd = &cobra.Command{
 var setAPITokenCmd = &cobra.Command{
 	Use:   "set-api-token",
 	Short: "set the default api token of the Hatchet instance",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := setAPIToken(args[0])
 
@@ -100,6 +101,15 @@ func init() {
 
 func setAddress(address string) error {
 	address = strings.TrimRight(address, "/")
+
+	// parse as a URL
+	if url, err := url.Parse(address); err != nil {
+		return fmt.Errorf("Could not parse address. Make sure your address includes the protocol "+
+			"and host, for example http://localhost:8080. Full error: %w", err)
+	} else if url.Scheme == "" || url.Host == "" {
+		return fmt.Errorf("Could not parse address. Make sure your address includes the protocol " +
+			"and host, for example http://localhost:8080")
+	}
 
 	v.Set("address", address)
 	color.New(color.FgGreen).Printf("Set the current address as %s\n", address)

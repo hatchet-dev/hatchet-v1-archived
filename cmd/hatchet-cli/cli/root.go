@@ -46,7 +46,7 @@ func init() {
 		&printVersion,
 		"version",
 		false,
-		"The cron schedule for the monitor.",
+		"The version of the hatchet cli.",
 	)
 
 	var err error
